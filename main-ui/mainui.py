@@ -40,6 +40,8 @@ def initialize_device(device):
         Device.init(MiyooFlip())
     elif "TRIMUI_BRICK" == device:
         Device.init(TrimUIBrick())
+    elif "TRIMUI_SMART_PRO" == device:
+        Device.init(TrimUISmartPro())
     else:
         raise RuntimeError(f"{device} is not a supported device")
 
