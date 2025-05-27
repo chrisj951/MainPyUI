@@ -729,6 +729,47 @@ class TrimUISmartPro(DeviceCommon):
     def launch_stock_os_menu(self):
         pass
 
+    def run_calibration(self, stick_name, joystick, file_path, leftOrRight):
+        from display.display import Display
+        from themes.theme import Theme
+        
+        Display.clear("Stick Calibration")
+        Display.render_text_centered(f"Rotate {stick_name}",self.screen_width//2, self.screen_height//2,Theme.text_color_selected(FontPurpose.LIST), purpose=FontPurpose.LIST)
+        Display.present()
+        
+        rotate_stats = joystick.sample_axes_stats()
+        
+        Display.clear("Stick Calibration")
+        Display.render_text_centered(f"Leave {stick_name} Still",self.screen_width//2, self.screen_height//2,Theme.text_color_selected(FontPurpose.LIST), purpose=FontPurpose.LIST)
+        Display.present()
+
+        centered_stats = joystick.sample_axes_stats()
+        print("rotate_stats keys:", rotate_stats.keys())
+        print("centered_stats keys:", rotate_stats.keys())
+        
+        x_min = f"x_min={round(rotate_stats['axisX'+leftOrRight]['min'])}"
+        x_max = f"x_max={round(rotate_stats['axisX'+leftOrRight]['max'])}"
+        x_zero = f"x_zero={round(centered_stats['axisX'+leftOrRight]['avg'])}"
+
+        y_min = f"y_min={round(rotate_stats['axisY'+leftOrRight]['min'])}"
+        y_max = f"y_max={round(rotate_stats['axisY'+leftOrRight]['max'])}"
+        y_zero = f"y_zero={round(centered_stats['axisY'+leftOrRight]['avg'])}" 
+
+        # Log each
+        PyUiLogger.get_logger().info(x_min)
+        PyUiLogger.get_logger().info(x_max)
+        PyUiLogger.get_logger().info(y_min)
+        PyUiLogger.get_logger().info(y_max)
+        PyUiLogger.get_logger().info(x_zero)
+        PyUiLogger.get_logger().info(y_zero)
+        with open(file_path, 'w') as f:
+            # Write to file
+            f.write(x_min + "\n")
+            f.write(x_max + "\n")
+            f.write(y_min + "\n")
+            f.write(y_max + "\n")
+            f.write(x_zero + "\n")
+            f.write(y_zero + "\n")
     
     def calibrate_sticks(self):
         from controller.controller import Controller
@@ -739,7 +780,7 @@ class TrimUISmartPro(DeviceCommon):
         joystick.open()
         self.run_calibration("Left stick",joystick,"/userdata/joypad.config","L")
         self.run_calibration("Right stick",joystick,"/userdata/joypad_right.config","R")
-        subprocess.Popen(["/usr/miyoo/bin/miyoo_inputd"],
+        subprocess.Popen(["/usr/trimui/bin/trimui_inputd"],
                                 stdin=subprocess.DEVNULL,
                                 stdout=subprocess.DEVNULL,
                                 stderr=subprocess.DEVNULL)
