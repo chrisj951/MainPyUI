@@ -14,6 +14,7 @@ from devices.device_common import DeviceCommon
 import os
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.miyoo.system_config import SystemConfig
+from devices.miyoo.trim_ui_joystick import TrimUIJoystick
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
 from devices.wifi.wifi_status import WifiStatus
