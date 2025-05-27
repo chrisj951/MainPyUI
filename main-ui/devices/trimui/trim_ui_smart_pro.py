@@ -777,8 +777,8 @@ class TrimUISmartPro(DeviceCommon):
         time.sleep(0.5)
         joystick = TrimUIJoystick()
         joystick.open()
-        self.run_calibration("Left stick",joystick,"/userdata/joypad.config","L")
-        self.run_calibration("Right stick",joystick,"/userdata/joypad_right.config","R")
+        self.run_calibration("Left stick",joystick,"/mnt/UDISK/joypad.config","L")
+        self.run_calibration("Right stick",joystick,"/mnt/UDISK/joypad_right.config","R")
         subprocess.Popen(["/usr/trimui/bin/trimui_inputd"],
                                 stdin=subprocess.DEVNULL,
                                 stdout=subprocess.DEVNULL,
