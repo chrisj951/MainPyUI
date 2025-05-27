@@ -348,7 +348,6 @@ class TrimUIBrick(DeviceCommon):
             
             # Construct the new path using the desired format
             new_path = original_path.replace(f"Roms{os.sep}{subdirectory}", f"Emu{os.sep}{subdirectory}{os.sep}..{os.sep}..{os.sep}Roms{os.sep}{subdirectory}")
-            new_path = new_path.replace("/mnt/SDCARD/", "/media/sdcard0/")
             return new_path
         else:
             PyUiLogger.get_logger().error(f"Unable to convert {original_path} to miyoo path")
