@@ -331,7 +331,7 @@ class MiyooDevice(DeviceCommon):
         ProcessRunner.run(["killall","-9","bluetoothd"])
 
     def enable_bluetooth(self):
-        if(not self.is_bluetooth_enabled()):
+        if(not MiyooTrimCommon.is_bluetooth_enabled()):
             subprocess.Popen(['./bluetoothd',"-f","/etc/bluetooth/main.conf"],
                             cwd='/usr/libexec/bluetooth/',
                             stdout=subprocess.DEVNULL,

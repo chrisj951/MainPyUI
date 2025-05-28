@@ -13,6 +13,7 @@ from controller.controller_inputs import ControllerInput
 from controller.key_watcher import KeyWatcher
 from devices.charge.charge_status import ChargeStatus
 from devices.abstract_device import AbstractDevice
+from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 import os
 from devices.device_common import DeviceCommon
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
@@ -109,4 +110,18 @@ class TrimUIBrick(TrimUIDevice):
             return 2.25
         else:
             return 1
-        
+    
+    def disable_bluetooth(self):
+        ProcessRunner.run(["killall","-15","bluetoothd"])
+        time.sleep(0.1)  
+        ProcessRunner.run(["killall","-9","bluetoothd"])
+
+    def enable_bluetooth(self):
+        if(not MiyooTrimCommon.is_bluetooth_enabled()):
+            subprocess.Popen(['./bluetoothd',"-f","/etc/bluetooth/main.conf"],
+                            cwd='/usr/libexec/bluetooth/',
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
+
+    def get_bluetooth_scanner(self):
+        return BluetoothScanner()

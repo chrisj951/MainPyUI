@@ -268,3 +268,15 @@ class TrimUIDevice(DeviceCommon):
 
     def supports_analog_calibration(self):
         return False
+
+    def _set_contrast_to_config(self):
+        with open("/sys/devices/virtual/disp/disp/attr/enhance_contrast", "w") as f:
+            f.write(str(self.system_config.contrast * 10))
+
+    def _set_saturation_to_config(self):
+        with open("/sys/devices/virtual/disp/disp/attr/enhance_saturation", "w") as f:
+            f.write(str(self.system_config.saturation * 10))
+
+    def _set_brightness_to_config(self):
+        with open("/sys/devices/virtual/disp/disp/attr/enhance_bright", "w") as f:
+            f.write(str(self.system_config.brightness * 10))

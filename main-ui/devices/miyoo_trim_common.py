@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import subprocess
 import time
+import psutil
 from devices.utils.process_runner import ProcessRunner
 from display.font_purpose import FontPurpose
 from menus.games.utils.rom_info import RomInfo
@@ -140,6 +141,10 @@ class MiyooTrimCommon():
         device.start_wifi_services()
         device.get_wifi_status.force_refresh()
         device.get_ip_addr_text.force_refresh()
+
+    @staticmethod
+    def is_bluetooth_enabled() -> bool:
+        return "bluetoothd" in map(lambda p: p.name, psutil.process_iter())
 
     @staticmethod
     def run_analog_stick_calibration(device, stick_name, joystick, file_path, leftOrRight):

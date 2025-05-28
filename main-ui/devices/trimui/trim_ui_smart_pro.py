@@ -13,6 +13,7 @@ from controller.controller_inputs import ControllerInput
 from controller.key_watcher import KeyWatcher
 from devices.charge.charge_status import ChargeStatus
 from devices.abstract_device import AbstractDevice
+from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 import os
 from devices.device_common import DeviceCommon
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
@@ -108,4 +109,37 @@ class TrimUISmartPro(TrimUIDevice):
             return 1.5
         else:
             return 1
-        
+    
+    
+    def disable_bluetooth(self):
+        ProcessRunner.run(["killall","-15","bluetoothd"])
+        time.sleep(0.1)  
+        ProcessRunner.run(["killall","-9","bluetoothd"])
+
+    def enable_bluetooth(self):
+        if(not MiyooTrimCommon.is_bluetooth_enabled()):
+            subprocess.Popen(['./bluetoothd',"-f","/etc/bluetooth/main.conf"],
+                            cwd='/usr/libexec/bluetooth/',
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
+
+    def get_bluetooth_scanner(self):
+        return BluetoothScanner()
+
+    def supports_analog_calibration(self):
+        return True
+
+    def calibrate_sticks(self):
+        from controller.controller import Controller
+        sdl2.SDL_QuitSubSystem(sdl2.SDL_INIT_GAMECONTROLLER)
+        ProcessRunner.run(["killall","-9","trimui_inputd"])
+        time.sleep(0.5)
+        joystick = TrimUIJoystick()
+        joystick.open()
+        MiyooTrimCommon.run_analog_stick_calibration(self,"Left stick",joystick,"/mnt/UDISK/joypad.config","L")
+        MiyooTrimCommon.run_analog_stick_calibration(self,"Right stick",joystick,"/mnt/UDISK/joypad_right.config","R")
+        subprocess.Popen(["/usr/trimui/bin/trimui_inputd"],
+                                stdin=subprocess.DEVNULL,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
+        Controller.re_init_controller()
