@@ -397,7 +397,7 @@ class Display:
     def render_text(cls, text, x, y, color, purpose: FontPurpose, render_mode=RenderMode.TOP_LEFT_ALIGNED,
                     crop_w=None, crop_h=None):
         loaded_font = cls.fonts[purpose]
-        cache : CachedImageTexture = cls._text_texture_cache.get_texture(text, loaded_font.font_path, color)
+        cache : CachedImageTexture = cls._text_texture_cache.get_texture(text, purpose, color)
         
         if cache:
             surface = cache.surface
@@ -415,7 +415,7 @@ class Display:
                 PyUiLogger.get_logger().error(f"Failed to create texture from surface {text}: {sdl2.sdlttf.TTF_GetError().decode('utf-8')}")
                 return 0, 0
 
-            cls._text_texture_cache.add_texture(text, loaded_font.font_path, color, surface, texture)
+            cls._text_texture_cache.add_texture(text, purpose, color, surface, texture)
 
         return cls._render_surface_texture(
                 x=x,
