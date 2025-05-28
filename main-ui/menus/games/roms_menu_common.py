@@ -72,6 +72,7 @@ class RomsMenuCommon(ABC):
                     set_top_bar_text_to_selection=Theme.get_set_top_bar_text_to_game_selection(),
                     grid_selected_bg=Theme.get_grid_game_selected_bg(),
                     grid_resize_type=Theme.get_grid_game_selected_resize_type(),
+                    grid_img_y_offset=Theme.get_grid_game_img_y_offset(),
                     carousel_selected_entry_width_percent=Theme.get_carousel_game_select_primary_img_width(),
                     carousel_shrink_further_away=Theme.get_carousel_game_select_shrink_further_away(),
                     carousel_sides_hang_off_edge=Theme.get_carousel_game_select_sides_hang_off()

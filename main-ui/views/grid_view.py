@@ -19,7 +19,7 @@ class GridView(View):
     def __init__(self, top_bar_text, options: List[GridOrListEntry], cols: int, rows: int, selected_bg: str = None,
                  selected_index=0, show_grid_text=True, resized_width=None, resized_height=None,
                  set_top_bar_text_to_selection=False, resize_type=None, 
-                 unselected_bg = None):
+                 unselected_bg = None, grid_img_y_offset=None):
         super().__init__()
         self.resized_width = resized_width
         self.resized_height = resized_height
@@ -52,6 +52,7 @@ class GridView(View):
         self.selected_bg = selected_bg
         self.unselected_bg = unselected_bg
         self.show_grid_text = show_grid_text
+        self.img_offset = grid_img_y_offset
 
     def set_options(self, options):
         self.options = options
@@ -124,7 +125,9 @@ class GridView(View):
             else:
                 text_height = 0
             
-            if(self.rows == 1):
+            if(self.img_offset is not None):
+                img_offset = self.img_offset
+            elif(self.rows == 1):
                 img_offset = 0
             else:
                 img_offset = Theme.get_system_select_grid_img_y_offset(text_height)

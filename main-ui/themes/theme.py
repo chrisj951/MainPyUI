@@ -568,6 +568,14 @@ class Theme():
         cls._data["gameSelectGridResizeType"] = view_type.name
         cls.save_changes()
 
+    @classmethod
+    def get_grid_game_img_y_offset(cls):
+        return cls._data.get("gridGameImageYOffset", 0)
+
+    @classmethod
+    def set_grid_game_img_y_offset(cls, value):
+        cls._data["gridGameImageYOffset"] = value
+        cls.save_changes()
 
     @classmethod
     def get_view_type_for_app_menu(cls):
