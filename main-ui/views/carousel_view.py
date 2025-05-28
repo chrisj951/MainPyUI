@@ -223,7 +223,8 @@ class CarouselView(View):
         self.prev_x_offsets = x_offsets
         self.prev_widths = widths
         if(self.include_index_text):
-            Display.add_index_text(self.selected%self.options_length + 1, self.options_length)
+            Display.add_index_text(self.selected%self.options_length + 1, self.options_length, 
+                                   letter=self.options[self.selected].get_primary_text()[0])
 
         Display.present()
 
@@ -318,7 +319,8 @@ class CarouselView(View):
                 if time.time() - last_frame_time < frame_duration:
                     time.sleep(frame_duration - (time.time() - last_frame_time))
                 if(self.include_index_text):
-                    Display.add_index_text(self.selected%self.options_length +1, self.options_length)
+                    Display.add_index_text(self.selected%self.options_length +1, self.options_length,
+                                           letter=self.options[self.selected].get_primary_text()[0])
                 Display.present()
                 last_frame_time = time.time()
         

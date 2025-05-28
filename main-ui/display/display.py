@@ -590,31 +590,43 @@ class Display:
         return width, height
 
     @classmethod
-    def add_index_text(cls, index, total, force_include_index = False):
+    def add_index_text(cls, index, total, force_include_index = False, letter = None):
         if(force_include_index or Theme.show_index_text()):
             y_padding = max(5, cls.get_bottom_bar_height() // 4)
             y_value = Device.screen_height() - y_padding
             x_padding = 10
 
-            total_text_x = Device.screen_width() - x_padding
+            x_offset = Device.screen_width() - x_padding
             total_text_w, _ = cls.render_text(
                 str(total),
-                total_text_x,
+                x_offset,
                 y_value,
                 Theme.text_color(FontPurpose.LIST_TOTAL),
                 FontPurpose.LIST_TOTAL,
                 RenderMode.BOTTOM_RIGHT_ALIGNED
             )
 
-            index_text_x = Device.screen_width() - x_padding - total_text_w
-            cls.render_text(
+            x_offset -= total_text_w
+            index_text_w, index_text_h = cls.render_text(
                 str(index) + "/",
-                index_text_x,
+                x_offset,
                 y_value,
                 Theme.text_color(FontPurpose.LIST_INDEX),
                 FontPurpose.LIST_INDEX,
                 RenderMode.BOTTOM_RIGHT_ALIGNED
             )
+
+            x_offset -= index_text_w  + x_padding
+            if(letter is not None):
+                cls.render_text(
+                    letter,
+                    x_offset,
+                    y_value,
+                    Theme.text_color(FontPurpose.LIST_INDEX),
+                    FontPurpose.LIST_INDEX,
+                    RenderMode.BOTTOM_RIGHT_ALIGNED
+                )
+
 
     @classmethod
     def get_current_top_bar_title(cls):
