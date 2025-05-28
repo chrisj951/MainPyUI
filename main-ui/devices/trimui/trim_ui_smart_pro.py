@@ -28,6 +28,7 @@ from games.utils.rom_utils import RomUtils
 from menus.games.utils.recents_manager import RecentsManager
 import sdl2
 from utils import throttle
+from utils.config_copier import ConfigCopier
 from utils.logger import PyUiLogger
 import psutil
 
@@ -57,7 +58,10 @@ class TrimUISmartPro(TrimUIDevice):
 
         #Idea is if something were to change from he we can reload it
         #so it always has the more accurate data
-        self.system_config = SystemConfig("/mnt/UDISK/system.json")
+        script_dir = Path(__file__).resolve().parent
+        source = script_dir / 'smartpro-system.json'
+        ConfigCopier.ensure_config("/mnt/SDCARD/Saves/smartpro-system.json", source)
+        self.system_config = SystemConfig("/mnt/SDCARD/Saves/smartpro-system.json")
 
 
         self.miyoo_games_file_parser = MiyooGamesFileParser()        
@@ -67,6 +71,7 @@ class TrimUISmartPro(TrimUIDevice):
         self._set_brightness_to_config()
         self.ensure_wpa_supplicant_conf()
         threading.Thread(target=self.monitor_wifi, daemon=True).start()
+        
         if(PyUiConfig.enable_button_watchers()):
             from controller.controller import Controller
             #/dev/miyooio if we want to get rid of miyoo_inputd
@@ -78,7 +83,10 @@ class TrimUISmartPro(TrimUIDevice):
             self.power_key_watcher = KeyWatcher("/dev/input/event1")
             power_key_polling_thread = threading.Thread(target=self.power_key_watcher.poll_keyboard, daemon=True)
             power_key_polling_thread.start()
-            
+        
+        config_volume = self.system_config.get_volume()
+        self._set_volume(config_volume)
+
     #Untested
     @throttle.limit_refresh(5)
     def is_hdmi_connected(self):

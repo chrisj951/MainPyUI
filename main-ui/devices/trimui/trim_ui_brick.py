@@ -58,6 +58,9 @@ class TrimUIBrick(TrimUIDevice):
             power_key_polling_thread = threading.Thread(target=self.power_key_watcher.poll_keyboard, daemon=True)
             power_key_polling_thread.start()
             
+        config_volume = self.system_config.get_volume()
+        self._set_volume(config_volume)
+            
     #Untested
     @throttle.limit_refresh(5)
     def is_hdmi_connected(self):

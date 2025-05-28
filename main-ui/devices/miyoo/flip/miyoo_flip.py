@@ -82,7 +82,8 @@ class MiyooFlip(MiyooDevice):
         }
 
         self.init_bluetooth()
-        
+        config_volume = self.system_config.get_volume()
+        self._set_volume(config_volume)
 
     def init_bluetooth(self):
         try:

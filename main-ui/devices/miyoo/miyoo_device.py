@@ -56,18 +56,18 @@ class MiyooDevice(DeviceCommon):
             if(0 == volume):
                 ProcessRunner.run(["amixer","sset","Playback Path","OFF"], print=False)
             else:
-                if(self.are_headphones_plugged_in()):
-                    ProcessRunner.run(["amixer","sset","Playback Path","HP"], print=False)
-                else:
-                    ProcessRunner.run(["amixer","sset","Playback Path","SPK"], print=False)
-
                 PyUiLogger.get_logger().info(f"Setting volume to {volume}")
-
                 ProcessRunner.run(
                     ["amixer", "cset", f"name='SPK Volume'", str(volume)],
                     check=True,
                     print=False
                 )
+
+                if(self.are_headphones_plugged_in()):
+                    ProcessRunner.run(["amixer","sset","Playback Path","HP"], print=False)
+                else:
+                    ProcessRunner.run(["amixer","sset","Playback Path","SPK"], print=False)
+
             
         except subprocess.CalledProcessError as e:
             PyUiLogger.get_logger().error(f"Failed to set volume: {e}")
@@ -97,6 +97,9 @@ class MiyooDevice(DeviceCommon):
         return None
 
     def get_volume(self):
+        return self.system_config.get_volume()
+
+    def read_volume(self):
         try:
             current_mixer = self.get_current_mixer_value(MiyooDevice.OUTPUT_MIXER)
             if(MiyooDevice.SOUND_DISABLED == current_mixer):
@@ -115,22 +118,19 @@ class MiyooDevice(DeviceCommon):
         except subprocess.CalledProcessError as e:
             PyUiLogger.get_logger().error(f"Command failed: {e}")
             return 0 # ???
-                
+
     def fix_sleep_sound_bug(self):
-        #Don't reload as there is a bug where it gets set to 1/0
-        # self.system_config.reload_config()
-        proper_volume = self.system_config.get_volume()
-        PyUiLogger.get_logger().info(f"Restoring volume to {proper_volume*5}")
+        config_volume = self.system_config.get_volume()
+        PyUiLogger.get_logger().info(f"Restoring volume to {config_volume}")
         ProcessRunner.run(["amixer", "cset","numid=2", "0"])
         ProcessRunner.run(["amixer", "cset","numid=5", "0"])
         if(self.are_headphones_plugged_in()):
             ProcessRunner.run(["amixer", "cset","numid=2", "3"])
-        elif(0 == proper_volume):
+        elif(0 == config_volume):
             ProcessRunner.run(["amixer", "cset","numid=2", "0"])
         else:
             ProcessRunner.run(["amixer", "cset","numid=2", "2"])
-        ProcessRunner.run(["amixer", "cset","numid=5", str(proper_volume*5)])
-        self._set_volume(proper_volume)
+        self._set_volume(config_volume)
 
     def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
         return MiyooTrimCommon.run_game(self,rom_info)

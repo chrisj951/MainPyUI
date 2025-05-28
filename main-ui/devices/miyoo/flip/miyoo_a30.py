@@ -76,7 +76,9 @@ class MiyooA30(MiyooDevice):
             4: "SDL_CONTROLLER_AXIS_TRIGGERLEFT",
             5: "SDL_CONTROLLER_AXIS_TRIGGERRIGHT"
         }
-        
+        config_volume = self.system_config.get_volume()
+        self._set_volume(config_volume)
+ 
 
     def init_gpio(self):
         try:
