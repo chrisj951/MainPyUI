@@ -271,5 +271,5 @@ class DeviceCommon(AbstractDevice):
             except Exception:
                 return "Error"
         
-        return "None"
+        return "Off"
     
