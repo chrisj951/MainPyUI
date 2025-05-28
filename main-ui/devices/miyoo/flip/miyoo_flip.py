@@ -44,9 +44,9 @@ class MiyooFlip(MiyooDevice):
         os.environ["SDL_RENDER_DRIVER"] = "kmsdrm"
         
         script_dir = Path(__file__).resolve().parent
-        source = script_dir / 'system.json'
-        ConfigCopier.ensure_config("/userdata/system.json", source)
-        self.system_config = SystemConfig("/userdata/system.json")
+        source = script_dir / 'flip-system.json'
+        ConfigCopier.ensure_config("/mnt/SDCARD/Saves/flip-system.json", source)
+        self.system_config = SystemConfig("/mnt/SDCARD/Saves/flip-system.json")
         self.miyoo_games_file_parser = MiyooGamesFileParser()        
         self._set_lumination_to_config()
         self._set_contrast_to_config()

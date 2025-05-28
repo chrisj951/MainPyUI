@@ -40,9 +40,9 @@ class MiyooA30(MiyooDevice):
         }
                 
         script_dir = Path(__file__).resolve().parent
-        source = script_dir / 'system.json'
-        ConfigCopier.ensure_config("/userdata/system.json", source)
-        self.system_config = SystemConfig("/userdata/system.json")
+        source = script_dir / 'a30-system.json'
+        ConfigCopier.ensure_config("/mnt/SDCARD/Saves/a30-system.json", source)
+        self.system_config = SystemConfig("/mnt/SDCARD/Saves/a30-system.json")
         self.miyoo_games_file_parser = MiyooGamesFileParser()        
         self._set_lumination_to_config()
         self._set_contrast_to_config()

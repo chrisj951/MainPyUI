@@ -1,3 +1,4 @@
+from pathlib import Path
 import threading
 from controller.controller_inputs import ControllerInput
 from controller.key_watcher import KeyWatcher
@@ -7,6 +8,7 @@ from devices.trimui.trim_ui_device import TrimUIDevice
 import sdl2
 from utils import throttle
 
+from utils.config_copier import ConfigCopier
 from utils.py_ui_config import PyUiConfig
 
 class TrimUIBrick(TrimUIDevice):
@@ -31,9 +33,10 @@ class TrimUIBrick(TrimUIDevice):
             sdl2.SDL_CONTROLLER_BUTTON_BACK: ControllerInput.SELECT,
         }
 
-        #Idea is if something were to change from he we can reload it
-        #so it always has the more accurate data
-        self.system_config = SystemConfig("/mnt/UDISK/system.json")
+        script_dir = Path(__file__).resolve().parent
+        source = script_dir / 'brick-system.json'
+        ConfigCopier.ensure_config("/mnt/SDCARD/Saves/brick-system.json", source)
+        self.system_config = SystemConfig("/mnt/SDCARD/Saves/brick-system.json")
 
 
         self.miyoo_games_file_parser = MiyooGamesFileParser()        
