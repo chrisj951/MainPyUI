@@ -79,7 +79,7 @@ class Display:
     bottom_bar = BottomBar()
     window = None
     background_texture = None
-    screen = None
+    top_bar_text = None
     _image_texture_cache = ImageTextureCache()
     _text_texture_cache = TextTextureCache()
 
@@ -269,8 +269,11 @@ class Display:
             cls.bg_canvas = None
 
     @classmethod
-    def clear(cls, screen, hide_top_bar_icons = False):
-        cls.screen = screen
+    def clear(cls, 
+              top_bar_text, 
+              hide_top_bar_icons = False,
+              bottom_bar_text = None):
+        cls.top_bar_text = top_bar_text
 
         if cls.bg_canvas is not None:
             sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.bg_canvas, None, None)
@@ -278,8 +281,8 @@ class Display:
             sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.background_texture, None, None)
 
         if not Theme.render_top_and_bottom_bar_last():
-            cls.top_bar.render_top_bar(cls.screen,hide_top_bar_icons)
-            cls.bottom_bar.render_bottom_bar()
+            cls.top_bar.render_top_bar(cls.top_bar_text,hide_top_bar_icons)
+            cls.bottom_bar.render_bottom_bar(bottom_bar_text)
 
     @classmethod
     def _log(cls, msg):
@@ -523,7 +526,7 @@ class Display:
     @classmethod
     def present(cls):
         if Theme.render_top_and_bottom_bar_last():
-            cls.top_bar.render_top_bar(cls.screen)
+            cls.top_bar.render_top_bar(cls.top_bar_text)
             cls.bottom_bar.render_bottom_bar()
 
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, None)

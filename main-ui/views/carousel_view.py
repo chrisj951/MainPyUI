@@ -146,7 +146,7 @@ class CarouselView(View):
         if(self.set_top_bar_text_to_selection) and len(self.options) > 0:
             Display.clear(self.options[self.selected].get_primary_text(), hide_top_bar_icons=True)
         else:
-            Display.clear(self.top_bar_text)
+            Display.clear(self.top_bar_text, bottom_bar_text=self.options[self.selected].get_primary_text())
 
     def _render_image(self,
                       image_path: str, 
