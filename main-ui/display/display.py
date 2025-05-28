@@ -73,8 +73,8 @@ class Display:
     bg_canvas = None
     render_canvas = None
     bg_path = ""
-    top_bar = None
-    bottom_bar = None
+    top_bar = TopBar()
+    bottom_bar = BottomBar()
     window = None
     background_texture = None
     screen = None
@@ -99,8 +99,6 @@ class Display:
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
         PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
         cls._check_for_bg_change()
-        cls.top_bar = TopBar()
-        cls.bottom_bar = BottomBar()
         cls.clear("init")
         cls.present()
 

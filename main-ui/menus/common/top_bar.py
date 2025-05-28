@@ -13,7 +13,7 @@ class TopBar:
     def __init__(self):
         self.title = ""
         self.volume_changed_time = time.time()
-        self.volume = Device.get_display_volume()
+        self.volume = 0
 
     def render_top_bar(self, title, hide_top_bar_icons = False) :
         from display.display import Display
