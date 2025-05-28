@@ -19,7 +19,7 @@ class GridView(View):
     def __init__(self, top_bar_text, options: List[GridOrListEntry], cols: int, rows: int, selected_bg: str = None,
                  selected_index=0, show_grid_text=True, resized_width=None, resized_height=None,
                  set_top_bar_text_to_selection=False, resize_type=None, 
-                 unselected_bg = None, grid_img_y_offset=None):
+                 unselected_bg = None, grid_img_y_offset=None, missing_image_path=None):
         super().__init__()
         self.resized_width = resized_width
         self.resized_height = resized_height
@@ -53,6 +53,7 @@ class GridView(View):
         self.unselected_bg = unselected_bg
         self.show_grid_text = show_grid_text
         self.img_offset = grid_img_y_offset
+        self.missing_image_path = missing_image_path
 
     def set_options(self, options):
         self.options = options
@@ -80,6 +81,33 @@ class GridView(View):
             else:
                 self.current_left += 1
                 self.current_right += 1
+
+    def _render_primary_image(self,
+                              image_path: str,
+                              x: int, 
+                              y: int, 
+                              render_mode=RenderMode.TOP_LEFT_ALIGNED, 
+                              target_width=None, 
+                              target_height=None, 
+                              resize_type=None):
+        
+        w,h = Display.render_image(image_path=image_path,
+                                   x=x,
+                                   y=y,
+                                   render_mode=render_mode,
+                                   target_width=target_width,
+                                   target_height=target_height,
+                                   resize_type=resize_type)
+        
+        if(w == 0):
+            w,h = Display.render_image(image_path=self.missing_image_path,
+                                   x=x,
+                                   y=y,
+                                   render_mode=render_mode,
+                                   target_width=target_width,
+                                   target_height=target_height,
+                                   resize_type=resize_type)
+        return w,h
 
     def _render(self):
         if (self.set_top_bar_text_to_selection) and len(self.options) > 0:
@@ -158,7 +186,7 @@ class GridView(View):
                                      target_width=bg_width,
                                      target_height=bg_height)
 
-            Display.render_image(image_path,
+            self._render_primary_image(image_path,
                                  x_offset,
                                  cell_y + img_offset // offset_divisor,
                                  render_mode,

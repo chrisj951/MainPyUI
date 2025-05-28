@@ -20,7 +20,8 @@ class CarouselView(View):
                   resize_type=None,
                   selected_entry_width_percent=None, 
                   shrink_further_away = None,
-                  sides_hang_off_edge = None):
+                  sides_hang_off_edge = None,
+                  missing_image_path = None):
         super().__init__()
         self.resize_type = resize_type
         self.top_bar_text = top_bar_text
@@ -56,7 +57,7 @@ class CarouselView(View):
         self.prev_visible_options = None
         self.animated_count = 0
         self.include_index_text = True
-        self.missing_image_path = Theme.get_missing_carousel_image_path()
+        self.missing_image_path = missing_image_path
 
     def set_options(self, options):
         self.options = options
