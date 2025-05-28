@@ -56,6 +56,7 @@ class RomsMenuCommon(ABC):
         view = None
         rom_list = self._get_rom_list()
         while(selected is not None):
+            Display.set_page(page_name)
             if(view is None):
                 view = ViewCreator.create_view(
                     view_type=Theme.get_game_selection_view_type(),
@@ -104,7 +105,8 @@ class RomsMenuCommon(ABC):
                     rom_list = self._get_rom_list()
                 elif(ControllerInput.B == selected.get_input()):
                     selected = None
-
+        Display.restore_bg()
+        
     def run_game(self, game_path):
         #recents is handled one level up to account for launched_via_special_case
         Display.deinit_display()

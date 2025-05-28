@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
+import os
 from devices.device import Device
 from display.font_purpose import FontPurpose
 from display.loaded_font import LoadedFont
@@ -73,6 +74,7 @@ class Display:
     bg_canvas = None
     render_canvas = None
     bg_path = ""
+    page = ""
     top_bar = TopBar()
     bottom_bar = BottomBar()
     window = None
@@ -98,7 +100,7 @@ class Display:
         PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
         PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
-        cls._check_for_bg_change()
+        cls.restore_bg()
         cls.clear("init")
         cls.present()
 
@@ -178,7 +180,7 @@ class Display:
         cls._unload_bg_texture()
         cls._init_display()
         cls.init_fonts()
-        cls._load_bg_texture()
+        cls.restore_bg()
         cls.clear("reinitialize")
         cls.present()
 
@@ -191,25 +193,35 @@ class Display:
             PyUiLogger.get_logger().debug("Destroying bg texture")
 
     @classmethod
-    def _load_bg_texture(cls):
-        cls.bg_path = Theme.background()
-        surface = sdl2.sdlimage.IMG_Load(cls.bg_path.encode('utf-8'))
-        if not surface:
-            PyUiLogger.get_logger().error(f"Failed to load image: {cls.bg_path}")
-            return
-
-        cls.background_texture = sdl2.SDL_CreateTextureFromSurface(cls.renderer.renderer, surface)
-        sdl2.SDL_FreeSurface(surface)
-
-        if not cls.background_texture:
-            PyUiLogger.get_logger().error("Failed to create texture from surface")
+    def restore_bg(cls):
+        cls.set_new_bg(Theme.background())
 
     @classmethod
-    def _check_for_bg_change(cls):
-        new_bg_path = Theme.background()
-        if cls.bg_path != new_bg_path:
-            cls._unload_bg_texture()
-            cls._load_bg_texture()
+    def set_new_bg(cls, bg_path):
+        cls._unload_bg_texture()
+        cls.bg_path = bg_path
+        PyUiLogger.get_logger().info(f"Using {bg_path} as the background")
+        if(bg_path is not None):
+            surface = sdl2.sdlimage.IMG_Load(cls.bg_path.encode('utf-8'))
+            if not surface:
+                PyUiLogger.get_logger().error(f"Failed to load image: {cls.bg_path}")
+                return
+
+            cls.background_texture = sdl2.SDL_CreateTextureFromSurface(cls.renderer.renderer, surface)
+            sdl2.SDL_FreeSurface(surface)
+
+            if not cls.background_texture:
+                PyUiLogger.get_logger().error("Failed to create texture from surface")
+
+    @classmethod
+    def set_page(cls, page):
+        if(page != cls.page):
+            cls.page = page 
+            background = Theme.background(page)
+            if(os.path.exists(background)):
+                cls.set_new_bg(background)
+            else:
+                PyUiLogger.get_logger().debug(f"Theme did not provide bg for {background}")
 
     @classmethod
     def _load_font(cls, font_purpose):
@@ -259,7 +271,6 @@ class Display:
     @classmethod
     def clear(cls, screen, hide_top_bar_icons = False):
         cls.screen = screen
-        cls._check_for_bg_change()
 
         if cls.bg_canvas is not None:
             sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.bg_canvas, None, None)

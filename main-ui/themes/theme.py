@@ -103,7 +103,11 @@ class Theme():
         return os.path.join(cls._path, cls._icon_folder, *parts)
 
     @classmethod
-    def background(cls): return cls._asset("background.png")
+    def background(cls, page = None):
+        if(page is None):
+            return cls._asset("background.png")
+        else:
+            return cls._asset(f"{page.lower()}-background.png")
     
     @classmethod
     def favorite(cls): return cls._asset("ic-favorite-n.png")
