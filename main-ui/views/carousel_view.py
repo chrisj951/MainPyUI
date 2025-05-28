@@ -11,6 +11,7 @@ from themes.theme import Theme
 from utils.py_ui_config import PyUiConfig
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
+from views.text_utils import TextUtils
 from views.view import View
 
 class CarouselView(View):
@@ -25,7 +26,7 @@ class CarouselView(View):
         super().__init__()
         self.resize_type = resize_type
         self.top_bar_text = top_bar_text
-        self.set_top_bar_text_to_selection = set_top_bar_text_to_selection
+        self.set_top_bar_text_to_selection = False
         self.options : List[GridOrListEntry] = options 
         self.font_purpose = FontPurpose.GRID_ONE_ROW
         self.show_grid_text = show_grid_text
@@ -38,6 +39,7 @@ class CarouselView(View):
             self.selected_entry_width_percent = 40
 
         self.selected = selected_index
+        self.prev_selected = self.selected
         if(cols < 3):
             cols = 3
 
@@ -58,6 +60,9 @@ class CarouselView(View):
         self.animated_count = 0
         self.include_index_text = True
         self.missing_image_path = missing_image_path
+        self.scroll_text_amount = 0
+        self.selected_same_entry_time = time.time()
+        self.rom_name_available_width = (Device.screen_width() * 3) // 4
 
     def set_options(self, options):
         self.options = options
@@ -143,10 +148,24 @@ class CarouselView(View):
 
 
     def _clear(self):
-        if(self.set_top_bar_text_to_selection) and len(self.options) > 0:
-            Display.clear(self.options[self.selected].get_primary_text(), hide_top_bar_icons=True)
+        game_name_text = self.options[self.selected].get_primary_text()
+        if(self.prev_selected != self.selected):
+            self.scroll_text_amount = 0
+            self.selected_same_entry_time = time.time()
         else:
-            Display.clear(self.top_bar_text, bottom_bar_text=self.options[self.selected].get_primary_text())
+            scroll_amt = self.scroll_text_amount
+            if(time.time() - self.selected_same_entry_time > 1):
+                print(f"      game_name_text={game_name_text}")
+                self.scroll_text_amount += 1
+                game_name_text = TextUtils.scroll_string(text=game_name_text,
+                                    amt=scroll_amt,
+                                    text_available_width=self.rom_name_available_width)
+                print(f"scroll game_name_text={game_name_text}")
+
+        if(self.set_top_bar_text_to_selection) and len(self.options) > 0:
+            Display.clear(game_name_text, hide_top_bar_icons=True)
+        else:
+            Display.clear(self.top_bar_text, bottom_bar_text=game_name_text)
 
     def _render_image(self,
                       image_path: str, 
