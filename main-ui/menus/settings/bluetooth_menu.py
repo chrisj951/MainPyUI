@@ -38,7 +38,7 @@ class BluetoothMenu:
             option_list.append(
                 GridOrListEntry(
                         primary_text="Status",
-                        value_text="<    " + ("On" if bluetooth_enabled else "Off") + "    >",
+                        value_text="<    " + ("Scanning" if bluetooth_enabled else "Off") + "    >",
                         image_path=None,
                         image_path_selected=None,
                         description=None,

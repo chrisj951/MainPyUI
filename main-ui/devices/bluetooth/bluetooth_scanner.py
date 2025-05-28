@@ -175,14 +175,16 @@ class BluetoothScanner:
                 Display.clear("Bluetooth Connection")
                 Display.render_text_centered(f"Successfully connected to {device_address}",Device.screen_width()//2, Device.screen_height()//2,Theme.text_color_selected(FontPurpose.LIST), purpose=FontPurpose.LIST)
                 Display.present()
-                Controller.get_input(20)
+                while(not Controller.get_input()):
+                    pass
                 return True
             else:
                 PyUiLogger.get_logger().info(f"Failed to connect to {device_address}. Output:\n{all_output}")
                 Display.clear("Bluetooth Connection")
                 Display.render_text_centered(f"Failed to connect to {device_address}",Device.screen_width()//2, Device.screen_height()//2,Theme.text_color_selected(FontPurpose.LIST), purpose=FontPurpose.LIST)
                 Display.present()
-                Controller.get_input(20)
+                while(not Controller.get_input()):
+                    pass
                 return False
 
         except Exception as e:
