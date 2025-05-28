@@ -1,19 +1,12 @@
-from pathlib import Path
 import re
-import socket
 import subprocess
-import threading
 import time
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from controller.controller_inputs import ControllerInput
-from controller.key_watcher import KeyWatcher
 from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 from devices.charge.charge_status import ChargeStatus
 import os
 from devices.device_common import DeviceCommon
-from devices.miyoo.flip.miyoo_flip_poller import MiyooFlipPoller
-from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
-from devices.miyoo.system_config import SystemConfig
 from devices.miyoo.trim_ui_joystick import TrimUIJoystick
 from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.utils.process_runner import ProcessRunner
@@ -22,9 +15,7 @@ from games.utils.game_entry import GameEntry
 from menus.games.utils.rom_info import RomInfo
 import sdl2
 from utils import throttle
-from utils.config_copier import ConfigCopier
 from utils.logger import PyUiLogger
-from utils.py_ui_config import PyUiConfig
 
 from devices.device_common import DeviceCommon
 

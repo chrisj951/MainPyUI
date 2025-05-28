@@ -1,9 +1,6 @@
 from pathlib import Path
-import re
-import socket
 import subprocess
 import threading
-import time
 from controller.controller_inputs import ControllerInput
 from controller.key_watcher import KeyWatcher
 import os
