@@ -608,7 +608,7 @@ class Display:
 
             x_offset -= total_text_w
             index_text_w, index_text_h = cls.render_text(
-                str(index) + "/",
+                str(index).zfill(len(str(total))) + "/",
                 x_offset,
                 y_value,
                 Theme.text_color(FontPurpose.LIST_INDEX),
