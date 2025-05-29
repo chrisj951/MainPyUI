@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 
 from devices.charge.charge_status import ChargeStatus
 from devices.wifi.wifi_status import WifiStatus
@@ -383,15 +384,15 @@ class Theme():
         try:
             match font_purpose:
                 case FontPurpose.TOP_BAR_TEXT:
-                    if(cls._data["title"] and cls._data["title"]["color"]):
+                    if(cls._data.get("title") and cls._data["title"]["color"]):
                         return cls.hex_to_color(cls._data["title"]["color"])
                     else:
                         return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
                 case FontPurpose.BATTERY_PERCENT:
-                    if(cls._data["batteryPercentage"] and cls._data["batteryPercentage"]["color"]):
+                    if(cls._data.get("batteryPercentage") and cls._data["batteryPercentage"]["color"]):
                         return cls.hex_to_color(cls._data["batteryPercentage"]["color"])
                     else:
-                        return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
+                        return cls.text_color(FontPurpose.TOP_BAR_TEXT)
                 case FontPurpose.ON_SCREEN_KEYBOARD:
                     return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.GRID_ONE_ROW:
@@ -414,7 +415,7 @@ class Theme():
                     return cls.hex_to_color(cls._data["grid"]["color"])
         except Exception as e:
             return cls.hex_to_color("#808080")
-      
+            
     @classmethod
     def text_color_selected(cls, font_purpose : FontPurpose):
         try:
