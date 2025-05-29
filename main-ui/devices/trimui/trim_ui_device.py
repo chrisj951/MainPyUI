@@ -43,13 +43,16 @@ class TrimUIDevice(DeviceCommon):
             PyUiLogger.get_logger().error(f"Error setting brightness: {e}")
 
     def _set_contrast_to_config(self):
-        pass
-    
+        with open("/sys/devices/virtual/disp/disp/attr/enhance_contrast", "w") as f:
+            f.write(str(self.system_config.contrast * 5))
+
     def _set_saturation_to_config(self):
-        pass
+        with open("/sys/devices/virtual/disp/disp/attr/enhance_saturation", "w") as f:
+            f.write(str(self.system_config.saturation * 5))
 
     def _set_brightness_to_config(self):
-        pass
+        with open("/sys/devices/virtual/disp/disp/attr/enhance_bright", "w") as f:
+            f.write(str(self.system_config.brightness * 5))
 
     def _set_volume(self, user_volume):
         from display.display import Display
@@ -254,3 +257,4 @@ class TrimUIDevice(DeviceCommon):
 
     def supports_analog_calibration(self):
         return False
+
