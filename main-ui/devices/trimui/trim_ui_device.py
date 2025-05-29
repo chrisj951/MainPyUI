@@ -53,12 +53,12 @@ class TrimUIDevice(DeviceCommon):
 
     def _set_volume(self, user_volume):
         from display.display import Display
+        if(user_volume < 0):
+            user_volume = 0
+        elif(user_volume > 100):
+            user_volume = 100
         volume = math.ceil(user_volume * 255//100)
-        if(volume < 0):
-            volume = 0
-        elif(volume > 256):
-            volume = 255
-
+        
         try:
             
             ProcessRunner.run(
@@ -76,6 +76,9 @@ class TrimUIDevice(DeviceCommon):
         return user_volume
 
     def get_volume(self):
+        return self.system_config.get_volume()
+
+    def get_real_volume(self):
         # Run the command and capture output
         result = subprocess.run(['amixer', 'cget', 'numid=17'], capture_output=True, text=True)
         # Search for 'values=' line and extract the first value
