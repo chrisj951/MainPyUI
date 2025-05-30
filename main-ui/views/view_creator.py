@@ -8,6 +8,7 @@ from themes.theme import Theme
 from views.carousel_view import CarouselView
 from views.descriptive_list_view import DescriptiveListView
 from views.empty_view import EmptyView
+from views.full_screen_grid_view import FullScreenGridView
 from views.grid_or_list_entry import GridOrListEntry
 from views.grid_view import GridView
 from views.image_list_view import ImageListView
@@ -174,6 +175,26 @@ class ViewCreator:
                     resized_height=grid_resized_height,
                     set_top_bar_text_to_selection=set_top_bar_text_to_selection,
                     resize_type=grid_resize_type,
+                    grid_img_y_offset=grid_img_y_offset,
+                    missing_image_path=missing_image_path
+                )
+
+            case ViewType.FULLSCREEN_GRID:
+                if(hide_grid_bg):
+                    grid_selected_bg = None
+                    grid_unselected_bg = None
+                elif(grid_selected_bg is None):
+                    grid_selected_bg = Theme.get_grid_bg(rows, cols, use_mutli_row_grid_select_as_backup_for_single_row_grid_select)
+                    grid_unselected_bg = Theme.get_grid_bg_unselected(rows, cols, use_mutli_row_grid_select_as_backup_for_single_row_grid_select)
+                
+                return FullScreenGridView(
+                    top_bar_text=top_bar_text,
+                    options=options,
+                    selected_bg=grid_selected_bg,
+                    unselected_bg=grid_unselected_bg,
+                    selected_index=selected_index,
+                    show_grid_text=show_grid_text,
+                    set_top_bar_text_to_selection=set_top_bar_text_to_selection,
                     grid_img_y_offset=grid_img_y_offset,
                     missing_image_path=missing_image_path
                 )

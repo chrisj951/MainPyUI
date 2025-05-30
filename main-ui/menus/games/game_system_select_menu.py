@@ -17,14 +17,18 @@ class GameSystemSelectMenu:
         self.rom_select_menu : GameSelectMenu = GameSelectMenu()
         self.use_emu_cfg = False
         self.game_system_select_menu_popup = GameSystemSelectMenuPopup()
+
         self.common_icon_mappings = {
-            "PPSSPP": "psp",
-            "FFPLAY":"ffplay",
-            "MPV":"ffplay",
-            "WSC":"ws",
-            "FAKE8":"pico",
-            "PICO8":"pico",
-            "THIRTYTWOX":"32X"
+            "PPSSPP": ["psp"],
+            "PM": ["ports"],
+            "SNES": ["sfc"],
+            "FFPLAY":["ffplay"],
+            "MPV":["ffplay"],
+            "WSC":["ws"],
+            "FAKE8":["pico"],
+            "PICO8":["pico"],
+            "Fake08":["pico"],
+            "THIRTYTWOX":["32X"]
         }
 
     def get_system_name_for_icon(self, sys_config):        
@@ -54,8 +58,9 @@ class GameSystemSelectMenu:
         selected_icon_system_name_priority.append(Theme.get_system_icon_selected(game_system.display_name.lower()))
 
         if game_system.folder_name in self.common_icon_mappings:
-            icon_system_name_priority.append(Theme.get_system_icon(self.common_icon_mappings[game_system.folder_name]))
-            selected_icon_system_name_priority.append(Theme.get_system_icon_selected(self.common_icon_mappings[game_system.folder_name]))
+            for name in self.common_icon_mappings.get(game_system.folder_name, []):
+                icon_system_name_priority.append(Theme.get_system_icon(name))
+                selected_icon_system_name_priority.append(Theme.get_system_icon(name))
 
         if(game_system.game_system_config.get_icon() is not None):
             icon_system_name_priority.append(os.path.join(game_system.game_system_config.get_emu_folder(),game_system.game_system_config.get_icon()))
