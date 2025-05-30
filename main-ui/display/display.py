@@ -273,7 +273,7 @@ class Display:
               top_bar_text, 
               hide_top_bar_icons = False,
               bottom_bar_text = None,
-              render_bottom_bar = True):
+              render_bottom_bar_icons_and_images = True):
         cls.top_bar_text = top_bar_text
 
         if cls.bg_canvas is not None:
@@ -283,8 +283,7 @@ class Display:
 
         if not Theme.render_top_and_bottom_bar_last():
             cls.top_bar.render_top_bar(cls.top_bar_text,hide_top_bar_icons)
-            if(render_bottom_bar):
-                cls.bottom_bar.render_bottom_bar(bottom_bar_text)
+            cls.bottom_bar.render_bottom_bar(bottom_bar_text, render_bottom_bar_icons_and_images=render_bottom_bar_icons_and_images)
 
     @classmethod
     def _log(cls, msg):

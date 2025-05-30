@@ -9,17 +9,17 @@ class BottomBar:
     def __init__(self):
         pass
 
-    def render_bottom_bar(self, bottom_bar_text) :
+    def render_bottom_bar(self, bottom_bar_text=None,render_bottom_bar_icons_and_images=True) :
         from display.display import Display
         if(Theme.show_bottom_bar()):
             bottom_bar_bg = Theme.bottom_bar_bg()
             
             self.bottom_bar_w, self.bottom_bar_h = Display.render_image(bottom_bar_bg,0,Device.screen_height(),render_mode=RenderMode.BOTTOM_LEFT_ALIGNED)
             
-            if(bottom_bar_text is None):
-                self.render_standard_bottom_bar()
-            else:
+            if(bottom_bar_text is not None):
                 self.render_bottom_bar_text(bottom_bar_text)
+            elif(render_bottom_bar_icons_and_images):
+                self.render_standard_bottom_bar()
         else:
             self.bottom_bar_h = 0
 

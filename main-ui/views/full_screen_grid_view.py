@@ -21,7 +21,7 @@ class FullScreenGridView(View):
                  unselected_bg = None, missing_image_path=None):
         super().__init__()
         self.resized_width = int(Device.screen_width() * 1.0)
-        self.resized_height = int(Device.screen_height() * 0.77)
+        self.resized_height = int(Device.screen_height() * 0.75)
         self.resize_type = ResizeType.ZOOM
         self.top_bar_text = top_bar_text
         self.set_top_bar_text_to_selection = set_top_bar_text_to_selection
@@ -54,6 +54,9 @@ class FullScreenGridView(View):
         self.option_text_widths = []
         for option in self.options:
             self.option_text_widths.append(Display.get_text_dimensions(self.font_purpose, option.get_primary_text())[0])
+
+        self.last_selected = -1
+        self.last_start = 0
 
 
     def set_options(self, options):
@@ -184,7 +187,15 @@ class FullScreenGridView(View):
         
     def _render_bottom_bar_text(self):
         start_index = self.calculate_start_index()
+        if(self.last_start > start_index):
+            if(self.selected >= self.last_start):
+                start_index = self.last_start
+            else:
+                while(self.last_start < start_index):
+                    start_index = self.last_start - 1
+
         visible_text_options = self.options[start_index:len(self.options)]
+
         y_offset = Device.screen_height() - 10 #TODO
         x_offset = self.x_text_pad
 
@@ -200,19 +211,20 @@ class FullScreenGridView(View):
                                  render_mode=RenderMode.BOTTOM_LEFT_ALIGNED)
             x_offset += self.x_text_pad + w
 
+        self.last_selected = self.selected
+        self.last_start = start_index
+
     def _render(self):
         if (self.set_top_bar_text_to_selection) and len(self.options) > 0:
             Display.clear(
                 self.options[self.selected].get_primary_text(), hide_top_bar_icons=True, render_bottom_bar=False)
         else:
-            Display.clear(self.top_bar_text, render_bottom_bar=False)
+            Display.clear(self.top_bar_text, render_bottom_bar_icons_and_images=False)
         self.correct_selected_for_off_list()
 
         self._render_image()
         self._render_bottom_bar_text()
 
-
-        # Don't display indexing for single row grids
         Display.present()
 
     def get_selected_option(self):
