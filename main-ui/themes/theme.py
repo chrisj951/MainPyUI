@@ -793,6 +793,24 @@ class Theme():
         cls.save_changes()
 
     @classmethod
+    def get_grid_game_select_img_width(cls):
+        return cls._data.get("gridGameSelectImgWidth", cls.set_game_select_img_width())
+    
+    @classmethod
+    def set_grid_game_select_img_width(cls, value):
+        cls._data["gridGameSelectImgWidth"] = value
+        cls.save_changes()
+
+    @classmethod
+    def get_list_game_select_img_width(cls):
+        return cls._data.get("listGameSelectImgWidth", cls.set_game_select_img_width())
+    
+    @classmethod
+    def set_list_game_select_img_width(cls, value):
+        cls._data["listGameSelectImgWidth"] = value
+        cls.save_changes()
+
+    @classmethod
     def get_carousel_game_select_primary_img_width(cls):
         return cls._data.get("carouselGameSelectPrimaryImgWidth", 40)
     
@@ -827,6 +845,23 @@ class Theme():
     @classmethod
     def set_game_select_img_height(cls, value):
         cls._data["gameSelectImgHeight"] = value
+        cls.save_changes()
+
+    @classmethod
+    def get_grid_game_select_img_height(cls):
+        return cls._data.get("gridGameSelectImgHeight", cls.get_game_select_img_height())
+    
+    @classmethod
+    def set_grid_game_select_img_height(cls, value):
+        cls._data["grid_gameSelectImgHeight"] = value
+        cls.save_changes()
+    @classmethod
+    def get_list_game_select_img_height(cls):
+        return cls._data.get("listGameSelectImgHeight", cls.get_game_select_img_height())
+    
+    @classmethod
+    def set_list_game_select_img_height(cls, value):
+        cls._data["listGameSelectImgHeight"] = value
         cls.save_changes()
 
     @classmethod
