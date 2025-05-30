@@ -18,7 +18,7 @@ class FullScreenGridView(View):
     def __init__(self, top_bar_text, options: List[GridOrListEntry], selected_bg: str = None,
                  selected_index=0, show_grid_text=True,
                  set_top_bar_text_to_selection=False, 
-                 unselected_bg = None, grid_img_y_offset=None, missing_image_path=None):
+                 unselected_bg = None, missing_image_path=None):
         super().__init__()
         self.resized_width = int(Device.screen_width() * 1.0)
         self.resized_height = int(Device.screen_height() * 0.77)
@@ -45,7 +45,6 @@ class FullScreenGridView(View):
         self.selected_bg = selected_bg
         self.unselected_bg = unselected_bg
         self.show_grid_text = show_grid_text
-        self.img_offset = grid_img_y_offset
         self.missing_image_path = missing_image_path
         # TODO Get hard coded values for padding from theme
         self.x_pad = 10
@@ -72,11 +71,54 @@ class FullScreenGridView(View):
             self.current_left += 1
             self.current_right +=1
 
+    def _render_shadowed_text(self, primary_text, y_offset_base, backdrop_font, front_font, x_offset):
 
+        #TODO hardcoded values of 25        
+        shadow_color =  Theme.text_color(backdrop_font)
+        # Render black text surfaces at offsets for the "outline"
+        shift_amt = 5
+        for dx in range (1,shift_amt):
+            for dy in range(1,shift_amt):
+                Display.render_text(primary_text,
+                                        x_offset + dx,
+                                        y_offset_base + dy,
+                                        shadow_color,
+                                        backdrop_font,
+                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
+                Display.render_text(primary_text,
+                                        x_offset - dx,
+                                        y_offset_base + dy,
+                                        shadow_color,
+                                        backdrop_font,
+                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
+                Display.render_text(primary_text,
+                                        x_offset + dx,
+                                        y_offset_base - dy,
+                                        shadow_color,
+                                        backdrop_font,
+                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
+                Display.render_text(primary_text,
+                                        x_offset - dx,
+                                        y_offset_base - dy,
+                                        shadow_color,
+                                        backdrop_font,
+                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
+        primary_color =  Theme.text_color(front_font)
+
+        # Render text in primary color
+        offsets = [(0,0)]  # diagonal directions
+        for dx, dy in offsets:
+            Display.render_text(primary_text,
+                                    x_offset + dx,
+                                    y_offset_base + dy,
+                                    primary_color,
+                                    front_font,
+                                    render_mode=RenderMode.TOP_LEFT_ALIGNED)
 
     def _render_primary_image(self,
                               image_path: str,
                               primary_text: str,
+                              secondary_text: str,
                               x: int, 
                               y: int, 
                               render_mode=RenderMode.TOP_LEFT_ALIGNED, 
@@ -100,102 +142,28 @@ class FullScreenGridView(View):
                                    target_width=target_width,
                                    target_height=target_height,
                                    resize_type=resize_type)
-
-        #TODO hardcoded values of 25        
-        shadow_color =  Theme.text_color(FontPurpose.SHADOWED_BACKDROP)
-        # Render black text surfaces at offsets for the "outline"
-        shift_amt = 5
-        for dx in range (1,shift_amt):
-            for dy in range(1,shift_amt):
-                Display.render_text(primary_text,
-                                        25 + dx,
-                                        Device.screen_height() * 0.7 + dy,
-                                        shadow_color,
-                                        FontPurpose.SHADOWED_BACKDROP,
-                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
-                Display.render_text(primary_text,
-                                        25 - dx,
-                                        Device.screen_height() * 0.7 + dy,
-                                        shadow_color,
-                                        FontPurpose.SHADOWED_BACKDROP,
-                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
-                Display.render_text(primary_text,
-                                        25 + dx,
-                                        Device.screen_height() * 0.7 - dy,
-                                        shadow_color,
-                                        FontPurpose.SHADOWED_BACKDROP,
-                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
-                Display.render_text(primary_text,
-                                        25 - dx,
-                                        Device.screen_height() * 0.7 - dy,
-                                        shadow_color,
-                                        FontPurpose.SHADOWED_BACKDROP,
-                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
-        primary_color =  Theme.text_color(FontPurpose.SHADOWED)
-
-        # Render text in primary color
-        offsets = [(0,0)]  # diagonal directions
-        for dx, dy in offsets:
-            Display.render_text(primary_text,
-                                    25 + dx,
-                                    Device.screen_height() * 0.7 + dy,
-                                    primary_color,
-                                    FontPurpose.SHADOWED,
-                                    render_mode=RenderMode.TOP_LEFT_ALIGNED)
+        self._render_shadowed_text(primary_text, Device.screen_height() * 0.68, FontPurpose.SHADOWED_BACKDROP, FontPurpose.SHADOWED, 25)
+        self._render_shadowed_text(secondary_text, Device.screen_height() * 0.78, FontPurpose.SHADOWED_BACKDROP_SMALL, FontPurpose.SHADOWED_SMALL, 27)
 
         return w,h
 
-    def _render_cell(self, visible_index, imageTextPair):
-        actual_index = self.current_left + visible_index
-        image_path = imageTextPair.get_image_path_selected(
-        ) if actual_index == self.selected else imageTextPair.get_image_path()
-        primary_text = imageTextPair.get_primary_text()
+    def _render_cell(self):
+        imageTextPair = self.options[self.selected]
+        image_path = imageTextPair.get_image_path_selected() 
+        primary_text = imageTextPair.get_primary_text_long()
+        secondary_text = imageTextPair.get_description()
         x_offset = 0
         render_mode = RenderMode.TOP_LEFT_ALIGNED
-        cell_y = Display.get_top_bar_height(False)       
-        offset_divisor = 1
-        bg_width = self.resized_width
-        bg_height = self.resized_height
-        
-        if(self.img_offset is not None):
-            img_offset = self.img_offset
-        else:
-            img_offset = 0
-            
-        bg_offset = 0
-        if (self.resized_width is not None):
-            # TODO not fixed values
-            bg_width += Theme.get_grid_multi_row_sel_bg_resize_pad_width()
-            bg_height += Theme.get_grid_multi_row_sel_bg_resize_pad_height()
-            if(YRenderOption.CENTER == render_mode.y_mode):
-                bg_offset = 0
-            elif(YRenderOption.BOTTOM == render_mode.y_mode):
-                bg_offset = Theme.get_grid_multi_row_sel_bg_resize_pad_height() //2    
-
-        if (actual_index == self.selected):
-            if (self.selected_bg is not None):
-                Display.render_image(self.selected_bg,
-                         x_offset,
-                         cell_y + bg_offset // offset_divisor,
-                         render_mode,
-                         target_width=bg_width,
-                         target_height=bg_height)
-        elif(self.unselected_bg is not None):
-            Display.render_image(self.unselected_bg,
-                         x_offset,
-                         cell_y,
-                         render_mode,
-                         target_width=bg_width,
-                         target_height=bg_height)
-
+                    
         self._render_primary_image(image_path,
                                    primary_text,
-                         x_offset,
-                         cell_y + img_offset // offset_divisor,
-                         render_mode,
-                         target_width=self.resized_width,
-                         target_height=self.resized_height,
-                         resize_type=self.resize_type)
+                                   secondary_text,
+                                    x_offset,
+                                    Display.get_top_bar_height(False),
+                                    render_mode,
+                                    target_width=self.resized_width,
+                                    target_height=self.resized_height,
+                                    resize_type=self.resize_type)
     def _render(self):
         if (self.set_top_bar_text_to_selection) and len(self.options) > 0:
             Display.clear(
@@ -204,7 +172,7 @@ class FullScreenGridView(View):
             Display.clear(self.top_bar_text, render_bottom_bar=False)
         self.correct_selected_for_off_list()
 
-        self._render_cell(visible_index=self.selected,imageTextPair=self.options[self.selected])
+        self._render_cell()
 
         visible_text_options = self.options[self.current_left:self.current_right]
         y_offset = Device.screen_height() - 10 #TODO
@@ -254,72 +222,3 @@ class FullScreenGridView(View):
                 return Selection(self.get_selected_option(), Controller.last_input(), self.selected)
 
         return Selection(self.get_selected_option(), None, self.selected)
-
-
-    def animate_transition(self):
-        animation_frames = 10 - self.animated_count*2
-
-        if PyUiConfig.animations_enabled() and animation_frames > 1:
-            render_mode = RenderMode.MIDDLE_CENTER_ALIGNED
-            animation_frames = 10
-            frame_duration = 1 / 60.0  # 60 FPS
-            last_frame_time = 0
-
-            diff = (self.selected - self.prev_selected) % (len(self.options) + 1)
-            rotate_left = diff > (len(self.options) + 1) // 2
-
-            for frame in range(animation_frames):
-                self._clear()
-
-                frame_x_offset = []
-                frame_widths = []
-                t = frame / (animation_frames - 1)
-
-                for i in range(len(self.prev_x_offsets)):
-                    start_x_offset = self.prev_x_offsets[i]
-                    start_width = self.prev_widths[i]
-
-                    if rotate_left:
-                        if i < len(self.prev_x_offsets) - 1:
-                            end_x_offset = self.prev_x_offsets[i + 1]
-                            end_width = self.prev_widths[i+1]
-                        else:
-                            # Last item exits to the right
-                            end_x_offset = start_x_offset
-                            end_width = start_width
-                    else:
-                        if i > 0:
-                            end_x_offset = self.prev_x_offsets[i - 1]
-                            end_width = self.prev_widths[i - 1]
-                        else:
-                            # First item exits to the left0+12
-                            end_x_offset = start_x_offset
-                            end_width = start_width
-
-                    new_x_offset = start_x_offset + (end_x_offset - start_x_offset) * t
-                    new_width = start_width + (end_width - start_width) * t
-                    frame_x_offset.append(new_x_offset)         
-                    frame_widths.append(new_width)
-
-                for visible_index, imageTextPair in enumerate(self.prev_visible_options):
-                    x_offset = frame_x_offset[visible_index]
-
-                    y_image_offset = Display.get_center_of_usable_screen_height()
-                    
-                    self._render_image(imageTextPair.get_image_path(), 
-                                            x_offset, 
-                                            y_image_offset,
-                                            render_mode,
-                                            target_width=frame_widths[visible_index],
-                                            target_height=None,
-                                            resize_type=self.resize_type)
-
-                if time.time() - last_frame_time < frame_duration:
-                    time.sleep(frame_duration - (time.time() - last_frame_time))
-                if(self.include_index_text):
-                    Display.add_index_text(self.selected%self.options_length +1, self.options_length,
-                                           letter=self.options[self.selected].get_primary_text()[0])
-                Display.present()
-                last_frame_time = time.time()
-        
-        self.animated_count += 1

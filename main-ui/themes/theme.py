@@ -316,6 +316,10 @@ class Theme():
                     font = os.path.join(cls._path,cls._data["shadowed"]["font"]) 
                 case FontPurpose.SHADOWED_BACKDROP:
                     font = os.path.join(cls._path,cls._data["shadowed"]["font"]) 
+                case FontPurpose.SHADOWED_SMALL:
+                    font = os.path.join(cls._path,cls._data["shadowed"]["font"]) 
+                case FontPurpose.SHADOWED_BACKDROP_SMALL:
+                    font = os.path.join(cls._path,cls._data["shadowed"]["font"]) 
                 case _:
                     font = os.path.join(cls._path,cls._data["list"]["font"]) 
                 
@@ -357,6 +361,10 @@ class Theme():
                     return cls._data["shadowed"]["shadowedFontSize"] 
                 case FontPurpose.SHADOWED_BACKDROP:
                     return cls._data["shadowed"]["shadowedFontBackdropSize"]
+                case FontPurpose.SHADOWED_SMALL:
+                    return cls._data["shadowed"]["shadowedFontSmallSize"] 
+                case FontPurpose.SHADOWED_BACKDROP_SMALL:
+                    return cls._data["shadowed"]["shadowedFontBackdropSmallSize"]
                 case _:
                     return cls._data["list"]["font"]
         except Exception as e:
@@ -399,6 +407,10 @@ class Theme():
                     cls._data["shadowed"]["shadowedFontSize"] = size
                 case FontPurpose.SHADOWED_BACKDROP:
                     cls._data["shadowed"]["shadowedFontBackdropSize"]  = size
+                case FontPurpose.SHADOWED_SMALL:
+                    cls._data["shadowed"]["shadowedFontSmallSize"] = size
+                case FontPurpose.SHADOWED_BACKDROP_SMALL:
+                    cls._data["shadowed"]["shadowedFontBackdropSmallSize"]  = size
                 case _:
                     PyUiLogger.get_logger().error(
                         f"set_font_size: Unknown font purpose {font_purpose}")
@@ -444,6 +456,10 @@ class Theme():
                     return cls.hex_to_color(cls._data["shadowed"]["shadowedFontColor"])
                 case FontPurpose.SHADOWED_BACKDROP:
                     return cls.hex_to_color(cls._data["shadowed"]["shadowedFontBackdropColor"])
+                case FontPurpose.SHADOWED_SMALL:
+                    return cls.hex_to_color(cls._data["shadowed"]["shadowedFontSmallColor"])
+                case FontPurpose.SHADOWED_BACKDROP_SMALL:
+                    return cls.hex_to_color(cls._data["shadowed"]["shadowedFontBackdropSmallColor"])
                 case _:
                     return cls.hex_to_color(cls._data["grid"]["color"])
         except Exception as e:
@@ -476,6 +492,10 @@ class Theme():
                     return cls.hex_to_color(cls._data["shadowed"]["shadowedFontColor"])
                 case FontPurpose.SHADOWED_BACKDROP:
                     return cls.hex_to_color(cls._data["shadowed"]["shadowedFontBackdropColor"])
+                case FontPurpose.SHADOWED:
+                    return cls.hex_to_color(cls._data["shadowed"]["shadowedFontSmallColor"])
+                case FontPurpose.SHADOWED_BACKDROP:
+                    return cls.hex_to_color(cls._data["shadowed"]["shadowedFontBackdropSmallColor"])
                 case _:
                     return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
         except Exception as e:

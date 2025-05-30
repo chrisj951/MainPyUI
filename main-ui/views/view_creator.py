@@ -195,7 +195,6 @@ class ViewCreator:
                     selected_index=selected_index,
                     show_grid_text=show_grid_text,
                     set_top_bar_text_to_selection=set_top_bar_text_to_selection,
-                    grid_img_y_offset=grid_img_y_offset,
                     missing_image_path=missing_image_path
                 )
             case ViewType.CAROUSEL:

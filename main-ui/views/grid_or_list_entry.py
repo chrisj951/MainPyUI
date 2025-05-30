@@ -19,9 +19,12 @@ class GridOrListEntry:
         value : T =None,
         image_path_searcher: Callable[[T], str] = None,
         image_path_selected_searcher: Callable[[T], str] = None,
-        icon_searcher: Callable[[T], str] = None
+        icon_searcher: Callable[[T], str] = None,
+        primary_text_long = None,
+
     ):        
         self.primary_text = primary_text
+        self.primary_text_long = primary_text_long
         self.value_text = value_text
         self.image_path = image_path
         self.image_path_searcher = image_path_searcher
@@ -62,6 +65,12 @@ class GridOrListEntry:
     def get_primary_text(self):
         return self.primary_text
     
+    def get_primary_text_long(self):
+        if(self.primary_text_long is None):
+            return self.primary_text
+        else:
+            return self.primary_text_long
+    
     def get_value_text(self):
         return self.value_text
     
@@ -69,6 +78,8 @@ class GridOrListEntry:
         return self.value
     
     def get_description(self):
+        if callable(self.description):
+            self.description = self.description()
         return self.description
 
     def get_icon(self):
