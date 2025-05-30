@@ -38,7 +38,7 @@ class FullScreenGridView(View):
         self.toggles = [False] * len(options)
 
         self.current_left = 0
-        self.current_right = min(len(options), 6)
+        self.current_right = min(len(options), 10)
 
         self.font_purpose = FontPurpose.GRID_ONE_ROW
 
@@ -50,6 +50,10 @@ class FullScreenGridView(View):
         self.x_pad = 10
         self.usable_width = Device.screen_width() - (2 * self.x_pad)
         self.icon_width = self.usable_width  # Initial icon width
+        self.x_text_pad = 20 #TODO
+        self.option_text_widths = []
+        for option in self.options:
+            self.option_text_widths.append(Display.get_text_dimensions(self.font_purpose, option.get_primary_text())[0])
 
 
     def set_options(self, options):
@@ -147,7 +151,7 @@ class FullScreenGridView(View):
 
         return w,h
 
-    def _render_cell(self):
+    def _render_image(self):
         imageTextPair = self.options[self.selected]
         image_path = imageTextPair.get_image_path_selected() 
         primary_text = imageTextPair.get_primary_text_long()
@@ -164,22 +168,50 @@ class FullScreenGridView(View):
                                     target_width=self.resized_width,
                                     target_height=self.resized_height,
                                     resize_type=self.resize_type)
-    def _render(self):
-        if (self.set_top_bar_text_to_selection) and len(self.options) > 0:
-            Display.clear(
-                self.options[self.selected].get_primary_text(), hide_top_bar_icons=True, render_bottom_bar=False)
-        else:
-            Display.clear(self.top_bar_text, render_bottom_bar=False)
-        self.correct_selected_for_off_list()
+        
+    def calculate_start_index(self):
+        """
+        Determine the left-most index to start rendering text so that the selected option is visible.
 
-        self._render_cell()
+        Parameters:
+            device_width (int): Width of the device/screen in pixels.
+            text_padding (int): Padding in pixels between each option.
+            selected_index (int): Index of the selected option.
 
-        visible_text_options = self.options[self.current_left:self.current_right]
+        Returns:
+            int: Starting index to render from.
+        """
+        n = len(self.option_text_widths)
+
+        # Edge case: render all from the start if it fits
+        total_width = sum(self.option_text_widths) + self.x_text_pad * (n - 1)
+        if total_width <= Device.screen_width():
+            return 0
+
+        # Try to fit as many options ending with the selected one going backwards
+        start_index = self.selected + 1 if self.selected != len(self.options) -1 else self.selected
+        current_width = self.option_text_widths[start_index] + self.x_text_pad
+        print(f"Initial entry {self.options[start_index].get_primary_text()} has a width of {current_width}")
+
+        for i in range(start_index - 1, -1, -1):
+            added_width = self.option_text_widths[i] + self.x_text_pad
+            if current_width + added_width > Device.screen_width():
+                break
+            print(f"Adding {self.options[i].get_primary_text()} will add {self.option_text_widths[i]} for a total of {current_width + added_width}")
+            current_width += added_width
+            start_index = i
+
+        print(f"Starting from {start_index} will take less than {current_width}")
+        return start_index
+        
+    def _render_bottom_bar_text(self):
+        start_index = self.calculate_start_index()
+        visible_text_options = self.options[start_index:len(self.options)]
         y_offset = Device.screen_height() - 10 #TODO
-        x_text_pad = 20 #TODO
-        x_offset = x_text_pad
+        x_offset = self.x_text_pad
+
         for visible_index, imageTextPair in enumerate(visible_text_options):
-            actual_index = self.current_left + visible_index
+            actual_index = start_index + visible_index
             color = Theme.text_color_selected(
                 self.font_purpose) if actual_index == self.selected else Theme.text_color(self.font_purpose)
             w, h = Display.render_text(imageTextPair.get_primary_text(),
@@ -188,7 +220,18 @@ class FullScreenGridView(View):
                                  color,
                                  self.font_purpose,
                                  render_mode=RenderMode.BOTTOM_LEFT_ALIGNED)
-            x_offset += x_text_pad + w
+            x_offset += self.x_text_pad + w
+
+    def _render(self):
+        if (self.set_top_bar_text_to_selection) and len(self.options) > 0:
+            Display.clear(
+                self.options[self.selected].get_primary_text(), hide_top_bar_icons=True, render_bottom_bar=False)
+        else:
+            Display.clear(self.top_bar_text, render_bottom_bar=False)
+        self.correct_selected_for_off_list()
+
+        self._render_image()
+        self._render_bottom_bar_text()
 
 
         # Don't display indexing for single row grids

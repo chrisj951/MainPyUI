@@ -158,9 +158,13 @@ class GameSystemSelectMenu:
         else:
             return None, None
 
-    def get_rom_count(self, game_system):
+    def get_rom_count_text(self, game_system):
         roms = RomSelectOptionsBuilder().build_rom_list(game_system, subfolder=None)
-        return f"{len(roms)}"
+        rom_count = len(roms)
+        if(rom_count > 1):
+               return f"{len(roms)} games"  
+        else:
+            return f"{len(roms)} game"
 
     def run_system_selection(self) :
         selected = Selection(None,None,0)
@@ -175,7 +179,7 @@ class GameSystemSelectMenu:
                     primary_text_long=self.full_name_mapping.get(game_system.folder_name.lower()),
                     image_path=image_path,
                     image_path_selected=image_path_selected,
-                    description = lambda gs=game_system: f"{gs.display_name} - {self.get_rom_count(gs)} items",
+                    description = lambda gs=game_system: f"{gs.display_name} - {self.get_rom_count_text(gs)}",
                     icon=icon,
                     value=game_system
                 )                
