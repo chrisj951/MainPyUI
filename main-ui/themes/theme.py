@@ -441,7 +441,10 @@ class Theme():
                 case FontPurpose.GRID_MULTI_ROW:
                     return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.LIST:
-                    return cls.hex_to_color(cls._data["grid"]["color"])
+                    if(cls._data.get("list") and cls._data.get("list").get("color")):
+                        return cls.hex_to_color(cls._data.get("list").get("color"))
+                    else:
+                        return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.DESCRIPTIVE_LIST_TITLE:
                     return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.MESSAGE:
@@ -475,7 +478,10 @@ class Theme():
                 case FontPurpose.GRID_MULTI_ROW:
                     return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
                 case FontPurpose.LIST:
-                    return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
+                    if(cls._data.get("list") and cls._data.get("list").get("selectedcolor")):
+                        return cls.hex_to_color(cls._data.get("list").get("selectedcolor"))
+                    else:
+                        return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
                 case FontPurpose.DESCRIPTIVE_LIST_TITLE:
                     return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
                 case FontPurpose.MESSAGE:
