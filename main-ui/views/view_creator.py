@@ -65,8 +65,8 @@ class ViewCreator:
 
             case ViewType.TEXT_AND_IMAGE:
                 text_and_image_list_view_mode = Theme.text_and_image_list_view_mode()
-                img_width = Theme.get_game_select_img_width()
-                img_height = Theme.get_game_select_img_height()
+                img_width = Theme.get_list_game_select_img_width()
+                img_height = Theme.get_list_game_select_img_height()
 
                 if text_and_image_list_view_mode == "TEXT_LEFT_IMAGE_RIGHT":
                     img_offset_x = Device.screen_width() - 10 - img_width // 2

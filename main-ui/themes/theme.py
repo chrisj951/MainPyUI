@@ -794,7 +794,7 @@ class Theme():
 
     @classmethod
     def get_grid_game_select_img_width(cls):
-        return cls._data.get("gridGameSelectImgWidth", cls.set_game_select_img_width())
+        return cls._data.get("gridGameSelectImgWidth", cls.get_game_select_img_width())
     
     @classmethod
     def set_grid_game_select_img_width(cls, value):
@@ -803,7 +803,7 @@ class Theme():
 
     @classmethod
     def get_list_game_select_img_width(cls):
-        return cls._data.get("listGameSelectImgWidth", cls.set_game_select_img_width())
+        return cls._data.get("listGameSelectImgWidth", cls.get_game_select_img_width())
     
     @classmethod
     def set_list_game_select_img_width(cls, value):
