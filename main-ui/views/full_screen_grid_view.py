@@ -170,38 +170,16 @@ class FullScreenGridView(View):
                                     resize_type=self.resize_type)
         
     def calculate_start_index(self):
-        """
-        Determine the left-most index to start rendering text so that the selected option is visible.
-
-        Parameters:
-            device_width (int): Width of the device/screen in pixels.
-            text_padding (int): Padding in pixels between each option.
-            selected_index (int): Index of the selected option.
-
-        Returns:
-            int: Starting index to render from.
-        """
-        n = len(self.option_text_widths)
-
-        # Edge case: render all from the start if it fits
-        total_width = sum(self.option_text_widths) + self.x_text_pad * (n - 1)
-        if total_width <= Device.screen_width():
-            return 0
-
-        # Try to fit as many options ending with the selected one going backwards
         start_index = self.selected + 1 if self.selected != len(self.options) -1 else self.selected
         current_width = self.option_text_widths[start_index] + self.x_text_pad
-        print(f"Initial entry {self.options[start_index].get_primary_text()} has a width of {current_width}")
 
         for i in range(start_index - 1, -1, -1):
             added_width = self.option_text_widths[i] + self.x_text_pad
             if current_width + added_width > Device.screen_width():
                 break
-            print(f"Adding {self.options[i].get_primary_text()} will add {self.option_text_widths[i]} for a total of {current_width + added_width}")
             current_width += added_width
             start_index = i
 
-        print(f"Starting from {start_index} will take less than {current_width}")
         return start_index
         
     def _render_bottom_bar_text(self):

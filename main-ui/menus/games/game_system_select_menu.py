@@ -170,7 +170,12 @@ class GameSystemSelectMenu:
         selected = Selection(None,None,0)
         systems_list = []
         view = None
-        for game_system in self.game_utils.get_active_systems():
+        active_systems = self.game_utils.get_active_systems()
+
+        index = 0
+        total_count = len(active_systems)
+        for game_system in active_systems:
+            index+=1
             image_path, image_path_selected = self.get_images(game_system)
             icon = image_path_selected
             systems_list.append(
@@ -179,7 +184,7 @@ class GameSystemSelectMenu:
                     primary_text_long=self.full_name_mapping.get(game_system.folder_name.lower()),
                     image_path=image_path,
                     image_path_selected=image_path_selected,
-                    description = lambda gs=game_system: f"{gs.display_name} - {self.get_rom_count_text(gs)}",
+                    description = lambda idx=index, gs=game_system: f"{gs.display_name} - {self.get_rom_count_text(gs)} - System {idx} of {total_count}",
                     icon=icon,
                     value=game_system
                 )                
