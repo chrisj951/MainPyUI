@@ -168,6 +168,9 @@ class Theme():
     def back_icon(cls): return cls._asset("icon-B-54.png")
     
     @classmethod
+    def start_icon(cls): return cls._asset("icon-START.png")
+    
+    @classmethod
     def show_bottom_bar(cls): return cls._data.get("showBottomBar", True) is not False
     
     @classmethod

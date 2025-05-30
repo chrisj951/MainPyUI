@@ -211,7 +211,7 @@ class GridView(View):
 
         # Don't display indexing for single row grids
         if (self.rows > 1):
-            Display.add_index_text(self.selected+1, len(self.options))
+            Display.add_index_text(self.selected+1, len(self.options),letter=self.options[self.selected].get_primary_text()[0])
         Display.present()
 
     def get_selected_option(self):

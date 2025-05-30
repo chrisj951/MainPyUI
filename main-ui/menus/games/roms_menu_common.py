@@ -103,9 +103,12 @@ class RomsMenuCommon(ABC):
                     # Regenerate as game config menu might've changed something
                     rom_list = self._get_rom_list()
                 elif(ControllerInput.MENU == selected.get_input()):
+                    prev_view = Theme.get_game_selection_view_type()
                     self.popup_menu.run_game_select_popup_menu(selected.get_selection().get_value())
                     # Regenerate as game config menu might've changed something
                     rom_list = self._get_rom_list()
+                    if(Theme.get_game_selection_view_type() != prev_view):
+                        view = self.create_view(page_name,rom_list,selected)
                 elif(ControllerInput.B == selected.get_input()):
                     selected = None
                 elif(ControllerInput.SELECT == selected.get_input()):
