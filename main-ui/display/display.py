@@ -101,6 +101,8 @@ class Display:
         PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
         PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
+        sdl2.SDL_SetRenderDrawBlendMode(cls.renderer.renderer, sdl2.SDL_BLENDMODE_BLEND)
+        PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
         cls.restore_bg()
         cls.clear("init")
         cls.present()
@@ -395,11 +397,11 @@ class Display:
 
     @classmethod
     def render_text(cls, text, x, y, color, purpose: FontPurpose, render_mode=RenderMode.TOP_LEFT_ALIGNED,
-                    crop_w=None, crop_h=None):
+                    crop_w=None, crop_h=None, alpha=None):
         loaded_font = cls.fonts[purpose]
         cache : CachedImageTexture = cls._text_texture_cache.get_texture(text, purpose, color)
         
-        if cache:
+        if cache and alpha is None:
             surface = cache.surface
             texture = cache.texture
         else:
@@ -415,7 +417,23 @@ class Display:
                 PyUiLogger.get_logger().error(f"Failed to create texture from surface {text}: {sdl2.sdlttf.TTF_GetError().decode('utf-8')}")
                 return 0, 0
 
-            cls._text_texture_cache.add_texture(text, purpose, color, surface, texture)
+            if(alpha is not None):
+                sdl2.SDL_SetTextureBlendMode(texture, sdl2.SDL_BLENDMODE_BLEND)
+                sdl2.SDL_SetTextureAlphaMod(texture, alpha)
+                w,h = cls._render_surface_texture(
+                        x=x,
+                        y=y, 
+                        texture=texture, 
+                        surface=surface, 
+                        render_mode=render_mode, 
+                        texture_id=text, 
+                        crop_w=crop_w, 
+                        crop_h=crop_h)
+                sdl2.SDL_DestroyTexture(texture)
+                sdl2.SDL_FreeSurface(surface)
+                return w,h
+            else:
+                cls._text_texture_cache.add_texture(text, purpose, color, surface, texture)
 
         return cls._render_surface_texture(
                 x=x,
