@@ -41,7 +41,7 @@ class CarouselView(View):
         if(cols < 3):
             cols = 3
 
-        while(len(self.options) <= cols):
+        while(len(self.options) <= cols*2):
             self.options += self.options
                        
         cols = min(cols, len(options))
