@@ -115,6 +115,9 @@ class RomsMenuCommon(ABC):
                     if(ViewType.TEXT_AND_IMAGE == Theme.get_game_selection_view_type()):
                         Theme.set_game_selection_view_type(ViewType.GRID)
                         view = self.create_view(page_name,rom_list,selected)
+                    elif(ViewType.GRID == Theme.get_game_selection_view_type()):
+                        Theme.set_game_selection_view_type(ViewType.CAROUSEL)
+                        view = self.create_view(page_name,rom_list,selected)
                     else:
                         Theme.set_game_selection_view_type(ViewType.TEXT_AND_IMAGE)
                         view = self.create_view(page_name,rom_list,selected)

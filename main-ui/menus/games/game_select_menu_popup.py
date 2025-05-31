@@ -31,6 +31,8 @@ class GameSelectMenuPopup:
     def toggle_view(self):
         if(ViewType.TEXT_AND_IMAGE == Theme.get_game_selection_view_type()):
             Theme.set_game_selection_view_type(ViewType.GRID)
+        elif(ViewType.GRID == Theme.get_game_selection_view_type()):
+            Theme.set_game_selection_view_type(ViewType.CAROUSEL)
         else:
             Theme.set_game_selection_view_type(ViewType.TEXT_AND_IMAGE)
 

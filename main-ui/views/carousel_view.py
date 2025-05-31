@@ -46,7 +46,7 @@ class CarouselView(View):
                        
         cols = min(cols, len(options))
         if(cols %2 == 0):
-            cols -=1 
+            cols +=1 
         
         cols = min(cols, len(options))
         
