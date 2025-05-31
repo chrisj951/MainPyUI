@@ -1,3 +1,4 @@
+import time
 from typing import List
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
@@ -55,7 +56,7 @@ class FullScreenGridView(View):
         for option in self.options:
             self.option_text_widths.append(Display.get_text_dimensions(self.font_purpose, option.get_primary_text())[0])
 
-        self.last_selected = -1
+        self.last_selected = self.selected
         self.last_start = 0
 
 
@@ -78,38 +79,43 @@ class FullScreenGridView(View):
             self.current_left += 1
             self.current_right +=1
 
-    def _render_shadowed_text(self, primary_text, y_offset_base, backdrop_font, front_font, x_offset):
+    def _render_shadowed_text(self, primary_text, y_offset_base, backdrop_font, front_font, x_offset, alpha=None):
 
         #TODO hardcoded values of 25        
         shadow_color =  Theme.text_color(backdrop_font)
         # Render black text surfaces at offsets for the "outline"
         shift_amt = 5
-        for dx in range (1,shift_amt):
-            for dy in range(1,shift_amt):
-                Display.render_text(primary_text,
-                                        x_offset + dx,
-                                        y_offset_base + dy,
-                                        shadow_color,
-                                        backdrop_font,
-                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
-                Display.render_text(primary_text,
-                                        x_offset - dx,
-                                        y_offset_base + dy,
-                                        shadow_color,
-                                        backdrop_font,
-                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
-                Display.render_text(primary_text,
-                                        x_offset + dx,
-                                        y_offset_base - dy,
-                                        shadow_color,
-                                        backdrop_font,
-                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
-                Display.render_text(primary_text,
-                                        x_offset - dx,
-                                        y_offset_base - dy,
-                                        shadow_color,
-                                        backdrop_font,
-                                        render_mode=RenderMode.TOP_LEFT_ALIGNED)
+        if(alpha is None):
+            for dx in range (1,shift_amt):
+                for dy in range(1,shift_amt):
+                    Display.render_text(primary_text,
+                                            x_offset + dx,
+                                            y_offset_base + dy,
+                                            shadow_color,
+                                            backdrop_font,
+                                            render_mode=RenderMode.TOP_LEFT_ALIGNED,
+                                            alpha=alpha)
+                    Display.render_text(primary_text,
+                                            x_offset - dx,
+                                            y_offset_base + dy,
+                                            shadow_color,
+                                            backdrop_font,
+                                            render_mode=RenderMode.TOP_LEFT_ALIGNED,
+                                            alpha=alpha)
+                    Display.render_text(primary_text,
+                                            x_offset + dx,
+                                            y_offset_base - dy,
+                                            shadow_color,
+                                            backdrop_font,
+                                            render_mode=RenderMode.TOP_LEFT_ALIGNED,
+                                            alpha=alpha)
+                    Display.render_text(primary_text,
+                                            x_offset - dx,
+                                            y_offset_base - dy,
+                                            shadow_color,
+                                            backdrop_font,
+                                            render_mode=RenderMode.TOP_LEFT_ALIGNED,
+                                            alpha=alpha)
         primary_color =  Theme.text_color(front_font)
 
         # Render text in primary color
@@ -120,12 +126,11 @@ class FullScreenGridView(View):
                                     y_offset_base + dy,
                                     primary_color,
                                     front_font,
-                                    render_mode=RenderMode.TOP_LEFT_ALIGNED)
+                                    render_mode=RenderMode.TOP_LEFT_ALIGNED,
+                                    alpha=alpha)
 
     def _render_primary_image(self,
                               image_path: str,
-                              primary_text: str,
-                              secondary_text: str,
                               x: int, 
                               y: int, 
                               render_mode=RenderMode.TOP_LEFT_ALIGNED, 
@@ -149,28 +154,27 @@ class FullScreenGridView(View):
                                    target_width=target_width,
                                    target_height=target_height,
                                    resize_type=resize_type)
-        self._render_shadowed_text(primary_text, Device.screen_height() * 0.68, FontPurpose.SHADOWED_BACKDROP, FontPurpose.SHADOWED, 25)
-        self._render_shadowed_text(secondary_text, Device.screen_height() * 0.78, FontPurpose.SHADOWED_BACKDROP_SMALL, FontPurpose.SHADOWED_SMALL, 27)
 
         return w,h
 
-    def _render_image(self):
-        imageTextPair = self.options[self.selected]
+    def _render_image(self, index=None, x_offset=0, render_text_overlay=True, text_alpha=None):
+        imageTextPair = self.options[index]
         image_path = imageTextPair.get_image_path_selected() 
         primary_text = imageTextPair.get_primary_text_long()
         secondary_text = imageTextPair.get_description()
-        x_offset = 0
         render_mode = RenderMode.TOP_LEFT_ALIGNED
-                    
+        
         self._render_primary_image( image_path,
-                                    primary_text,
-                                    secondary_text,
                                     x_offset,
                                     Display.get_top_bar_height(False),
                                     render_mode,
                                     target_width=self.resized_width,
                                     target_height=self.resized_height,
                                     resize_type=self.resize_type)
+        
+        if(render_text_overlay):
+            self._render_shadowed_text(primary_text, Device.screen_height() * 0.68, FontPurpose.SHADOWED_BACKDROP, FontPurpose.SHADOWED, 25,text_alpha)
+            self._render_shadowed_text(secondary_text, Device.screen_height() * 0.78, FontPurpose.SHADOWED_BACKDROP_SMALL, FontPurpose.SHADOWED_SMALL, 27,text_alpha)
         
     def calculate_start_index(self):
         start_index = self.selected + 1 if self.selected != len(self.options) -1 else self.selected
@@ -211,28 +215,30 @@ class FullScreenGridView(View):
                                  render_mode=RenderMode.BOTTOM_LEFT_ALIGNED)
             x_offset += self.x_text_pad + w
 
-        self.last_selected = self.selected
         self.last_start = start_index
 
-    def _render(self):
-        fade = self.selected != self.last_selected
-        if(fade):
-            Display.lock_current_image()
-
+    def _clear(self):
         if (self.set_top_bar_text_to_selection) and len(self.options) > 0:
             Display.clear(
                 self.options[self.selected].get_primary_text(), hide_top_bar_icons=True, render_bottom_bar=False)
         else:
             Display.clear(self.top_bar_text, render_bottom_bar_icons_and_images=False)
-        self.correct_selected_for_off_list()
 
-        self._render_image()
+    def _render_entire_screen(self, index, x_offset):
+        self._clear()
+        self._render_image(index=index,x_offset=x_offset,render_text_overlay=True)
         self._render_bottom_bar_text()
 
-        if(fade):
-            Display.present(fade = True)
+    def _render(self):
+        self.correct_selected_for_off_list()
+
+        if(self.selected != self.last_selected):
+            self.animate_transition()
         else:
-            Display.present()
+            self._render_entire_screen(index=self.selected,x_offset=0)
+
+        self.last_selected = self.selected
+        Display.present()
 
     def get_selected_option(self):
         if 0 <= self.selected < len(self.options):
@@ -262,3 +268,46 @@ class FullScreenGridView(View):
                 return Selection(self.get_selected_option(), Controller.last_input(), self.selected)
 
         return Selection(self.get_selected_option(), None, self.selected)
+    
+    def animate_transition(self):
+        if not PyUiConfig.animations_enabled():
+            return
+        animation_duration = 0.20  # seconds
+        start_time = time.time()
+        total_shift = Device.screen_width()
+        last_frame_time = 0
+        refresh_rate = 1/60
+
+        diff = (self.selected - self.last_selected) % (len(self.options) + 1)
+        rotate_left = diff > (len(self.options) + 1) // 2
+        while True:
+            elapsed = time.time() - start_time
+            t = min(elapsed / animation_duration, 1.0)  # clamp to [0, 1]
+
+            self._clear()
+            self._render_bottom_bar_text()
+
+            if rotate_left:
+                old_frame_x_offset = int(total_shift * t)
+                new_frame_x_offset = -total_shift + old_frame_x_offset
+            else:
+                old_frame_x_offset = int(-total_shift * t)
+                new_frame_x_offset = total_shift + old_frame_x_offset
+
+            if(t < 1.0):
+                self._render_image(self.last_selected, old_frame_x_offset,render_text_overlay=True, text_alpha=int(256 * (1.0-t)//1.0))
+            else:
+                self._render_image(self.last_selected, old_frame_x_offset,render_text_overlay=False)
+
+
+            self._render_image(self.selected, new_frame_x_offset,render_text_overlay=True, text_alpha=256)
+
+            the_time = time.time()
+            if the_time - last_frame_time < refresh_rate:
+                time.sleep(refresh_rate - (the_time - last_frame_time))
+            Display.present()
+
+            if t >= 1.0:
+                break
+
+            last_frame_time = time.time()
