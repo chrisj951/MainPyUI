@@ -215,6 +215,10 @@ class FullScreenGridView(View):
         self.last_start = start_index
 
     def _render(self):
+        fade = self.selected != self.last_selected
+        if(fade):
+            Display.lock_current_image()
+
         if (self.set_top_bar_text_to_selection) and len(self.options) > 0:
             Display.clear(
                 self.options[self.selected].get_primary_text(), hide_top_bar_icons=True, render_bottom_bar=False)
@@ -225,7 +229,10 @@ class FullScreenGridView(View):
         self._render_image()
         self._render_bottom_bar_text()
 
-        Display.present()
+        if(fade):
+            Display.present(fade = True)
+        else:
+            Display.present()
 
     def get_selected_option(self):
         if 0 <= self.selected < len(self.options):

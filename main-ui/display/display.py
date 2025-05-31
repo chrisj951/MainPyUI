@@ -15,6 +15,7 @@ import sdl2.ext
 import sdl2.sdlttf
 from themes.theme import Theme
 from utils.logger import PyUiLogger
+import ctypes
 from ctypes import c_double
 
 @dataclass
@@ -522,8 +523,73 @@ class Display:
         sdl2.SDL_SetRenderTarget(cls.renderer.sdlrenderer, old_target)
         return scaled_texture
 
+    FADE_DURATION_MS = 96  # 0.25 seconds
+
     @classmethod
-    def present(cls):
+    def fade_transition(cls, texture1, texture2):
+        renderer = cls.renderer.renderer
+
+        # Get renderer output size (window size)
+        width = ctypes.c_int()
+        height = ctypes.c_int()
+        sdl2.SDL_GetRendererOutputSize(renderer, width, height)
+
+        # Create an intermediate render target texture
+        render_target = sdl2.SDL_CreateTexture(
+            renderer,
+            sdl2.SDL_PIXELFORMAT_RGBA8888,
+            sdl2.SDL_TEXTUREACCESS_TARGET,
+            width.value, height.value
+        )
+
+        # Enable blending on both target and texture2
+        sdl2.SDL_SetTextureBlendMode(texture2, sdl2.SDL_BLENDMODE_BLEND)
+        sdl2.SDL_SetTextureBlendMode(render_target, sdl2.SDL_BLENDMODE_BLEND)
+
+        TARGET_FRAME_MS = 16
+        start_time = sdl2.SDL_GetTicks()
+
+        while True:
+            frame_start = sdl2.SDL_GetTicks()
+
+            now = sdl2.SDL_GetTicks()
+            elapsed = now - start_time
+            alpha = int(255 * (elapsed / cls.FADE_DURATION_MS))
+            if alpha > 255:
+                alpha = 255
+
+            sdl2.SDL_SetTextureAlphaMod(texture2, alpha)
+
+            # Set render target to the intermediate texture
+            sdl2.SDL_SetRenderTarget(renderer, render_target)
+
+            # Composite both images into the target
+            sdl2.SDL_RenderClear(renderer)
+            sdl2.SDL_RenderCopy(renderer, texture1, None, None)
+            sdl2.SDL_RenderCopy(renderer, texture2, None, None)
+
+            # Set render target back to default (the screen)
+            sdl2.SDL_SetRenderTarget(renderer, None)
+
+            # Draw final composited texture to the screen
+            sdl2.SDL_RenderClear(renderer)
+            sdl2.SDL_RenderCopy(renderer, render_target, None, None)
+            sdl2.SDL_RenderPresent(renderer)
+
+            if alpha == 255:
+                break
+
+            # Frame pacing
+            frame_time = sdl2.SDL_GetTicks() - frame_start
+            delay = TARGET_FRAME_MS - frame_time
+            if delay > 0:
+                sdl2.SDL_Delay(delay)
+
+        # Cleanup render target (optional, good practice)
+        sdl2.SDL_DestroyTexture(render_target)
+                
+    @classmethod
+    def present(cls, fade=False):
         if Theme.render_top_and_bottom_bar_last():
             cls.top_bar.render_top_bar(cls.top_bar_text)
             cls.bottom_bar.render_bottom_bar()
@@ -535,7 +601,10 @@ class Display:
             sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, scaled_canvas, None, None)
             sdl2.SDL_DestroyTexture(scaled_canvas)
         elif(0 == Device.screen_rotation()):
-            sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.render_canvas, None, None)
+            if(fade):
+                cls.fade_transition(cls.bg_canvas, cls.render_canvas)
+            else:
+                sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.render_canvas, None, None)
         else:
             sdl2.SDL_RenderCopyEx(
                 cls.renderer.sdlrenderer,     # Renderer
