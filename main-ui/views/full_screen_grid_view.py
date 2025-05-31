@@ -162,9 +162,9 @@ class FullScreenGridView(View):
         x_offset = 0
         render_mode = RenderMode.TOP_LEFT_ALIGNED
                     
-        self._render_primary_image(image_path,
-                                   primary_text,
-                                   secondary_text,
+        self._render_primary_image( image_path,
+                                    primary_text,
+                                    secondary_text,
                                     x_offset,
                                     Display.get_top_bar_height(False),
                                     render_mode,

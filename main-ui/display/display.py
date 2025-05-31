@@ -243,10 +243,8 @@ class Display:
 
         return LoadedFont(font, line_height, font_path)
 
-
-
     @classmethod
-    def lock_current_image_as_bg(cls):
+    def lock_current_image(cls):
         if cls.bg_canvas:
             sdl2.SDL_DestroyTexture(cls.bg_canvas)
             cls.bg_canvas = None
@@ -263,7 +261,7 @@ class Display:
         sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.bg_canvas, None, None)
 
     @classmethod
-    def unlock_current_image_as_bg(cls):
+    def unlock_current_image(cls):
         if cls.bg_canvas:
             sdl2.SDL_DestroyTexture(cls.bg_canvas)
             cls.bg_canvas = None
