@@ -313,7 +313,7 @@ class CarouselView(View):
                                             y_image_offset,
                                             render_mode,
                                             target_width=frame_widths[visible_index],
-                                            target_height=None,
+                                            target_height=Display.get_usable_screen_height(),
                                             resize_type=self.resize_type)
 
                 if time.time() - last_frame_time < frame_duration:
