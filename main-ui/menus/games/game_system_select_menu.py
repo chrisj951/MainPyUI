@@ -222,5 +222,5 @@ class GameSystemSelectMenu:
                 self.rom_select_menu.run_rom_selection(selected.get_selection().get_value())
             elif(ControllerInput.MENU == selected.get_input()):
                 self.game_system_select_menu_popup.run_popup_menu_selection(selected.get_selection().get_value())
-            elif(ControllerInput.B == selected.get_input()):
+            elif(ControllerInput.B == selected.get_input() and not Theme.skip_main_menu()):
                 exit = True
