@@ -22,8 +22,8 @@ class DeviceCommon(AbstractDevice):
         while(True):
             PyUiLogger.get_logger().info("Prompting for shutdown")
             Display.clear("Power")
-            Display.render_text_centered(f"Would you like to power down?",self.screen_width//2, self.screen_height//2,Theme.text_color_selected(FontPurpose.LIST), purpose=FontPurpose.LIST)
-            Display.render_text_centered(f"A = Power Down, X = Reboot, B = Cancel",self.screen_width //2, self.screen_height//2+100,Theme.text_color_selected(FontPurpose.LIST), purpose=FontPurpose.LIST)
+            Display.render_text_centered(f"Would you like to power down?",self.screen_width//2, self.screen_height//2,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
+            Display.render_text_centered(f"A = Power Down, X = Reboot, B = Cancel",self.screen_width //2, self.screen_height//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
             Display.present()
             if(Controller.get_input()):
                 if(Controller.last_input() == ControllerInput.A):
