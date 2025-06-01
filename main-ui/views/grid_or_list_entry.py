@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import threading
 from typing import Callable, TypeVar
 
@@ -6,6 +7,10 @@ from menus.games.utils.rom_info import RomInfo
 T = TypeVar('T')  # Generic input type
 
 class GridOrListEntry:
+    
+    # Shared ThreadPoolExecutor for all instances 
+    _desc_executor = ThreadPoolExecutor(max_workers=1)
+
     def __init__(
         self,
         primary_text,
@@ -38,18 +43,32 @@ class GridOrListEntry:
 
         if callable(description):
             self._description_func = description
-            threading.Thread(target=self._load_description, daemon=True).start()
+            # Submit to thread pool and get Future
+            self._description_future = self._desc_executor.submit(self._load_description_func)
         else:
             self._description = description
-            self._description_event.set()  # Already available
+            self._description_event.set()  # No async loading needed
 
-    def _load_description(self):
+    def _load_description_func(self):
         try:
-            self._description = self._description_func()
+            desc = self._description_func()
         except Exception as e:
-            self._description = f"[Error loading description: {e}]"
-        finally:
-            self._description_event.set()
+            desc = f"[Error loading description: {e}]"
+        self._description = desc
+        self._description_event.set()
+        return desc
+
+    def get_description(self):
+        # If description is loading asynchronously, block here until done
+        if self._description_future is not None:
+            # Wait for future to complete if it hasn't yet
+            self._description_future.result()
+        else:
+            # If no future, make sure event is set
+            self._description_event.wait()
+
+        return self._description
+
 
     def __str__(self) -> str:
         return self.primary_text
@@ -79,10 +98,6 @@ class GridOrListEntry:
     def get_value(self):
         return self.value
     
-    def get_description(self):
-        self._description_event.wait()  # Block until description is loaded
-        return self._description
-
     def get_icon(self):
         if self.icon is None and self.icon_searcher is not None:
             return self.icon_searcher(self.value)
