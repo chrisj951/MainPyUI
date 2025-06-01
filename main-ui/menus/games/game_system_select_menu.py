@@ -23,14 +23,15 @@ class GameSystemSelectMenu:
 
         self.common_icon_mappings = {
             "PPSSPP": ["psp"],
+            "PSP": ["ppsspp"],
             "PM": ["ports"],
             "SNES": ["sfc"],
             "FFPLAY":["ffplay"],
             "MPV":["ffplay"],
             "WSC":["ws"],
-            "FAKE8":["pico"],
-            "PICO8":["pico"],
-            "Fake08":["pico"],
+            "FAKE8":["pico","pico8"],
+            "FAKE08":["pico","pico8"],
+            "PICO8":["pico","pico8"],
             "THIRTYTWOX":["32X"]
         }
         self.full_name_mapping = {
@@ -128,7 +129,7 @@ class GameSystemSelectMenu:
 
     def get_images(self, game_system : GameSystem):
         icon_system_name = self.get_system_name_for_icon(game_system.game_system_config)
-        print(f"System_name = {icon_system_name}")
+        print(f"System_name = {icon_system_name}, folder_name={game_system.folder_name.lower()}")
         icon_system_name_priority = []
         selected_icon_system_name_priority = []
 
