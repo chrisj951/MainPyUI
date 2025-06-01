@@ -443,16 +443,12 @@ class Theme():
                     return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.GRID_MULTI_ROW:
                     return cls.hex_to_color(cls._data["grid"]["color"])
-                case FontPurpose.LIST:
+                case FontPurpose.LIST | FontPurpose.DESCRIPTIVE_LIST_TITLE | FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION:
                     if(cls._data.get("list") and cls._data.get("list").get("color")):
                         return cls.hex_to_color(cls._data.get("list").get("color"))
                     else:
                         return cls.hex_to_color(cls._data["grid"]["color"])
-                case FontPurpose.DESCRIPTIVE_LIST_TITLE:
-                    return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.MESSAGE:
-                    return cls.hex_to_color(cls._data["grid"]["color"])
-                case FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION:
                     return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.LIST_INDEX:
                     return cls.hex_to_color(cls._data["currentpage"]["color"])
@@ -480,16 +476,12 @@ class Theme():
                     return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
                 case FontPurpose.GRID_MULTI_ROW:
                     return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
-                case FontPurpose.LIST:
+                case FontPurpose.LIST | FontPurpose.DESCRIPTIVE_LIST_TITLE | FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION:
                     if(cls._data.get("list") and cls._data.get("list").get("selectedcolor")):
                         return cls.hex_to_color(cls._data.get("list").get("selectedcolor"))
                     else:
                         return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
-                case FontPurpose.DESCRIPTIVE_LIST_TITLE:
-                    return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
                 case FontPurpose.MESSAGE:
-                    return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
-                case FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION:
                     return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
                 case FontPurpose.LIST_INDEX:
                     return cls.hex_to_color(cls._data["currentpage"]["color"])
