@@ -7,6 +7,8 @@ from menus.games.game_select_menu import GameSelectMenu
 from menus.games.game_system_select_menu_popup import GameSystemSelectMenuPopup
 from menus.games.utils.rom_select_options_builder import RomSelectOptionsBuilder
 from themes.theme import Theme
+from utils.py_ui_config import PyUiConfig
+from utils.py_ui_state import PyUiState
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
 from views.view_creator import ViewCreator
@@ -110,7 +112,10 @@ class GameSystemSelectMenu:
             "zxs": "ZX Spectrum"
         }
     def get_system_name_for_icon(self, sys_config):        
-        return os.path.splitext(os.path.basename(sys_config.get_icon()))[0]
+        if(sys_config.get_icon()):
+            return os.path.splitext(os.path.basename(sys_config.get_icon()))[0]
+        else:
+            return sys_config.get_label().lower()
     
     def get_first_existing_path(self,icon_system_name_priority):
         for index, path in enumerate(icon_system_name_priority):
@@ -123,6 +128,7 @@ class GameSystemSelectMenu:
 
     def get_images(self, game_system : GameSystem):
         icon_system_name = self.get_system_name_for_icon(game_system.game_system_config)
+        print(f"System_name = {icon_system_name}")
         icon_system_name_priority = []
         selected_icon_system_name_priority = []
 
@@ -167,13 +173,13 @@ class GameSystemSelectMenu:
             return f"{len(roms)} game"
 
     def run_system_selection(self) :
-        selected = Selection(None,None,0)
         systems_list = []
         view = None
         active_systems = self.game_utils.get_active_systems()
 
         index = 0
         total_count = len(active_systems)
+        selected = Selection(None,None,0)
         for game_system in active_systems:
             index+=1
             image_path, image_path_selected = self.get_images(game_system)
@@ -189,6 +195,9 @@ class GameSystemSelectMenu:
                     value=game_system
                 )                
             )
+            if(game_system.display_name == PyUiState.get_last_system_selection()):
+                selected = Selection(None,None,index-1)
+
         if(view is None):
             view = ViewCreator.create_view(
                 view_type=Theme.get_view_type_for_system_select_menu(),
@@ -208,6 +217,7 @@ class GameSystemSelectMenu:
         while(not exit):
             selected = view.get_selection([ControllerInput.A, ControllerInput.MENU])
             if(ControllerInput.A == selected.get_input()):
+                PyUiState.set_last_system_selection(selected.get_selection().get_value().display_name)
                 self.rom_select_menu.run_rom_selection(selected.get_selection().get_value())
             elif(ControllerInput.MENU == selected.get_input()):
                 self.game_system_select_menu_popup.run_popup_menu_selection(selected.get_selection().get_value())

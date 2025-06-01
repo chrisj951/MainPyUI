@@ -343,6 +343,8 @@ class MiyooDevice(DeviceCommon):
     def launch_stock_os_menu(self):
         self.run_app("/usr/miyoo/bin/runmiyoo-original.sh")
 
+    def get_state_path(self):
+        return "/mnt/SDCARD/Saves/pyui-state.json"
 
     def calibrate_sticks(self):
         from controller.controller import Controller

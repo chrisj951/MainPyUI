@@ -234,4 +234,9 @@ class Device:
     def calibrate_sticks():
         return Device._impl.calibrate_sticks()
     
+    @staticmethod  
+    def get_state_path():
+        return Device._impl.get_state_path()
+    
+    
     

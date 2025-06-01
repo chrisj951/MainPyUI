@@ -218,3 +218,8 @@ class AbstractDevice(ABC):
     @staticmethod  
     def calibrate_sticks(self):
         pass
+    
+    @staticmethod  
+    def get_state_path(self):
+        pass
+

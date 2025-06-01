@@ -1,6 +1,7 @@
 import json
 import os
 from PIL import Image
+from utils.logger import PyUiLogger
 
 class DaijishoThemeIndex:
     USE_DEFAULT = "USE_DEFAULT"
@@ -110,6 +111,7 @@ class DaijishoThemeIndex:
             png_path = os.path.join(self.foldername, png_filename)
 
             if not os.path.exists(png_path):
+                PyUiLogger.get_logger().info(f"Converting {jpg_path} to {png_path}")
                 try:
                     with Image.open(jpg_path) as img:
                         img.save(png_path, "PNG")
@@ -132,6 +134,7 @@ class DaijishoThemeIndex:
                 elif(uniquename is not None):
                     return self._convert_if_needed(uniquename)
         
+        PyUiLogger.get_logger().info(f"No image found for {system}")
         return self.get_default_filename()
 
     def get_default_filename(self):

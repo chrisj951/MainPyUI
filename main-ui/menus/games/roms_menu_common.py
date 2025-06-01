@@ -13,6 +13,7 @@ from menus.games.utils.rom_info import RomInfo
 from menus.games.utils.rom_select_options_builder import RomSelectOptionsBuilder
 from themes.theme import Theme
 from utils.logger import PyUiLogger
+from utils.py_ui_state import PyUiState
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
 from abc import ABC, abstractmethod
@@ -79,6 +80,11 @@ class RomsMenuCommon(ABC):
         selected = Selection(None,None,0)
         view = None
         rom_list = self._get_rom_list()
+
+        for index, entry in enumerate(rom_list):
+            if(entry.get_value().rom_file_path == PyUiState.get_last_game_selection(page_name)):
+                selected = Selection(None,None,index)
+
         while(selected is not None):
             Display.set_page(page_name)
             if(view is None):
@@ -89,6 +95,7 @@ class RomsMenuCommon(ABC):
             selected = view.get_selection([ControllerInput.A, ControllerInput.X, ControllerInput.MENU, ControllerInput.SELECT])
             if(selected is not None):
                 if(ControllerInput.A == selected.get_input()):
+                    PyUiState.set_last_game_selection(page_name,selected.get_selection().get_value().rom_file_path)
                     if(self.launched_via_special_case(selected.get_selection().get_value())):
                         pass
                     elif(os.path.isdir(selected.get_selection().get_value().rom_file_path)):

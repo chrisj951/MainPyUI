@@ -9,7 +9,9 @@ from utils.logger import PyUiLogger
 class ThemePatcher():
 
     # Add properties you want to scale (case-sensitive)
-    SCALABLE_KEYS = {"grid1x4","grid3x4","FontSize"}
+    SCALABLE_KEYS = {"grid1x4","grid3x4","FontSize","gameSelectImgWidth","gameSelectImgHeight","gridGameSelectImgWidth",
+                     "gridGameSelectImgHeight","listGameSelectImgWidth","listGameSelectImgHeight","gridMultiRowSelBgResizePadWidth",
+                     "gridMultiRowSelBgResizePadHeight","gridMultiRowExtraYPad"}
 
     @classmethod
     def patch_theme(cls, path, target_width, target_height):
@@ -120,7 +122,12 @@ class ThemePatcher():
 
     @classmethod
     def _should_scale_key(cls, key):
-        return key in cls.SCALABLE_KEYS or key.endswith("size") or key.endswith("Size")
+        should_scale = key in cls.SCALABLE_KEYS or key.endswith("size") or key.endswith("Size")
+        if(should_scale):
+            PyUiLogger.get_logger().info(f"Scaling {key}")
+        else:
+            PyUiLogger.get_logger().info(f"Not scaling {key}")
+        return should_scale
 
     @staticmethod
     def _scale_if_number(value, scale):

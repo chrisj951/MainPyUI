@@ -249,6 +249,9 @@ class TrimUIDevice(DeviceCommon):
     def get_recents_path(self):
         return "/mnt/SDCARD/Saves/pyui-recents.json"
     
+    def get_state_path(self):
+        return "/mnt/SDCARD/Saves/pyui-state.json"
+
     def launch_stock_os_menu(self):
         pass
 
