@@ -9,7 +9,6 @@ from devices.miyoo.miyoo_device import MiyooDevice
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.miyoo.system_config import SystemConfig
 from devices.utils.process_runner import ProcessRunner
-from menus.settings.button_remapper import ButtonRemapper
 import sdl2
 from utils import throttle
 from utils.config_copier import ConfigCopier
@@ -85,7 +84,7 @@ class MiyooFlip(MiyooDevice):
         self.init_bluetooth()
         config_volume = self.system_config.get_volume()
         self._set_volume(config_volume)
-        self.button_remapper = ButtonRemapper(self.system_config)
+        super().__init__()
 
     def init_bluetooth(self):
         try:
@@ -202,6 +201,3 @@ class MiyooFlip(MiyooDevice):
     def _set_brightness_to_config(self):
         ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
                                      "179:brightness:"+str(self.system_config.brightness * 5)])
-
-    def remap_buttons(self):
-        self.button_remapper.remap_buttons()

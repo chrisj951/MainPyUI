@@ -148,28 +148,28 @@ class SystemConfig:
                 self.config[k] = v
         else:
             self.config[property] = value
-
-    def get_button_mapping(self):
-        raw_map = self.config.get("button_mapping", {})
-        # Convert strings back to ControllerInput Enum
-        return {k: ControllerInput(v) for k, v in raw_map.items()}
     
     def set_button_mapping(self, mapping):
         if not isinstance(mapping, dict):
             raise ValueError("Mapping must be a dictionary.")
         for k, v in mapping.items():
             if not isinstance(k, ControllerInput) or not isinstance(v, ControllerInput):
-                raise ValueError("Keys and values must be of type ControllerInput.")
-        
-        # Convert Enum keys and values to strings for JSON
-        serialized = {k.value: v.value for k, v in mapping.items()}
-        self.config["button_mapping"] = serialized
+                raise ValueError("Keys and values must be ControllerInput enums")
+
+        serialized = {str(k.value): v.value for k, v in mapping.items()}
+        self.config["button_mapping"] = serialized        
         
     def get_button_mapping(self):
         raw_map = self.config.get("button_mapping", {})
-        # Convert string keys/values back to Enum
-        return {
-            ControllerInput(k): ControllerInput(v)
-            for k, v in raw_map.items()
-            if k in ControllerInput.__members__ and v in ControllerInput.__members__
-        }
+        mapping = {}
+
+        for k, v in raw_map.items():
+            try:
+                key_enum = ControllerInput(int(k))
+                val_enum = ControllerInput(v)
+                mapping[key_enum] = val_enum
+            except ValueError:
+                print(f"Skipping invalid enum mapping: {k} -> {v}")
+                continue
+
+        return mapping

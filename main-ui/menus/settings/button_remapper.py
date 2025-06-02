@@ -2,6 +2,7 @@
 
 from controller.controller_inputs import ControllerInput
 from devices.miyoo.system_config import SystemConfig
+from utils.logger import PyUiLogger
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
 from views.view_creator import ViewCreator
@@ -12,8 +13,14 @@ class ButtonRemapper:
     def __init__(self, system_config : SystemConfig):
         self.system_config = system_config
         self.button_mapping = self.system_config.get_button_mapping()
+        PyUiLogger.get_logger().info(f"Button Mapping = {self.button_mapping}")
     
-    def remap_buttons(self):
+    def get_mappping(self, controller_input):
+        if(controller_input in self.button_mapping):
+            controller_input = self.button_mapping[controller_input]
+        return controller_input
+
+    def build_remap_buttons_options(self):
         option_list = []
 
         for controller_input in ControllerInput:
@@ -32,26 +39,23 @@ class ButtonRemapper:
                             value=lambda button=controller_input : self.remap_single_button(button)
                         )
                 )
-            
+        return option_list
+
+    def remap_buttons(self):
+
         selected = Selection(None,None,0)
-        list_view = None
-        while(selected is not None):
-            
-            if(list_view is None or self.theme_changed):
-                list_view = ViewCreator.create_view(
+        list_view = ViewCreator.create_view(
                     view_type=ViewType.ICON_AND_DESC,
                     top_bar_text=f"Button Remapper", 
-                    options=option_list,
+                    options=self.build_remap_buttons_options(),
                     selected_index=selected.get_index())
-                self.theme_changed = False
-            else:
-                list_view.set_options(option_list)
-    
+        while(selected is not None):    
             control_options = [ControllerInput.A]
             selected = list_view.get_selection(control_options)
 
             if(selected.get_input() in control_options):
                 selected.get_selection().get_value()()
+                list_view.set_options(self.build_remap_buttons_options())
             elif(ControllerInput.B == selected.get_input()):
                 selected = None
 
@@ -73,18 +77,12 @@ class ButtonRemapper:
                 )
         
         selected = Selection(None,None,0)
-        list_view = None
-        while(selected is not None):           
-            if(list_view is None or self.theme_changed):
-                list_view = ViewCreator.create_view(
+        list_view = ViewCreator.create_view(
                     view_type=ViewType.TEXT_ONLY,
                     top_bar_text=f"Remapping {button.name}", 
                     options=option_list,
                     selected_index=selected.get_index())
-                self.theme_changed = False
-            else:
-                list_view.set_options(option_list)
-    
+        while(selected is not None):               
             control_options = [ControllerInput.A]
             selected = list_view.get_selection(control_options)
 
