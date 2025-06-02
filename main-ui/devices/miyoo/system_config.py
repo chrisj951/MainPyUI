@@ -1,33 +1,14 @@
 import json
 import threading
 
+from controller.controller_inputs import ControllerInput
+
 class SystemConfig:
     def __init__(self, filepath):
         self._lock = threading.Lock()
         self.filepath = filepath
-        #MainUI often corrupts this file,
-        #this seems to be a consistent fix though
-        self.truncate_after_first_brace(self.filepath)
         self.reload_config()
         
-
-    def truncate_after_first_brace(self,file_path):
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-
-        first_brace_index = content.find('}')
-        if first_brace_index == -1:
-            print("No closing brace found.")
-            return
-
-        # Keep everything up to and including the first brace
-        truncated_content = content[:first_brace_index + 1]
-
-        # Overwrite the file with truncated content
-        with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(truncated_content)
-
-        print(f"Truncated file after first '}}' at position {first_brace_index}.")
 
     def reload_config(self):
         with self._lock:
@@ -162,4 +143,33 @@ class SystemConfig:
         return self.config.get(property)
     
     def set(self, property, value):
-        self.config[property] = value
+        if isinstance(property, dict):
+            for k, v in property.items():
+                self.config[k] = v
+        else:
+            self.config[property] = value
+
+    def get_button_mapping(self):
+        raw_map = self.config.get("button_mapping", {})
+        # Convert strings back to ControllerInput Enum
+        return {k: ControllerInput(v) for k, v in raw_map.items()}
+    
+    def set_button_mapping(self, mapping):
+        if not isinstance(mapping, dict):
+            raise ValueError("Mapping must be a dictionary.")
+        for k, v in mapping.items():
+            if not isinstance(k, ControllerInput) or not isinstance(v, ControllerInput):
+                raise ValueError("Keys and values must be of type ControllerInput.")
+        
+        # Convert Enum keys and values to strings for JSON
+        serialized = {k.value: v.value for k, v in mapping.items()}
+        self.config["button_mapping"] = serialized
+        
+    def get_button_mapping(self):
+        raw_map = self.config.get("button_mapping", {})
+        # Convert string keys/values back to Enum
+        return {
+            ControllerInput(k): ControllerInput(v)
+            for k, v in raw_map.items()
+            if k in ControllerInput.__members__ and v in ControllerInput.__members__
+        }
