@@ -86,7 +86,7 @@ class RomsMenuCommon(ABC):
                 selected = Selection(None,None,index)
 
         while(selected is not None):
-            Display.set_page(page_name)
+            Display.set_page_bg(page_name)
             if(view is None):
                 view = self.create_view(page_name,rom_list,selected)
             else:

@@ -75,7 +75,7 @@ class Display:
     bg_canvas = None
     render_canvas = None
     bg_path = ""
-    page = ""
+    page_bg = ""
     top_bar = TopBar()
     bottom_bar = BottomBar()
     window = None
@@ -217,10 +217,10 @@ class Display:
                 PyUiLogger.get_logger().error("Failed to create texture from surface")
 
     @classmethod
-    def set_page(cls, page):
-        if(page != cls.page):
-            cls.page = page 
-            background = Theme.background(page)
+    def set_page_bg(cls, page_bg):
+        if(page_bg != cls.page_bg):
+            cls.page_bg = page_bg 
+            background = Theme.background(page_bg)
             if(os.path.exists(background)):
                 cls.set_new_bg(background)
             else:
