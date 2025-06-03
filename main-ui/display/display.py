@@ -227,6 +227,10 @@ class Display:
                 PyUiLogger.get_logger().debug(f"Theme did not provide bg for {background}")
 
     @classmethod
+    def set_selected_tab(cls, tab):
+        cls.top_bar.set_selected_tab(tab)
+
+    @classmethod
     def _load_font(cls, font_purpose):
         font_path = Theme.get_font(font_purpose)
         font_size = Theme.get_font_size(font_purpose)
