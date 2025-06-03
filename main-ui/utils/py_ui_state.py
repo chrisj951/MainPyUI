@@ -76,3 +76,13 @@ class PyUiState:
             cls._data[page_name] = {}
         cls._data[page_name]["lastGameSelection"] = value
         cls.save()
+
+    @classmethod
+    def get_in_game_selection_screen(cls):
+        return cls.get("inGameSelectionScreen",False)
+
+    @classmethod
+    def set_in_game_selection_screen(cls, value):
+        cls._data["inGameSelectionScreen"] = value
+        cls.save()
+

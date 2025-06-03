@@ -92,7 +92,10 @@ class RomsMenuCommon(ABC):
             else:
                 view.set_options(rom_list)
 
-            selected = view.get_selection([ControllerInput.A, ControllerInput.X, ControllerInput.MENU, ControllerInput.SELECT])
+            accepted_inputs = [ControllerInput.A, ControllerInput.X, ControllerInput.MENU, ControllerInput.SELECT]
+            if(Theme.skip_main_menu()):
+                accepted_inputs += [ControllerInput.L1, ControllerInput.R1]
+            selected = view.get_selection(accepted_inputs)
             if(selected is not None):
                 if(ControllerInput.A == selected.get_input()):
                     PyUiState.set_last_game_selection(page_name,selected.get_selection().get_value().rom_file_path)
@@ -100,7 +103,9 @@ class RomsMenuCommon(ABC):
                         pass
                     elif(os.path.isdir(selected.get_selection().get_value().rom_file_path)):
                         # If the selected item is a directory, open it
-                        self._run_subfolder_menu(selected.get_selection().get_value())
+                        return_value = self._run_subfolder_menu(selected.get_selection().get_value())
+                        if(return_value is not None):
+                            return return_value
                     else:
                         RecentsManager.add_game(selected.get_selection().get_value())
                         self.run_game(selected.get_selection().get_value())
@@ -128,6 +133,12 @@ class RomsMenuCommon(ABC):
                     else:
                         Theme.set_game_selection_view_type(ViewType.TEXT_AND_IMAGE)
                         view = self.create_view(page_name,rom_list,selected)
+                elif(Theme.skip_main_menu() and ControllerInput.L1 == selected.get_input()):
+                    PyUiState.set_last_game_selection(page_name,selected.get_selection().get_value().rom_file_path)
+                    return ControllerInput.L1
+                elif(Theme.skip_main_menu() and ControllerInput.R1 == selected.get_input()):
+                    PyUiState.set_last_game_selection(page_name,selected.get_selection().get_value().rom_file_path)
+                    return ControllerInput.R1
 
         Display.restore_bg()
         
