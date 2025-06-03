@@ -67,6 +67,16 @@ class PyUiState:
         cls.save()
 
     @classmethod
+    def get_last_app_selection(cls):
+        return cls._data.get("lastAppSelectionDir", None), cls._data.get("lastAppSelectionFile", None)
+
+    @classmethod
+    def set_last_app_selection(cls, directory,filepath):
+        cls._data["lastAppSelectionDir"] = directory
+        cls._data["lastAppSelectionFile"] = filepath
+        cls.save()
+
+    @classmethod
     def get_last_game_selection(cls, page_name):
         return cls._data.get(page_name, {}).get("lastGameSelection", None)
         
