@@ -16,6 +16,26 @@ class ListView(View):
         self.clear_display_each_render_cycle = True
         self.include_index_text = True
 
+    def center_selection(self):
+        if(self.selected != 0):
+            window_size = self.current_bottom - self.current_top
+            half_window = window_size // 2
+
+            # Try to center selected
+            new_top = self.selected - half_window
+            new_bottom = new_top + window_size
+
+            # Clamp top and bottom
+            if new_top < 0:
+                new_top = 0
+                new_bottom = window_size
+            if new_bottom > len(self.options):
+                new_bottom = len(self.options)
+                new_top = new_bottom - window_size
+
+            self.current_top = new_top
+            self.current_bottom = new_bottom
+
     @abstractmethod
     def _render(self):
         pass
