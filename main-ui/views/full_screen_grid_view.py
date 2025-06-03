@@ -234,6 +234,7 @@ class FullScreenGridView(View):
 
         if(self.selected != self.last_selected):
             self.animate_transition()
+            self._render_entire_screen(index=self.selected,x_offset=0)
         else:
             self._render_entire_screen(index=self.selected,x_offset=0)
 
