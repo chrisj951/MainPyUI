@@ -107,7 +107,27 @@ class MainMenu:
     def run_main_menu_selection(self):
         
         if(Theme.skip_main_menu()):
-            self.system_select_menu.run_system_selection()
+            selection = "Game"
+            while(True):
+                if("Game" == selection):
+                    controller_input = self.system_select_menu.run_system_selection()
+                    if(ControllerInput.L1 == controller_input):
+                        selection = "Settings"
+                    elif(ControllerInput.R1 == controller_input):
+                        selection = "App"
+                elif("App" == selection):
+                    controller_input = self.app_menu.run_app_selection()
+                    if(ControllerInput.L1 == controller_input):
+                        selection = "Game"
+                    elif(ControllerInput.R1 == controller_input):
+                        selection = "Settings"
+                elif("Settings" == selection):
+                    controller_input = self.settings_menu.show_menu()
+                    if(ControllerInput.L1 == controller_input):
+                        selection = "App"
+                    elif(ControllerInput.R1 == controller_input):
+                        selection = "Game"
+
         else:
             selected = Selection(None,None,0)
 

@@ -74,3 +74,8 @@ class AppMenu:
                 Display.reinitialize()
             elif(ControllerInput.B == selected.get_input()):
                 running = False
+            elif(Theme.skip_main_menu() and ControllerInput.L1 == selected.get_input()):
+                return ControllerInput.L1
+            elif(Theme.skip_main_menu() and ControllerInput.R1 == selected.get_input()):
+                return ControllerInput.R1
+            

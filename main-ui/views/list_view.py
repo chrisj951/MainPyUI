@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from controller.controller import Controller
 from controller.controller_inputs import ControllerInput
 from display.display import Display
+from themes.theme import Theme
 from views.selection import Selection
 from views.view import View
 
@@ -41,9 +42,15 @@ class ListView(View):
                 self.selection_made()
                 return Selection(self.get_selected_option(),Controller.last_input(), self.selected)
             elif Controller.last_input() == ControllerInput.L1:
-                self.adjust_selected(-1*self.max_rows+1)
+                if(Theme.skip_main_menu()):
+                    return Selection(self.get_selected_option(),Controller.last_input(), self.selected)
+                else:
+                    self.adjust_selected(-1*self.max_rows+1)
             elif Controller.last_input() == ControllerInput.R1:
-                self.adjust_selected(self.max_rows-1)
+                if(Theme.skip_main_menu()):
+                    return Selection(self.get_selected_option(),Controller.last_input(), self.selected)
+                else:
+                    self.adjust_selected(self.max_rows-1)
             elif Controller.last_input() == ControllerInput.B:
                 self.selection_made()
                 return Selection(self.get_selected_option(),Controller.last_input(), self.selected)
