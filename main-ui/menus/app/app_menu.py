@@ -85,7 +85,8 @@ class AppMenu:
                 Controller.clear_input_queue()
                 Display.reinitialize()
             elif(ControllerInput.B == selected.get_input()):
-                running = False
+                if(not Theme.skip_main_menu()):
+                    running = False
             elif(Theme.skip_main_menu() and ControllerInput.L1 == selected.get_input()):
                 self.save_app_selection(selected)
                 return ControllerInput.L1

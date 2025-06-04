@@ -232,9 +232,9 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
             elif(selected.get_input() in control_options):
                 selected.get_selection().get_value()(selected.get_input())
             elif(ControllerInput.B == selected.get_input()):
-                selected = None
+                if(not Theme.skip_main_menu()):
+                    selected = None
         
         if(self.anything_theme_related_changed):
             os._exit(0)
         return False #shouldnt need to do this but jic
-
