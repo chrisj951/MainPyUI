@@ -22,6 +22,6 @@ class GameSelectMenu(RomsMenuCommon):
         self.subfolder = subfolder
         PyUiState.set_in_game_selection_screen(True)
         return_value = self._run_rom_selection(game_system.display_name)
-        if(return_value is None):
+        if(return_value is None and subfolder is None):
             PyUiState.set_in_game_selection_screen(False)
         return return_value

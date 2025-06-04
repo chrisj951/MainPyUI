@@ -132,7 +132,6 @@ class GameSystemSelectMenu:
 
     def get_images(self, game_system : GameSystem):
         icon_system_name = self.get_system_name_for_icon(game_system.game_system_config)
-        print(f"System_name = {icon_system_name}, folder_name={game_system.folder_name.lower()}")
         icon_system_name_priority = []
         selected_icon_system_name_priority = []
 

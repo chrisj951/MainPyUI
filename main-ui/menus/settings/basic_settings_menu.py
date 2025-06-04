@@ -222,8 +222,12 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
             selected = list_view.get_selection(control_options)
 
             if(Theme.skip_main_menu() and ControllerInput.L1 == selected.get_input()):
+                if(self.anything_theme_related_changed):
+                    os._exit(0)
                 return ControllerInput.L1
             if(Theme.skip_main_menu() and ControllerInput.R1 == selected.get_input()):
+                if(self.anything_theme_related_changed):
+                    os._exit(0)
                 return ControllerInput.R1
             elif(selected.get_input() in control_options):
                 selected.get_selection().get_value()(selected.get_input())

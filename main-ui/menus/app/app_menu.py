@@ -50,7 +50,6 @@ class AppMenu:
         for app in self.appFinder.get_apps():
             if(app.get_label() is not None):
                 icon = self.get_icon(app.get_folder(),app.get_icon())
-                print(f"Adding app: {app.get_label()} with icon: {icon}")
                 app_list.append(
                     GridOrListEntry(
                         primary_text=app.get_label(),
