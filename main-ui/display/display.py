@@ -619,7 +619,7 @@ class Display:
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, None)
 
         if Device.should_scale_screen():
-            scaled_canvas = cls.scale_texture_to_fit(cls.render_canvas, Device.output_screen_width, Device.output_screen_height)
+            scaled_canvas = cls.scale_texture_to_fit(cls.render_canvas, Device.output_screen_width(), Device.output_screen_height())
             sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, scaled_canvas, None, None)
             sdl2.SDL_DestroyTexture(scaled_canvas)
         elif(0 == Device.screen_rotation()):
