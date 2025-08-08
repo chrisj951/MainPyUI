@@ -27,11 +27,11 @@ class Device:
 
     @staticmethod
     def output_screen_width():
-        return Device._impl.output_screen_width()
+        return Device._impl.output_screen_width
 
     @staticmethod
     def output_screen_height():
-        return Device._impl.output_screen_height()
+        return Device._impl.output_screen_height
 
     @staticmethod
     def should_scale_screen():
