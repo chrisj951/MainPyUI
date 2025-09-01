@@ -30,7 +30,7 @@ class Controller:
 
     @staticmethod
     def init():
-        Controller.controller_interface = Sdl2ControllerInterface()
+        Controller.controller_interface = Device.get_controller_interface()
 
     @staticmethod
     def init_controller():

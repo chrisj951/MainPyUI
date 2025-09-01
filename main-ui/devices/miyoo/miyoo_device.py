@@ -3,6 +3,7 @@ import subprocess
 import time
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from controller.controller_inputs import ControllerInput
+from controller.sdl.sdl2_controller_interface import Sdl2ControllerInterface
 from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 from devices.charge.charge_status import ChargeStatus
 import os
@@ -27,6 +28,9 @@ class MiyooDevice(DeviceCommon):
 
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
+
+    def get_controller_interface(self):
+        return Sdl2ControllerInterface()
 
     def sleep(self):
         with open("/sys/power/mem_sleep", "w") as f:

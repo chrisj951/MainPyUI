@@ -254,5 +254,6 @@ class Device:
     def remap_buttons():
         return Device._impl.remap_buttons()
     
-    
-    
+    @staticmethod
+    def get_controller_interface():
+        return Device._impl.get_controller_interface()

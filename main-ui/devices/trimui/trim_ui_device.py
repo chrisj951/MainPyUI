@@ -5,6 +5,7 @@ import re
 import subprocess
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from controller.controller_inputs import ControllerInput
+from controller.sdl.sdl2_controller_interface import Sdl2ControllerInterface
 from devices.charge.charge_status import ChargeStatus
 import os
 from devices.device_common import DeviceCommon
@@ -20,6 +21,9 @@ class TrimUIDevice(DeviceCommon):
     
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
+
+    def get_controller_interface(self):
+        return Sdl2ControllerInterface()
 
     def ensure_wpa_supplicant_conf(self):
         MiyooTrimCommon.ensure_wpa_supplicant_conf()
