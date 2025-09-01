@@ -39,7 +39,7 @@ class KeyWatcherController(ControllerInterface):
         """
         self.event_path = event_path
         self.key_mappings = key_mappings
-        self.held_keys = {}  # Maps keycode -> last seen time
+        self.help_controller_inputs = {}  # Maps keycode -> last seen time
         self.held_inputs = {}  # Maps input -> last seen time
 
         try:
@@ -97,17 +97,17 @@ class KeyWatcherController(ControllerInterface):
                         mapped_events = self.key_mappings[key_event]
                         for mapped_event in mapped_events:
                             if mapped_event.key_state == KeyState.PRESS:
-                                self.held_keys[mapped_event.controller_input] = now
+                                self.help_controller_inputs[mapped_event.controller_input] = now
                                 return mapped_event.controller_input
                             elif mapped_event.key_state == KeyState.RELEASE:
-                                self.held_keys.pop(mapped_event.controller_input, None)
+                                self.help_controller_inputs.pop(mapped_event.controller_input, None)
 
         except Exception as e:
             print(f"Error reading input: {e}")
 
         # Simulate repeat for held keys
-        for controller_input, last_time in list(self.held_keys.items()):
-            self.held_keys[controller_input] = now
+        for controller_input, last_time in list(self.help_controller_inputs.items()):
+            self.help_controller_inputs[controller_input] = now
             return controller_input
     
         return (None, None)
