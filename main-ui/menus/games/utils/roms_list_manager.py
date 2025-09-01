@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 import json
 from typing import List
-from games.utils.game_system_utils import GameSystemUtils
+from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
 from menus.games.utils.rom_info import RomInfo
 from utils.logger import PyUiLogger
 
@@ -19,7 +19,7 @@ class RomsListManager():
         self.entries_file = entries_file
         self._entries: List[RomsListEntry] = []
         self.load_from_file()
-        self.game_system_utils = GameSystemUtils()
+        self.game_system_utils = MiyooTrimGameSystemUtils()
         self.rom_info_list = self.load_entries_as_rom_info()
 
     def add_game(self, rom_info: RomInfo):

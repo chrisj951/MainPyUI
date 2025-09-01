@@ -2,7 +2,7 @@
 import os
 from controller.controller_inputs import ControllerInput
 from games.utils.game_system import GameSystem
-from games.utils.game_system_utils import GameSystemUtils
+from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
 from menus.games.game_select_menu import GameSelectMenu
 from menus.games.game_system_select_menu_popup import GameSystemSelectMenuPopup
 from menus.games.utils.rom_select_options_builder import RomSelectOptionsBuilder
@@ -108,7 +108,7 @@ class GameSystemSelectMenu:
         }
     
     def __init__(self):
-        self.game_utils : GameSystemUtils = GameSystemUtils()
+        self.game_utils : MiyooTrimGameSystemUtils = MiyooTrimGameSystemUtils()
         self.rom_select_menu : GameSelectMenu = GameSelectMenu()
         self.use_emu_cfg = False
         self.game_system_select_menu_popup = GameSystemSelectMenuPopup()
