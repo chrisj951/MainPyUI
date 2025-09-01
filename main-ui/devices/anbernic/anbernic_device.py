@@ -3,6 +3,7 @@ import subprocess
 import time
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from controller.controller_inputs import ControllerInput
+from controller.key_watcher_controller import KeyWatcherController
 from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 from devices.charge.charge_status import ChargeStatus
 import os
@@ -69,26 +70,6 @@ class AnbernicDevice(DeviceCommon):
 
     #TODO untested
     def map_analog_axis(self,sdl_input, value, threshold=16000):
-        if sdl_input == sdl2.SDL_CONTROLLER_AXIS_LEFTX:
-            if value < -threshold:
-                return ControllerInput.LEFT_STICK_LEFT
-            elif value > threshold:
-                return ControllerInput.LEFT_STICK_RIGHT
-        elif sdl_input == sdl2.SDL_CONTROLLER_AXIS_LEFTY:
-            if value < -threshold:
-                return ControllerInput.LEFT_STICK_UP
-            elif value > threshold:
-                return ControllerInput.LEFT_STICK_DOWN
-        elif sdl_input == sdl2.SDL_CONTROLLER_AXIS_RIGHTX:
-            if value < -threshold:
-                return ControllerInput.RIGHT_STICK_LEFT
-            elif value > threshold:
-                return ControllerInput.RIGHT_STICK_RIGHT
-        elif sdl_input == sdl2.SDL_CONTROLLER_AXIS_RIGHTY:
-            if value < -threshold:
-                return ControllerInput.RIGHT_STICK_UP
-            elif value > threshold:
-                return ControllerInput.RIGHT_STICK_DOWN
         return None
     
     def map_digital_input(self, sdl_input):
@@ -98,38 +79,7 @@ class AnbernicDevice(DeviceCommon):
         return self.button_remapper.get_mappping(mapping)
 
     def map_analog_input(self, sdl_axis, sdl_value):
-        if sdl_axis == 5 and sdl_value == 32767:
-            return self.button_remapper.get_mappping(ControllerInput.R2)
-        elif sdl_axis == 4 and sdl_value == 32767:
-            return self.button_remapper.get_mappping(ControllerInput.L2)
-        else:
-            # Update min/max range
-            if sdl_axis not in self.unknown_axis_ranges:
-                self.unknown_axis_ranges[sdl_axis] = (sdl_value, sdl_value)
-            else:
-                current_min, current_max = self.unknown_axis_ranges[sdl_axis]
-                self.unknown_axis_ranges[sdl_axis] = (
-                    min(current_min, sdl_value),
-                    max(current_max, sdl_value)
-                )
-
-            # Update sum/count for average
-            if sdl_axis not in self.unknown_axis_stats:
-                self.unknown_axis_stats[sdl_axis] = (sdl_value, 1)
-            else:
-                total, count = self.unknown_axis_stats[sdl_axis]
-                self.unknown_axis_stats[sdl_axis] = (total + sdl_value, count + 1)
-
-            min_val, max_val = self.unknown_axis_ranges[sdl_axis]
-            total, count = self.unknown_axis_stats[sdl_axis]
-            avg_val = total / count if count > 0 else 0
-
-            axis_name = self.sdl_axis_names.get(sdl_axis, "UNKNOWN_AXIS")
-            #PyUiLogger.get_logger().error(
-            #    f"Received unknown analog input axis = {sdl_axis} ({axis_name}), value = {sdl_value} "
-            #    f"(range: min = {min_val}, max = {max_val}, avg = {avg_val:.2f})"
-            #)
-            return None
+        return None
 
     def prompt_power_down(self):
         DeviceCommon.prompt_power_down(self)
@@ -146,36 +96,8 @@ class AnbernicDevice(DeviceCommon):
             self.change_volume(-5)
 
     def map_key(self, key_code):
-        if(304 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.A)
-        elif(305 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.B)
-        elif(306 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.Y)
-        elif(307 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.X)
-        elif(308 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.L1)
-        elif(309 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.R1)
-        elif(310 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.SELECT)
-        elif(311 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.START)
-        elif(312 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.MENU)
-        elif(313 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.L3)
-        elif(314 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.L2)
-        elif(315 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.R2)
-        elif(316 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.R3)
-        else:
-            PyUiLogger.get_logger().debug(f"Unrecognized keycode {key_code}")
-            return None
-
+        PyUiLogger.get_logger().debug(f"Unrecognized keycode {key_code}")
+        return None
 
     def get_wifi_connection_quality_info(self) -> WiFiConnectionQualityInfo:
         return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
