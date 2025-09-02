@@ -175,6 +175,7 @@ class RomsMenuCommon(ABC):
         Display.restore_bg()
         
     def run_game(self, game_path):
+        PyUiLogger.get_logger().info("run_game(" + game_path.rom_file_path +")")
         #recents is handled one level up to account for launched_via_special_case
         Display.deinit_display()
 
@@ -185,6 +186,7 @@ class RomsMenuCommon(ABC):
             Controller.clear_input_queue()
 
         Display.reinitialize()
+        PyUiLogger.get_logger().info("Finished run_game(" + game_path.rom_file_path +")")
 
 
     def launched_via_special_case(self, rom_info : RomInfo):
