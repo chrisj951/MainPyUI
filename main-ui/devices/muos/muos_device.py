@@ -230,8 +230,13 @@ class MuosDevice(DeviceCommon):
 
     @property
     def screen_height(self):
-        return  int(self.read_based_on_muos_config("/opt/muos/device/config/screen/internal/height"))
+        return int(self.read_based_on_muos_config("/opt/muos/device/config/screen/internal/height"))
     
+            
+    @property
+    def screen_rotation(self):
+        return int(self.read_based_on_muos_config("/opt/muos/device/config/screen/rotate"))
+
     @property
     def output_screen_width(self):
         if(self.should_scale_screen()):
@@ -251,3 +256,4 @@ class MuosDevice(DeviceCommon):
             return 2.25
         else:
             return 1
+        
