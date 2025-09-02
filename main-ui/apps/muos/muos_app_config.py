@@ -27,7 +27,7 @@ class MuosAppConfig(AppConfig):
         except Exception as e:
             print(f"Error reading {self.launch}: {e}")
 
-        return None
+        return "/opt/muos/default/MUOS/theme/active/glyph/muxapp/app.png"
     def get_label(self):
         return self.label
 
