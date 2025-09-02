@@ -149,17 +149,19 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
                         value=self.volume_adjust
                     )
             )
-        option_list.append(
-                GridOrListEntry(
-                        primary_text="WiFi",
-                        value_text="<    " + (Device.get_ip_addr_text()) + "    >",
-                        image_path=None,
-                        image_path_selected=None,
-                        description=None,
-                        icon=None,
-                        value=self.show_wifi_menu
-                    )
-            )
+        
+        if(Device.supports_wifi()):
+            option_list.append(
+                    GridOrListEntry(
+                            primary_text="WiFi",
+                            value_text="<    " + (Device.get_ip_addr_text()) + "    >",
+                            image_path=None,
+                            image_path_selected=None,
+                            description=None,
+                            icon=None,
+                            value=self.show_wifi_menu
+                        )
+                )
         
         if(Device.get_bluetooth_scanner() is not None):
             option_list.append(

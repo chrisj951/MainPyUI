@@ -229,6 +229,10 @@ class Device:
     @staticmethod
     def get_bluetooth_scanner():
         return Device._impl.get_bluetooth_scanner()
+    
+    @staticmethod  
+    def supports_wifi():
+        return Device._impl.supports_wifi()
 
     @staticmethod  
     def get_ip_addr_text():

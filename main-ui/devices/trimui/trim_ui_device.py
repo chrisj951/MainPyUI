@@ -275,3 +275,6 @@ class TrimUIDevice(DeviceCommon):
 
     def remap_buttons(self):
         self.button_remapper.remap_buttons()
+
+    def supports_wifi(self):
+        return True

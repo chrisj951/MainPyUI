@@ -179,7 +179,7 @@ class MuosDevice(DeviceCommon):
         return self.miyoo_games_file_parser.parse_recents()
 
     def is_bluetooth_enabled(self):
-        return False
+        return False #Let it be handled in muOS proper, too lazy to implement
     
     def disable_bluetooth(self):
         pass
@@ -191,7 +191,7 @@ class MuosDevice(DeviceCommon):
         pass
 
     def get_bluetooth_scanner(self):
-        return BluetoothScanner()
+        return None
 
     def get_favorites_path(self):
         return "/mnt/sdcard/Saves/pyui-favorites.json"
@@ -213,3 +213,6 @@ class MuosDevice(DeviceCommon):
     
     def remap_buttons(self):
         self.button_remapper.remap_buttons()
+
+    def supports_wifi(self):
+        return False #Let it be handled in muOS proper, too lazy to implement
