@@ -106,7 +106,12 @@ class MuosAnbernicRG34XXSP(MuosDevice):
         return False
         
     def is_lid_closed(self):
-        return False
+        try:
+            with open("/sys/class/power_supply/axp2202-battery/hallkey", "r") as f:
+                value = f.read().strip()
+                return "0" == value 
+        except (FileNotFoundError, IOError) as e:
+            return False
 
     @throttle.limit_refresh(5)
     def is_hdmi_connected(self):
