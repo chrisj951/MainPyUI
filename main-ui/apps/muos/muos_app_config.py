@@ -13,7 +13,9 @@ class MuosAppConfig(AppConfig):
         self.icon = self._get_icon_from_launch()
 
     def _get_icon_from_launch(self):
-        glyph_base = "/opt/muos/default/MUOS/theme/active/glyph/muxapp"
+        # Is it safe to always use 1280x720?
+        glyph_base = "/opt/muos/default/MUOS/theme/active/1280x720/glyph/muxapp/"
+        #glyph_base = "/opt/muos/default/MUOS/theme/active/glyph/muxapp"
         if not os.path.isfile(self.launch):
             return None
 
@@ -26,8 +28,10 @@ class MuosAppConfig(AppConfig):
                         return os.path.join(glyph_base, icon_value + ".png")
         except Exception as e:
             print(f"Error reading {self.launch}: {e}")
-
-        return "/opt/muos/default/MUOS/theme/active/glyph/muxapp/app.png"
+            
+        return "/opt/muos/default/MUOS/theme/active/1280x720/glyph/muxapp/app.png"
+        #return "/opt/muos/default/MUOS/theme/active/glyph/muxapp/app.png"
+        
     def get_label(self):
         return self.label
 
