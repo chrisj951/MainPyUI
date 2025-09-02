@@ -53,12 +53,6 @@ class MiyooDevice(DeviceCommon):
         return "reboot"
 
     def _set_volume(self, volume):
-        from display.display import Display
-        if(volume < 0):
-            volume = 0
-        elif(volume > 100):
-            volume = 100
-
         try:
             
             if(0 == volume):
@@ -80,10 +74,6 @@ class MiyooDevice(DeviceCommon):
         except subprocess.CalledProcessError as e:
             PyUiLogger.get_logger().error(f"Failed to set volume: {e}")
 
-        self.system_config.reload_config()
-        self.system_config.set_volume(volume)
-        self.system_config.save_config()
-        Display.volume_changed(volume)
         return volume 
 
 
