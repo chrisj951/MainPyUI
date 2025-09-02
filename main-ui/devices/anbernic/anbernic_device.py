@@ -2,6 +2,7 @@ import re
 import subprocess
 import time
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
+from apps.muos.muos_app_finder import MuosAppFinder
 from controller.controller_inputs import ControllerInput
 from controller.key_watcher_controller import KeyWatcherController
 from devices.bluetooth.bluetooth_scanner import BluetoothScanner
@@ -50,33 +51,46 @@ class AnbernicDevice(DeviceCommon):
         return "reboot"
 
     def _set_volume(self, volume):
+        # /opt/muos/device/script/audio.sh val
+        ProcessRunner.run(["/opt/muos/device/script/audio.sh", str(volume)])
         return volume 
 
 
-    def get_current_mixer_value(self, numid):
-        return None
+    def _set_brightness_to_config(self):
+        pass
+
+    def _set_lumination_to_config(self):
+        luminosity = self.map_backlight_from_10_to_full_255(self.system_config.backlight)
+        ProcessRunner.run(["/opt/muos/device/script/bright.sh", str(luminosity)])
+    
+    def _set_contrast_to_config(self):
+        pass
+    
+    def _set_saturation_to_config(self):
+        pass
+
+
+    def _set_hue_to_config(self):
+        # echo val > /sys/class/disp/disp/attr/color_temperature
+        pass
 
     def get_volume(self):
         return self.system_config.get_volume()
 
     def read_volume(self):
-         return 0 
+        return self.system_config.get_volume()
 
     def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
-        return MiyooTrimCommon.run_game(self,rom_info)
+        launch_path = os.path.join(rom_info.game_system.game_system_config.get_emu_folder(),rom_info.game_system.game_system_config.get_launch())
+        return subprocess.Popen([launch_path,rom_info.rom_file_path], stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def run_app(self, args, dir = None):
-        MiyooTrimCommon.run_app(self, args, dir)
-
-    #TODO untested
-    def map_analog_axis(self,sdl_input, value, threshold=16000):
-        return None
+        PyUiLogger.get_logger().debug(f"About to launch app {args} from dir {dir}")
+        subprocess.run(args, cwd = dir)
     
     def map_digital_input(self, sdl_input):
-        mapping = self.sdl_button_to_input.get(sdl_input, ControllerInput.UNKNOWN)
-        if(ControllerInput.UNKNOWN == mapping):
-            PyUiLogger.get_logger().error(f"Unknown input {sdl_input}")
-        return self.button_remapper.get_mappping(mapping)
+        return None
 
     def map_analog_input(self, sdl_axis, sdl_value):
         return None
@@ -130,7 +144,7 @@ class AnbernicDevice(DeviceCommon):
         return 0
         
     def get_app_finder(self):
-        return MiyooAppFinder()
+        return MuosAppFinder()
     
     def parse_favorites(self) -> list[GameEntry]:
         return self.miyoo_games_file_parser.parse_favorites()
