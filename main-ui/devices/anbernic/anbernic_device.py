@@ -141,8 +141,22 @@ class AnbernicDevice(DeviceCommon):
     
     @throttle.limit_refresh(15)
     def get_battery_percent(self):
-        return 0
+        try:
+            file_path = "/opt/muos/device/config/battery/capacity"
+
+            # Read the command from the file
+            with open(file_path, "r") as f:
+                location = f.read().strip()
+
+            # Run the command
+            with open(location, "r") as f:
+                return int(f.read().strip())
+
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"Error reading battery percentage : {e}")
         
+        return 0
+
     def get_app_finder(self):
         return MuosAppFinder()
     
