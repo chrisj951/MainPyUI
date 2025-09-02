@@ -31,10 +31,7 @@ class MuosDevice(DeviceCommon):
         self.button_remapper = ButtonRemapper(self.system_config)
 
     def sleep(self):
-        with open("/sys/power/mem_sleep", "w") as f:
-            f.write("deep")
-        with open("/sys/power/state", "w") as f:
-            f.write("mem")  
+        ProcessRunner.run(["/opt/muos/script/system/suspend.sh"])
 
     def ensure_wpa_supplicant_conf(self):
         pass
