@@ -4,11 +4,14 @@ from dataclasses import dataclass
 import os
 import struct
 import select
+import threading
 import time
+from typing import OrderedDict
 
 from controller.controller_inputs import ControllerInput
 from controller.controller_interface import ControllerInterface
 from controller.key_state import KeyState
+from utils.logger import PyUiLogger
 
 # Constants for Linux input
 EVENT_FORMAT = 'llHHI'
@@ -39,8 +42,7 @@ class KeyWatcherController(ControllerInterface):
         """
         self.event_path = event_path
         self.key_mappings = key_mappings
-        self.help_controller_inputs = {}  # Maps keycode -> last seen time
-        self.held_inputs = {}  # Maps input -> last seen time
+        self.held_controller_inputs = OrderedDict()
 
         try:
             self.fd = os.open(self.event_path, os.O_RDONLY | os.O_NONBLOCK)
@@ -49,20 +51,25 @@ class KeyWatcherController(ControllerInterface):
             self.fd = None
         
         self.last_held_input = None
-
+        self.input_polling_thread = threading.Thread(target=self.poll_keyboard, daemon=True)
+        self.input_polling_thread.start()
 
     def still_held_down(self):
-        if(self.last_held_input):
+        
+        if(self.last_held_input is None):
             return False
-        elif(self.last_held_input in self.held_inputs):
+        elif(self.last_held_input in self.held_controller_inputs):
             return True
+        else:
+            return False
+
 
     def last_input(self):
         return self.last_held_input
 
     def clear_input(self):
         count = 0
-        while(count < 50 and self.get_input(0.01) != (None, None)):
+        while(count < 50 and self.get_input(0.001) != (None, None)):
             count += 1
 
     def cache_last_event(self):
@@ -73,44 +80,33 @@ class KeyWatcherController(ControllerInterface):
         self.last_held_input = self.cached_input
 
 
+    def poll_keyboard(self):
+        while(True):
+            now = time.time()
+            try:
+                rlist, _, _ = select.select([self.fd], [], [], 100)
+                if rlist:
+                    data = os.read(self.fd, EVENT_SIZE)
 
-    def get_input(self, timeout):
-        """
-        Polls for a single key event or simulates a repeat if a key is held.
+                    if len(data) == EVENT_SIZE:
+                        _, _, event_type, code, value = struct.unpack(EVENT_FORMAT, data)
+                        key_event = KeyEvent(event_type, code, value)
+                        if key_event in self.key_mappings:
+                            mapped_events = self.key_mappings[key_event]
+                            for mapped_event in mapped_events:
+                                if mapped_event.key_state == KeyState.PRESS:
+                                    self.held_controller_inputs[mapped_event.controller_input] = now
+                                    PyUiLogger.get_logger().error(f"Adding {mapped_event.controller_input} to held inputs")
+                                elif mapped_event.key_state == KeyState.RELEASE:
+                                    self.held_controller_inputs.pop(mapped_event.controller_input, None)
+                                    PyUiLogger.get_logger().error(f"Removing {mapped_event.controller_input} from held inputs")
 
-        Returns:
-            tuple: (keycode, is_down)
-        """
-        now = time.time()
+            except Exception as e:
+                PyUiLogger.get_logger().error(f"Error reading input: {e}")
 
-
-        try:
-            rlist, _, _ = select.select([self.fd], [], [], timeout)
-            if rlist:
-                data = os.read(self.fd, EVENT_SIZE)
-
-                if len(data) == EVENT_SIZE:
-                    _, _, event_type, code, value = struct.unpack(EVENT_FORMAT, data)
-                    key_event = KeyEvent(event_type, code, value)
-                    #print(f"event_type: {event_type}, code: {code}, value: {value}")
-                    if key_event in self.key_mappings:
-                        mapped_events = self.key_mappings[key_event]
-                        for mapped_event in mapped_events:
-                            if mapped_event.key_state == KeyState.PRESS:
-                                self.help_controller_inputs[mapped_event.controller_input] = now
-                                return mapped_event.controller_input
-                            elif mapped_event.key_state == KeyState.RELEASE:
-                                self.help_controller_inputs.pop(mapped_event.controller_input, None)
-
-        except Exception as e:
-            print(f"Error reading input: {e}")
-
-        # Simulate repeat for held keys
-        for controller_input, last_time in list(self.help_controller_inputs.items()):
-            self.help_controller_inputs[controller_input] = now
-            return controller_input
-    
-        return (None, None)
+    def get_input(self, timeoutInMilliseconds):
+        self.last_held_input = next(iter(self.held_controller_inputs), None)
+        return self.last_held_input
 
     def clear_input_queue(self):
         pass

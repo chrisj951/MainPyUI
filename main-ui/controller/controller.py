@@ -55,17 +55,17 @@ class Controller:
 
     @staticmethod
     def clear_last_input():
-        if(Controller.last_controller_input is not None):
-            PyUiLogger.get_logger().info(f"Clearing last input")
+        #if(Controller.last_controller_input is not None):
+        #    PyUiLogger.get_logger().info(f"Clearing last input")
         Controller.last_controller_input = None
         Controller.controller_interface.clear_input()
 
     @staticmethod
     def set_last_input(last_input):
-        if(last_input is not None):            
-            PyUiLogger.get_logger().info(f"Setting last input to {last_input}")
-        elif(Controller.last_controller_input is not None):
-            PyUiLogger.get_logger().info(f"Setting last input to {last_input}")
+        #if(last_input is not None):            
+        #    PyUiLogger.get_logger().info(f"Setting last input to {last_input}")
+        #elif(Controller.last_controller_input is not None):
+        #    PyUiLogger.get_logger().info(f"Setting last input to {last_input}")
         Controller.last_controller_input = last_input
 
     @staticmethod
@@ -74,8 +74,8 @@ class Controller:
         INPUT_DEBOUNCE_SECONDS = 0.2
         POLL_INTERVAL_SECONDS = 0.005
 
-        if(Controller.last_controller_input is not None):
-            PyUiLogger.get_logger().info(f"Controller.last_controller_input = {Controller.last_controller_input}")
+        #if(Controller.last_controller_input is not None):
+        #    PyUiLogger.get_logger().info(f"Controller.last_controller_input = {Controller.last_controller_input}")
 
         if(Controller.render_required_callback is not None):
             callback = Controller.render_required_callback
@@ -92,7 +92,6 @@ class Controller:
         if time_since_last_input > INPUT_DEBOUNCE_SECONDS:
             Controller.controller_interface.force_refresh()
             if not Controller.still_held_down():
-                PyUiLogger.get_logger().info(f"Controller is no longer still held down")
                 Controller.clear_input_queue()
 
         Controller.controller_interface.force_refresh()
@@ -118,10 +117,10 @@ class Controller:
                     break
 
                 ms_remaining = int(remaining_time * 1000)
-                Controller.set_last_input(Controller.controller_interface.get_input(ms_remaining))
+                input = Controller.controller_interface.get_input(ms_remaining)
+                Controller.set_last_input(input)
 
                 if Controller.last_controller_input is not None:
-
                     if Controller.last_controller_input == ControllerInput.MENU:
                         if not Controller.is_check_for_hotkey and not Controller.check_for_hotkey():
                             break  # Treat MENU as valid input
