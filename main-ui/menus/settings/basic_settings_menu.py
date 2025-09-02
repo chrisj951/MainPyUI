@@ -1,5 +1,6 @@
 
 import os
+import sys
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from display.display import Display
@@ -109,6 +110,10 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
         if(ControllerInput.A == input):
             ExtraSettingsMenu().show_menu()
 
+    def exit(self,input):
+        if(ControllerInput.A == input):
+            sys.exit()
+
     def build_options_list(self):
         option_list = []
         option_list.append(
@@ -190,6 +195,17 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
                         description=None,
                         icon=None,
                         value=self.launch_extra_settings
+                    )
+            )
+        option_list.append(
+                GridOrListEntry(
+                        primary_text="Exit",
+                        value_text=None,
+                        image_path=None,
+                        image_path_selected=None,
+                        description=None,
+                        icon=None,
+                        value=self.exit
                     )
             )
 
