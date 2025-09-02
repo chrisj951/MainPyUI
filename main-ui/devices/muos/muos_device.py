@@ -51,7 +51,6 @@ class MuosDevice(DeviceCommon):
         return "reboot"
 
     def _set_volume(self, volume):
-        PyUiLogger.get_logger().debug(f"Setting volume to {volume}")
         ProcessRunner.run(["/opt/muos/device/script/audio.sh", str(volume)])
         return volume 
 
@@ -131,7 +130,7 @@ class MuosDevice(DeviceCommon):
     def enable_wifi(self):
         pass
 
-    def read_based_on_muos_config(self, file_path):
+    def execute_based_on_muos_config(self, file_path):
         try:
             # Read the command from the file
             with open(file_path, "r") as f:
@@ -142,6 +141,17 @@ class MuosDevice(DeviceCommon):
                 return int(f.read().strip())
 
         except Exception as e:
+            PyUiLogger.get_logger().error(f"Error executing to get value from {file_path} so returning 0s : {e}")
+        
+        return 0
+
+    def read_based_on_muos_config(self, file_path):
+        try:
+            # Read the command from the file
+            with open(file_path, "r") as f:
+                return f.read().strip()
+            
+        except Exception as e:
             PyUiLogger.get_logger().error(f"Error reading value from {file_path} so returning 0s : {e}")
         
         return 0
@@ -150,7 +160,7 @@ class MuosDevice(DeviceCommon):
     @throttle.limit_refresh(5)
     def get_charge_status(self):
         try:
-            ac_online = self.read_based_on_muos_config("/opt/muos/device/config/battery/charger")
+            ac_online = self.execute_based_on_muos_config("/opt/muos/device/config/battery/charger")
             if(ac_online):
                 return ChargeStatus.CHARGING
             else:
@@ -163,7 +173,7 @@ class MuosDevice(DeviceCommon):
     
     @throttle.limit_refresh(15)
     def get_battery_percent(self):
-        return self.read_based_on_muos_config("/opt/muos/device/config/battery/capacity")
+        return self.execute_based_on_muos_config("/opt/muos/device/config/battery/capacity")
 
     def get_app_finder(self):
         return MuosAppFinder()
@@ -212,3 +222,32 @@ class MuosDevice(DeviceCommon):
 
     def supports_wifi(self):
         return False #Let it be handled in muOS proper, too lazy to implement
+    
+    
+    @property
+    def screen_width(self):
+        return  int(self.read_based_on_muos_config("/opt/muos/device/config/screen/internal/width"))
+
+    @property
+    def screen_height(self):
+        return  int(self.read_based_on_muos_config("/opt/muos/device/config/screen/internal/height"))
+    
+    @property
+    def output_screen_width(self):
+        if(self.should_scale_screen()):
+            return 1920
+        else:
+            return self.screen_width
+        
+    @property
+    def output_screen_height(self):
+        if(self.should_scale_screen()):
+            return 1080
+        else:
+            return self.screen_height
+
+    def get_scale_factor(self):
+        if(self.is_hdmi_connected()):
+            return 2.25
+        else:
+            return 1

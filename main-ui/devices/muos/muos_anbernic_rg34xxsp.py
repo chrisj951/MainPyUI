@@ -102,35 +102,6 @@ class MuosAnbernicRG34XXSP(MuosDevice):
         return KeyWatcherController(event_path="/dev/input/event1", key_mappings=key_mappings)
 
 
-    @property
-    def screen_width(self):
-        return 720
-
-    @property
-    def screen_height(self):
-        return 480
-    
-    
-    @property
-    def output_screen_width(self):
-        if(self.should_scale_screen()):
-            return 1920
-        else:
-            return 720
-        
-    @property
-    def output_screen_height(self):
-        if(self.should_scale_screen()):
-            return 1080
-        else:
-            return 480
-
-    def get_scale_factor(self):
-        if(self.is_hdmi_connected()):
-            return 2.25
-        else:
-            return 1
-
     def are_headphones_plugged_in(self):
         return False
         
