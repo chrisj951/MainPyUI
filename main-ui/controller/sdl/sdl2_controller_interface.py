@@ -55,8 +55,6 @@ class Sdl2ControllerInterface(ControllerInterface):
 
     def still_held_down(self):
         held_down = sdl2.SDL_GameControllerGetButton(self.controller, self.event.cbutton.button)
-        if(0 != self.event.cbutton.button):
-            PyUiLogger.get_logger().info(f"Checking if {self.event.cbutton.button} is still held down ? {held_down}")
         return held_down
 
     def force_refresh(self):
