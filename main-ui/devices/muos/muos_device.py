@@ -23,7 +23,7 @@ from utils.logger import PyUiLogger
 from devices.device_common import DeviceCommon
 
 
-class AnbernicDevice(DeviceCommon):
+class MuosDevice(DeviceCommon):
     OUTPUT_MIXER = 2
     SOUND_DISABLED = 0
 

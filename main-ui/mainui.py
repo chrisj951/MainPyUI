@@ -4,9 +4,9 @@ from pathlib import Path
 import shutil
 import sys
 import threading
-from devices.anbernic.anbernic_rg34xxsp import AnbernicRG34XXSP
 from devices.device import Device
 from devices.miyoo.flip.miyoo_a30 import MiyooA30
+from devices.muos.muos_anbernic_rg34xxsp import MuosAnbernicRG34XXSP
 from devices.trimui.trim_ui_brick import TrimUIBrick
 from devices.trimui.trim_ui_smart_pro import TrimUISmartPro
 from menus.games.utils.favorites_manager import FavoritesManager
@@ -49,7 +49,7 @@ def initialize_device(device):
     elif "MIYOO_A30" == device:
         Device.init(MiyooA30())
     elif "ANBERNIC_RG34XXSP" == device:
-        Device.init(AnbernicRG34XXSP())
+        Device.init(MuosAnbernicRG34XXSP())
     else:
         raise RuntimeError(f"{device} is not a supported device")
 
