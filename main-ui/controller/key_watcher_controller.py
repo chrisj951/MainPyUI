@@ -93,13 +93,16 @@ class KeyWatcherController(ControllerInterface):
                         key_event = KeyEvent(event_type, code, value)
                         if key_event in self.key_mappings:
                             mapped_events = self.key_mappings[key_event]
-                            for mapped_event in mapped_events:
-                                if mapped_event.key_state == KeyState.PRESS:
-                                    self.held_controller_inputs[mapped_event.controller_input] = now
-                                    PyUiLogger.get_logger().error(f"Adding {mapped_event.controller_input} to held inputs")
-                                elif mapped_event.key_state == KeyState.RELEASE:
-                                    self.held_controller_inputs.pop(mapped_event.controller_input, None)
-                                    PyUiLogger.get_logger().error(f"Removing {mapped_event.controller_input} from held inputs")
+                            if(mapped_events is not None and len(mapped_events) > 0):
+                                for mapped_event in mapped_events:
+                                    if mapped_event.key_state == KeyState.PRESS:
+                                        self.held_controller_inputs[mapped_event.controller_input] = now
+                                        #PyUiLogger.get_logger().debug(f"Adding {mapped_event.controller_input} to held inputs")
+                                    elif mapped_event.key_state == KeyState.RELEASE:
+                                        self.held_controller_inputs.pop(mapped_event.controller_input, None)
+                                        #PyUiLogger.get_logger().debug(f"Removing {mapped_event.controller_input} from held inputs")
+                            else:
+                                PyUiLogger.get_logger().error(f"No mapping for event: {key_event}")
 
             except Exception as e:
                 PyUiLogger.get_logger().error(f"Error reading input: {e}")

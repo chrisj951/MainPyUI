@@ -109,10 +109,6 @@ class MuosDevice(DeviceCommon):
         elif(ControllerInput.VOLUME_DOWN == controller_input):
             self.change_volume(-5)
 
-    def map_key(self, key_code):
-        PyUiLogger.get_logger().debug(f"Unrecognized keycode {key_code}")
-        return None
-
     def get_wifi_connection_quality_info(self) -> WiFiConnectionQualityInfo:
         return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
 
