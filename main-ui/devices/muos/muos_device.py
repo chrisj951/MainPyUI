@@ -137,6 +137,23 @@ class MuosDevice(DeviceCommon):
 
     @throttle.limit_refresh(5)
     def get_charge_status(self):
+        try:
+            file_path = "/opt/muos/device/config/battery/charger"
+            # Read the command from the file
+            with open(file_path, "r") as f:
+                location = f.read().strip()
+
+            # Read the value
+            with open(location, "r") as f:
+                ac_online = int(f.read().strip())
+                if(ac_online):
+                    return ChargeStatus.CHARGING
+                else:
+                    return ChargeStatus.DISCONNECTED
+                
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"Error reading battery percentage : {e}")
+        
         return ChargeStatus.DISCONNECTED
     
     @throttle.limit_refresh(15)
@@ -148,7 +165,7 @@ class MuosDevice(DeviceCommon):
             with open(file_path, "r") as f:
                 location = f.read().strip()
 
-            # Run the command
+            # Read the value
             with open(location, "r") as f:
                 return int(f.read().strip())
 
