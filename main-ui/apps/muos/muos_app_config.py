@@ -13,7 +13,17 @@ class MuosAppConfig(AppConfig):
         self.icontop = None
         self.launch = os.path.join(self.folder,"mux_launch.sh")
         self.description = self._get_help_from_launch()
+        #self.icon = self._get_icon_from_name()
+        #if(self.icon is None):
         self.icon = self._get_icon_from_launch()
+
+
+    def _get_icon_from_name(self):
+        # Don't like how these look...
+        #icon = os.path.join("/mnt/sdcard/MUOS/info/catalogue/Application/box/1280x720", self.label + ".png")
+        #if(os.path.exists(icon)):
+        #    return icon
+        return None
 
     def _get_icon_from_launch(self):
         try:
@@ -22,6 +32,7 @@ class MuosAppConfig(AppConfig):
                     line = line.strip()
                     if line.startswith("# ICON:"):
                         icon_value = line.split(":", 1)[1].strip()
+                        #
                         return os.path.join(GLYPH_BASE, icon_value + ".png")
         except Exception as e:
             print(f"Error reading {self.launch}: {e}")
