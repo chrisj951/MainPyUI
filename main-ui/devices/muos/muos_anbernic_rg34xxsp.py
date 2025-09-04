@@ -128,3 +128,6 @@ class MuosAnbernicRG34XXSP(MuosDevice):
         else:
             PyUiLogger.get_logger().debug(f"Unrecognized keycode {key_code}")
             return None
+        
+    def clear_framebuffer(self):
+        ProcessRunner.run(["dd", "if=/dev/zero", "of=/dev/fb0", "bs=4096"])

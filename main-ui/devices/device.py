@@ -261,3 +261,7 @@ class Device:
     @staticmethod
     def get_controller_interface():
         return Device._impl.get_controller_interface()
+
+    @staticmethod
+    def clear_framebuffer():
+        return Device._impl.clear_framebuffer()

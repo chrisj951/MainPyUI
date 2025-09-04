@@ -27,6 +27,9 @@ class TrimUIDevice(DeviceCommon):
 
     def ensure_wpa_supplicant_conf(self):
         MiyooTrimCommon.ensure_wpa_supplicant_conf()
+        
+    def clear_framebuffer(self):
+        pass
 
     @property
     def power_off_cmd(self):

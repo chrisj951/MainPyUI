@@ -32,6 +32,9 @@ class MiyooDevice(DeviceCommon):
     def get_controller_interface(self):
         return Sdl2ControllerInterface()
 
+    def clear_framebuffer(self):
+        pass
+
     def sleep(self):
         with open("/sys/power/mem_sleep", "w") as f:
             f.write("deep")
