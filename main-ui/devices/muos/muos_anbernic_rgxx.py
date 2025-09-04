@@ -18,7 +18,7 @@ from utils.config_copier import ConfigCopier
 from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 
-class MuosAnbernicRG34XXSP(MuosDevice):
+class MuosAnbernicRGXX(MuosDevice):
     OUTPUT_MIXER = 2
     SOUND_DISABLED = 0
 
