@@ -50,6 +50,8 @@ def initialize_device(device):
         Device.init(MiyooA30())
     elif "ANBERNIC_RG34XXSP" == device:
         Device.init(MuosAnbernicRG34XXSP())
+    elif "ANBERNIC_RG28XX" == device:
+        Device.init(MuosAnbernicRG34XXSP())
     else:
         raise RuntimeError(f"{device} is not a supported device")
 
