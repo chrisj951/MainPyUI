@@ -1,5 +1,5 @@
 
-from time import time
+import time
 from devices.device import Device
 import sdl2
 
