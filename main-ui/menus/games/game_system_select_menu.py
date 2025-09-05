@@ -19,6 +19,7 @@ from views.view_creator import ViewCreator
 class GameSystemSelectMenu:
     common_icon_mappings = {
             "PPSSPP": ["psp"],
+            "NES": ["fc"],
             "PSX": ["ps"],
             "PSP": ["ppsspp"],
             "PM": ["ports"],
@@ -29,10 +30,11 @@ class GameSystemSelectMenu:
             "FAKE8":["pico","pico8"],
             "FAKE08":["pico","pico8"],
             "PICO8":["pico","pico8"],
-            "THIRTYTWOX":["32X"]
+            "THIRTYTWOX":["32x"],
+            "GENESIS":["md"]
         }
     full_name_mapping = {
-            "32X": "Sega 32X",
+            "32x": "Sega 32X",
             "5200": "Atari 5200",
             "7800": "Atari 7800",
             "amiga": "Amiga",
