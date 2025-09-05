@@ -265,3 +265,8 @@ class Device:
     @staticmethod
     def clear_framebuffer():
         return Device._impl.clear_framebuffer()
+    
+    @staticmethod
+    def get_game_system_utils():
+        return Device._impl.get_game_system_utils()
+    

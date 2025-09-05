@@ -12,6 +12,7 @@ from devices.device_common import DeviceCommon
 from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
+from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
 from games.utils.game_entry import GameEntry
 from menus.settings.button_remapper import ButtonRemapper
 from utils import throttle
@@ -281,3 +282,6 @@ class TrimUIDevice(DeviceCommon):
 
     def supports_wifi(self):
         return True
+    
+    def get_game_system_utils(self):
+        return MiyooTrimGameSystemUtils()

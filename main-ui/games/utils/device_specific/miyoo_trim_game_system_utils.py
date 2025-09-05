@@ -1,12 +1,13 @@
 
 
 import os
+from games.game_system_utils import GameSystemUtils
 from games.utils.game_system import GameSystem 
 from games.utils.rom_utils import RomUtils
 from menus.games.game_system_config import GameSystemConfig
 from utils.logger import PyUiLogger
 
-class MiyooTrimGameSystemUtils:
+class MiyooTrimGameSystemUtils(GameSystemUtils):
     def __init__(self):
         self.roms_path = "/mnt/SDCARD/Roms/"
         self.emu_path = "/mnt/SDCARD/Emu/"
