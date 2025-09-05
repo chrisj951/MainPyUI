@@ -5,6 +5,7 @@ import subprocess
 import time
 from controller.controller import Controller
 from controller.controller_inputs import ControllerInput
+from devices.device import Device
 from display.display import Display
 from games.utils.game_system import GameSystem
 from menus.games.in_game_menu_popup import InGameMenuPopup
@@ -55,6 +56,7 @@ class InGameMenuListener:
             if(Controller.get_input()):
                 if (ControllerInput.MENU == Controller.last_input() and support_menu_button_in_game):
                     self.send_signal(game_process, signal.SIGSTOP)
+                    Device.capture_framebuffer()
                     Display.reinitialize()
                     
                     PyUiLogger.get_logger().debug(f"In game menu opened")
@@ -62,7 +64,7 @@ class InGameMenuListener:
                     PyUiLogger.get_logger().debug(f"In game menu opened closed. Continue Running ? {continue_running}")
 
                     Display.deinit_display()
-                    
+                    Device.restore_framebuffer()
                     if(continue_running):
                         self.send_signal(game_process, signal.SIGCONT)
                     else:

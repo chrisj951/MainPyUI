@@ -136,7 +136,6 @@ class Display:
 
     @classmethod
     def deinit_display(cls):
-        Device.clear_framebuffer()
         if cls.render_canvas:
             sdl2.SDL_DestroyTexture(cls.render_canvas)
             cls.render_canvas = None

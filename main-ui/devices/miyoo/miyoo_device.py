@@ -35,6 +35,12 @@ class MiyooDevice(DeviceCommon):
 
     def clear_framebuffer(self):
         pass
+    
+    def capture_framebuffer(self):
+        pass
+
+    def restore_framebuffer(self):
+        pass
 
     def sleep(self):
         with open("/sys/power/mem_sleep", "w") as f:

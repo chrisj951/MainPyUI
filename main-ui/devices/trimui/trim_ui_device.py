@@ -32,6 +32,12 @@ class TrimUIDevice(DeviceCommon):
     def clear_framebuffer(self):
         pass
 
+    def capture_framebuffer(self):
+        pass
+
+    def restore_framebuffer(self):
+        pass
+    
     @property
     def power_off_cmd(self):
         return "poweroff"
