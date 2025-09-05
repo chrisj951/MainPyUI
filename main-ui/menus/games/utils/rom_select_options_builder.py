@@ -29,8 +29,9 @@ class RomSelectOptionsBuilder:
         parts = os.path.normpath(rom_info.rom_file_path).split(os.sep)
 
         try:
-            roms_index = parts.index("Roms")
+            roms_index = next(i for i, part in enumerate(parts) if part.lower() == "roms")
         except (ValueError, IndexError):
+            PyUiLogger.get_logger().info(f"Roms not found in {rom_info.rom_file_path}")
             return None  # "Roms" not in path or nothing after "Roms"
 
         # Build path to the image using the extracted directory
