@@ -44,22 +44,17 @@ class MuosGameSystemUtils(GameSystemUtils):
             try:
                 if os.path.isdir(os.path.join(self.emu_path, folder)):
                     game_system_config = FileBasedGameSystemConfig(folder)
-                    PyUiLogger.get_logger().info(f"Loaded {folder} as a FileBasedGameSystemConfig")
                 elif folder.upper() in self.muos_systems:
                     game_system_config = MuosGameSystemConfig(folder,self.muos_systems[folder.upper()])
-                    PyUiLogger.get_logger().info(f"Loaded {folder} as a MuosGameSystemConfig")
 
             except Exception as e:
                 pass
             
             if(game_system_config is not None):
-                PyUiLogger.get_logger().info(f"Checking for {game_system_config}")
                 display_name = game_system_config.get_label()
                 game_system = GameSystem(os.path.join(self.roms_path, folder),display_name, game_system_config)
                 if(self.rom_utils.has_roms(game_system)):
                     active_systems.append(game_system)
-                else:
-                    PyUiLogger.get_logger().info(f"{folder} has no games, ext list was {game_system_config.get_extlist()}")
 
 
         # Step 4: Sort the list alphabetically

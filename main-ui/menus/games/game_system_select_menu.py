@@ -149,20 +149,16 @@ class GameSystemSelectMenu:
 
         if game_system.folder_name in GameSystemSelectMenu.common_icon_mappings:
             for name in GameSystemSelectMenu.common_icon_mappings.get(game_system.folder_name, []):
-                PyUiLogger.get_logger().info(f"Adding {Theme.get_system_icon(name)} as icon for {game_system.folder_name} / {game_system.display_name}")
                 icon = Theme.get_system_icon(name)
                 if(icon is not None):
                     icon_system_name_priority.append(icon)
                     selected_icon_system_name_priority.append(icon)
         elif game_system.display_name in GameSystemSelectMenu.common_icon_mappings:
             for name in GameSystemSelectMenu.common_icon_mappings.get(game_system.display_name, []):
-                PyUiLogger.get_logger().info(f"Adding {Theme.get_system_icon(name)} as icon for {game_system.folder_name} / {game_system.display_name}")
                 icon = Theme.get_system_icon(name)
                 if(icon is not None):
                     icon_system_name_priority.append(icon)
                     selected_icon_system_name_priority.append(icon)
-        else:
-            PyUiLogger.get_logger().info(f"No common icon mapping for {game_system.folder_name} or {game_system.display_name}")
 
         if(game_system.game_system_config.get_icon() is not None):
             icon_system_name_priority.append(os.path.join(game_system.game_system_config.get_emu_folder(),game_system.game_system_config.get_icon()))
