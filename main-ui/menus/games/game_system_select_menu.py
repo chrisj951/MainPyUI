@@ -4,7 +4,6 @@ from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from games.utils.device_specific.game_system_utils import GameSystemUtils
 from games.utils.game_system import GameSystem
-from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
 from menus.games.game_select_menu import GameSelectMenu
 from menus.games.game_system_select_menu_popup import GameSystemSelectMenuPopup
 from menus.games.utils.rom_select_options_builder import RomSelectOptionsBuilder
@@ -151,13 +150,17 @@ class GameSystemSelectMenu:
         if game_system.folder_name in GameSystemSelectMenu.common_icon_mappings:
             for name in GameSystemSelectMenu.common_icon_mappings.get(game_system.folder_name, []):
                 PyUiLogger.get_logger().info(f"Adding {Theme.get_system_icon(name)} as icon for {game_system.folder_name} / {game_system.display_name}")
-                icon_system_name_priority.append(Theme.get_system_icon(name))
-                selected_icon_system_name_priority.append(Theme.get_system_icon(name))
+                icon = Theme.get_system_icon(name)
+                if(icon is not None):
+                    icon_system_name_priority.append(icon)
+                    selected_icon_system_name_priority.append(icon)
         elif game_system.display_name in GameSystemSelectMenu.common_icon_mappings:
             for name in GameSystemSelectMenu.common_icon_mappings.get(game_system.display_name, []):
                 PyUiLogger.get_logger().info(f"Adding {Theme.get_system_icon(name)} as icon for {game_system.folder_name} / {game_system.display_name}")
-                icon_system_name_priority.append(Theme.get_system_icon(name))
-                selected_icon_system_name_priority.append(Theme.get_system_icon(name))
+                icon = Theme.get_system_icon(name)
+                if(icon is not None):
+                    icon_system_name_priority.append(icon)
+                    selected_icon_system_name_priority.append(icon)
         else:
             PyUiLogger.get_logger().info(f"No common icon mapping for {game_system.folder_name} or {game_system.display_name}")
 

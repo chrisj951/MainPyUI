@@ -1,3 +1,4 @@
+import json
 import re
 import subprocess
 import time
@@ -13,7 +14,6 @@ from devices.miyoo.trim_ui_joystick import TrimUIJoystick
 from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
-from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
 from games.utils.device_specific.muos_game_system_utils import MuosGameSystemUtils
 from games.utils.game_entry import GameEntry
 from menus.games.utils.rom_info import RomInfo
@@ -31,6 +31,7 @@ class MuosDevice(DeviceCommon):
 
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
+        self.muos_systems = self.load_assign_json()
 
     def sleep(self):
         ProcessRunner.run(["/opt/muos/script/system/suspend.sh"])
@@ -258,4 +259,26 @@ class MuosDevice(DeviceCommon):
             return 1
         
     def get_game_system_utils(self):
-        return MuosGameSystemUtils()
+        return MuosGameSystemUtils(self.muos_systems)
+    
+    
+    def load_assign_json(self, uppercase_keys: bool = True) -> dict:
+        """
+        Loads the assign.json file from MUOS info path.
+        If uppercase_keys is True, all keys are converted to uppercase.
+        """
+        assign_path = "/mnt/mmc/MUOS/info/assign/assign.json"
+        try:
+            with open(assign_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            PyUiLogger.get_logger().error(f"{assign_path} not found")
+            return {}
+        except json.JSONDecodeError as e:
+            PyUiLogger.get_logger().error(f"Error decoding JSON from {assign_path}: {e}")
+            return {}
+
+        if uppercase_keys:
+            return {k.upper(): v for k, v in data.items()}
+
+        return data
