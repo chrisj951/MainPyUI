@@ -285,7 +285,14 @@ class Theme():
             return cls._daijisho_theme_index.get_file_name_for_system(system)
         else:
             return os.path.join(cls._path, cls._icon_folder, system + ".png")
-   
+
+    @classmethod
+    def get_default_system_icon(cls):
+        if(cls._daijisho_theme_index is not None):
+            return cls._daijisho_theme_index.get_default_filename()
+        else:
+            return None   
+
     @classmethod
     def get_system_icon_selected(cls, system):
         if(cls._daijisho_theme_index is not None):

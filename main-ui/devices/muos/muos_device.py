@@ -14,6 +14,7 @@ from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
 from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
+from games.utils.device_specific.muos_game_system_utils import MuosGameSystemUtils
 from games.utils.game_entry import GameEntry
 from menus.games.utils.rom_info import RomInfo
 from menus.settings.button_remapper import ButtonRemapper
@@ -257,4 +258,4 @@ class MuosDevice(DeviceCommon):
             return 1
         
     def get_game_system_utils(self):
-        return MiyooTrimGameSystemUtils()
+        return MuosGameSystemUtils()

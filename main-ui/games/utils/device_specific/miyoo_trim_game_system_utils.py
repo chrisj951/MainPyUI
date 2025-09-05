@@ -4,7 +4,7 @@ import os
 from games.game_system_utils import GameSystemUtils
 from games.utils.game_system import GameSystem 
 from games.utils.rom_utils import RomUtils
-from menus.games.game_system_config import GameSystemConfig
+from menus.games.file_based_game_system_config import FileBasedGameSystemConfig
 from utils.logger import PyUiLogger
 
 class MiyooTrimGameSystemUtils(GameSystemUtils):
@@ -17,11 +17,11 @@ class MiyooTrimGameSystemUtils(GameSystemUtils):
         self.rom_utils = RomUtils(self.roms_path)
     
     def get_game_system_by_name(self, system_name) -> GameSystem:
-        game_system_config = GameSystemConfig(system_name)
+        game_system_config = FileBasedGameSystemConfig(system_name)
 
         if(game_system_config is not None):
             display_name = game_system_config.get_label()
-            return GameSystem(system_name,display_name, game_system_config)
+            return GameSystem(self.roms_path+system_name,display_name, game_system_config)
 
         PyUiLogger.get_logger().error(f"Unable to load game system for {system_name}")
         return None
@@ -40,15 +40,16 @@ class MiyooTrimGameSystemUtils(GameSystemUtils):
         for folder in folders:
             game_system_config = None
             try:
-                game_system_config = GameSystemConfig(folder)
+                game_system_config = FileBasedGameSystemConfig(folder)
             except Exception as e:
                 #PyUiLogger().get_logger().info(f"{folder} contains a broken config.json : {e}")
                 pass
 
             if(game_system_config is not None):
                 display_name = game_system_config.get_label()
-                if(self.rom_utils.has_roms(folder)):
-                    active_systems.append(GameSystem(folder,display_name, game_system_config))
+                game_system = GameSystem(os.path.join(self.roms_path, folder),display_name, game_system_config)
+                if(self.rom_utils.has_roms(game_system)):
+                    active_systems.append(game_system)
 
         # Step 4: Sort the list alphabetically
         active_systems.sort(key=lambda system: system.display_name)

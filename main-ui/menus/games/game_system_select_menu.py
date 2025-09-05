@@ -9,6 +9,7 @@ from menus.games.game_select_menu import GameSelectMenu
 from menus.games.game_system_select_menu_popup import GameSystemSelectMenuPopup
 from menus.games.utils.rom_select_options_builder import RomSelectOptionsBuilder
 from themes.theme import Theme
+from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 from utils.py_ui_state import PyUiState
 from views.grid_or_list_entry import GridOrListEntry
@@ -19,6 +20,7 @@ from views.view_creator import ViewCreator
 class GameSystemSelectMenu:
     common_icon_mappings = {
             "PPSSPP": ["psp"],
+            "PSX": ["ps"],
             "PSP": ["ppsspp"],
             "PM": ["ports"],
             "SNES": ["sfc"],
@@ -148,8 +150,16 @@ class GameSystemSelectMenu:
 
         if game_system.folder_name in GameSystemSelectMenu.common_icon_mappings:
             for name in GameSystemSelectMenu.common_icon_mappings.get(game_system.folder_name, []):
+                PyUiLogger.get_logger().info(f"Adding {Theme.get_system_icon(name)} as icon for {game_system.folder_name} / {game_system.display_name}")
                 icon_system_name_priority.append(Theme.get_system_icon(name))
                 selected_icon_system_name_priority.append(Theme.get_system_icon(name))
+        elif game_system.display_name in GameSystemSelectMenu.common_icon_mappings:
+            for name in GameSystemSelectMenu.common_icon_mappings.get(game_system.display_name, []):
+                PyUiLogger.get_logger().info(f"Adding {Theme.get_system_icon(name)} as icon for {game_system.folder_name} / {game_system.display_name}")
+                icon_system_name_priority.append(Theme.get_system_icon(name))
+                selected_icon_system_name_priority.append(Theme.get_system_icon(name))
+        else:
+            PyUiLogger.get_logger().info(f"No common icon mapping for {game_system.folder_name} or {game_system.display_name}")
 
         if(game_system.game_system_config.get_icon() is not None):
             icon_system_name_priority.append(os.path.join(game_system.game_system_config.get_emu_folder(),game_system.game_system_config.get_icon()))
@@ -159,6 +169,10 @@ class GameSystemSelectMenu:
             else:
                 selected_icon_system_name_priority.append(os.path.join(game_system.game_system_config.get_emu_folder(),game_system.game_system_config.get_icon()))
         
+        if(Theme.get_default_system_icon() is not None):
+            icon_system_name_priority.append(Theme.get_default_system_icon())
+            selected_icon_system_name_priority.append(Theme.get_default_system_icon())
+
         index = self.get_first_existing_path(icon_system_name_priority)
         if(index is not None):
             icon = icon_system_name_priority[index]

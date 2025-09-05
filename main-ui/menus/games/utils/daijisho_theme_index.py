@@ -134,7 +134,7 @@ class DaijishoThemeIndex:
                 elif(uniquename is not None):
                     return self._convert_if_needed(uniquename)
         
-        return self.get_default_filename()
+        return None
 
     def get_default_filename(self):
         return self._convert_if_needed(self.default_filename)
