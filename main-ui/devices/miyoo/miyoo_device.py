@@ -348,6 +348,9 @@ class MiyooDevice(DeviceCommon):
     def get_recents_path(self):
         return "/mnt/SDCARD/Saves/pyui-recents.json"
     
+    def get_collections_path(self):
+        return "/mnt/SDCARD/Collections/"
+    
     def launch_stock_os_menu(self):
         self.run_app("/usr/miyoo/bin/runmiyoo-original.sh")
 

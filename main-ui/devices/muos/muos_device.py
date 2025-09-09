@@ -206,6 +206,9 @@ class MuosDevice(DeviceCommon):
     def get_recents_path(self):
         return "/mnt/sdcard/Saves/pyui-recents.json"
     
+    def get_collections_path(self):
+        return "/mnt/sdcard/Collections/"
+
     def launch_stock_os_menu(self):
         self.run_app("/usr/miyoo/bin/runmiyoo-original.sh")
 
