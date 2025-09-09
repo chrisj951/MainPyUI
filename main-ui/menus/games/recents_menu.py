@@ -23,7 +23,7 @@ class RecentsMenu(RomsMenuCommon):
                     primary_text=self._remove_extension(rom_file_name)  +" (" + self._extract_game_system(rom_info.rom_file_path)+")",
                     image_path=img_path,
                     image_path_selected=img_path,
-                    description="Favorite", 
+                    description="Recents", 
                     icon=None,
                     value=rom_info)
             )
