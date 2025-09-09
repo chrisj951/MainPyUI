@@ -39,7 +39,7 @@ class RomsMenuCommon(ABC):
         rom_path = os.path.abspath(os.path.normpath(rom_path))
         parts = os.path.normpath(rom_path).split(os.sep)
         try:
-            roms_index = parts.index("Roms")
+            roms_index = [p.lower() for p in parts].index("roms")
             return parts[roms_index + 1]
         except (ValueError, IndexError) as e:
             PyUiLogger.get_logger().error(f"Error extracting subdirectory after 'Roms' for {rom_path}: {e}")
@@ -82,7 +82,7 @@ class RomsMenuCommon(ABC):
         last_game_file_path, last_subfolder = PyUiState.get_last_game_selection(page_name)
 
         rom_list = self._get_rom_list()
-        if(last_subfolder != '' and getattr(self, 'subfolder', '') != last_subfolder):
+        if(last_subfolder != '' and getattr(self, 'subfolder', '') != last_subfolder and getattr(self, 'subfolder', '') != ''):
             print(f"Subfolder does not match {last_subfolder} vs {getattr(self, 'subfolder', '') }")
             rom_info_subfolder = RomInfo(game_system=rom_list[0].get_value().game_system,rom_file_path=last_subfolder)
             return_value = self._run_subfolder_menu(rom_info_subfolder)
