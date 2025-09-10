@@ -45,16 +45,18 @@ class MainMenu:
                     value="Recent"
                 )
             )
-        image_text_list.append(
-            GridOrListEntry(
-                primary_text="Collection",
-                image_path=Theme.favorite(),
-                image_path_selected=Theme.favorite_selected(),
-                description="Collection",
-                icon=None,
-                value="Collection"
+
+        if (Theme.get_collections_enabled()):
+            image_text_list.append(
+                GridOrListEntry(
+                    primary_text="Collection",
+                    image_path=Theme.collection(),
+                    image_path_selected=Theme.collection_selected(),
+                    description="Collection",
+                    icon=None,
+                    value="Collection"
+                )
             )
-        )
 
         if (Theme.get_favorites_enabled()):
             image_text_list.append(

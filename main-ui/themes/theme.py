@@ -136,6 +136,12 @@ class Theme():
     
     @classmethod
     def recent_selected(cls): return cls._asset("ic-recent-f.png")
+
+    @classmethod
+    def collection(cls): return cls._asset("ic-collection-n.png")
+    
+    @classmethod
+    def collection_selected(cls): return cls._asset("ic-collection-f.png")
     
     @classmethod
     def game(cls): return cls._asset("ic-game-n.png")
@@ -733,6 +739,15 @@ class Theme():
     @classmethod
     def set_recents_enabled(cls, value):
         cls._data["recentsEnabled"] = value
+        cls.save_changes()
+
+    @classmethod
+    def get_collections_enabled(cls):
+        return cls._data.get("collectionsEnabled", True)
+
+    @classmethod
+    def set_collections_enabled(cls, value):
+        cls._data["collectionsEnabled"] = value
         cls.save_changes()
 
     @classmethod
