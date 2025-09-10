@@ -8,6 +8,7 @@ from display.display import Display
 from menus.games.game_config_menu import GameConfigMenu
 from menus.games.game_select_menu_popup import GameSelectMenuPopup
 from menus.games.in_game_menu_listener import InGameMenuListener
+from menus.games.utils.collections_manager import CollectionsManager
 from menus.games.utils.recents_manager import RecentsManager
 from menus.games.utils.rom_info import RomInfo
 from menus.games.utils.rom_select_options_builder import RomSelectOptionsBuilder
@@ -53,10 +54,36 @@ class RomsMenuCommon(ABC):
         from menus.games.game_select_menu import GameSelectMenu
         return GameSelectMenu().run_rom_selection(rom_info.game_system, rom_info.rom_file_path)
 
-    
+
     def _load_collection_menu(self, rom_info : RomInfo) -> list[GridOrListEntry]:
         from menus.games.game_select_menu import GameSelectMenu
-        return GameSelectMenu().run_rom_selection_for_collection(rom_info.rom_file_path)
+        self.current_collection = rom_info.rom_file_path
+        PyUiState.set_in_game_selection_screen(True)
+        rom_list = self.build_rom_selection_for_collection(self.current_collection)
+        while(ControllerInput.B != self._run_rom_selection_for_rom_list(self.current_collection, rom_list)):
+            pass
+
+        PyUiState.set_in_game_selection_screen(False)
+        self.current_collection = None
+
+    def build_rom_selection_for_collection(self, collection):
+        raw_rom_list = CollectionsManager.get_games_in_collection(collection)
+        
+        rom_list = []
+
+        for rom_info in raw_rom_list:
+            rom_file_name = os.path.basename(rom_info.rom_file_path)
+            img_path = self._get_image_path(rom_info)
+            rom_list.append(
+                GridOrListEntry(
+                    primary_text=self._remove_extension(rom_file_name)  +" (" + self._extract_game_system(rom_info.rom_file_path)+")",
+                    image_path=img_path,
+                    image_path_selected=img_path,
+                    description=collection, 
+                    icon=None,
+                    value=rom_info)
+            )
+        return rom_list
 
     def create_view(self, page_name, rom_list, selected):
         return ViewCreator.create_view(
@@ -84,6 +111,9 @@ class RomsMenuCommon(ABC):
     def _run_rom_selection(self, page_name) :
         rom_list = self._get_rom_list()
         self._run_rom_selection_for_rom_list(page_name,rom_list)
+
+    def _menu_pressed(self, selection):
+        self.popup_menu.run_game_select_popup_menu(selection)
 
     def _run_rom_selection_for_rom_list(self, page_name, rom_list) :
         selected = Selection(None,None,0)
@@ -127,12 +157,9 @@ class RomsMenuCommon(ABC):
                             selected.get_selection().get_value().rom_file_path
                         )
                         
-                        return_value = self._load_collection_menu(selected.get_selection().get_value())
+                        self._load_collection_menu(selected.get_selection().get_value())
                         
-                        if(return_value is not None):
-                            return return_value
-                        else:
-                            PyUiState.set_last_game_selection(
+                        PyUiState.set_last_game_selection(
                             page_name,
                             selected.get_selection().get_value().rom_file_path,
                             getattr(self, 'subfolder', '') or ''
@@ -168,13 +195,15 @@ class RomsMenuCommon(ABC):
                     rom_list = self._get_rom_list()
                 elif(ControllerInput.MENU == selected.get_input()):
                     prev_view = Theme.get_game_selection_view_type()
-                    self.popup_menu.run_game_select_popup_menu(selected.get_selection().get_value())
+                    self._menu_pressed(selected.get_selection().get_value())
                     # Regenerate as game config menu might've changed something
+                    original_length = len(rom_list)
                     rom_list = self._get_rom_list()
-                    if(Theme.get_game_selection_view_type() != prev_view):
+                    new_length = len(rom_list)
+                    if(Theme.get_game_selection_view_type() != prev_view or original_length != new_length):
                         view = self.create_view(page_name,rom_list,selected)
                 elif(ControllerInput.B == selected.get_input()):
-                    selected = None
+                    return ControllerInput.B
                 elif(ControllerInput.SELECT == selected.get_input()):
                     if(ViewType.TEXT_AND_IMAGE == Theme.get_game_selection_view_type()):
                         Theme.set_game_selection_view_type(ViewType.GRID)

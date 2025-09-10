@@ -210,7 +210,7 @@ class MuosDevice(DeviceCommon):
         return "/mnt/sdcard/Collections/"
 
     def launch_stock_os_menu(self):
-        self.run_app("/usr/miyoo/bin/runmiyoo-original.sh")
+        os._exit(0)
 
     def get_state_path(self):
         return "/mnt/sdcard/Saves/pyui-state.json"

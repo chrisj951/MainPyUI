@@ -44,6 +44,9 @@ class CollectionsManager:
                 PyUiLogger.get_logger().error(
                     f"Unable to load config for {entry.game_system_name} so skipping entry"
                 )
+                
+        # Sort by filename (case-insensitive)
+        rom_info_list.sort(key=lambda rom: os.path.basename(rom.rom_file_path).lower())
 
         return rom_info_list
 
