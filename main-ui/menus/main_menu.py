@@ -2,6 +2,7 @@
 from controller.controller_inputs import ControllerInput
 from display.display import Display
 from menus.app.app_menu import AppMenu
+from menus.games.collections_menu import CollectionsMenu
 from menus.games.favorites_menu import FavoritesMenu
 from menus.games.game_system_select_menu import GameSystemSelectMenu
 from menus.main_menu_popup import MainMenuPopup
@@ -19,6 +20,7 @@ class MainMenu:
         self.system_select_menu = GameSystemSelectMenu()
         self.app_menu = AppMenu()
         self.favorites_menu = FavoritesMenu()
+        self.collections_menu = CollectionsMenu()
         self.recents_menu = RecentsMenu()
         self.settings_menu = BasicSettingsMenu()
         self.popup_menu = MainMenuPopup()
@@ -43,6 +45,16 @@ class MainMenu:
                     value="Recent"
                 )
             )
+        image_text_list.append(
+            GridOrListEntry(
+                primary_text="Collection",
+                image_path=Theme.favorite(),
+                image_path_selected=Theme.favorite_selected(),
+                description="Collection",
+                icon=None,
+                value="Collection"
+            )
+        )
 
         if (Theme.get_favorites_enabled()):
             image_text_list.append(
@@ -147,6 +159,8 @@ class MainMenu:
                             self.app_menu.run_app_selection()
                         elif("Favorite" == selected.get_selection().get_primary_text()):
                             self.favorites_menu.run_rom_selection()
+                        elif("Collection" == selected.get_selection().get_primary_text()):
+                            self.collections_menu.run_rom_selection()
                         elif("Recent" == selected.get_selection().get_primary_text()):
                             self.recents_menu.run_rom_selection()
                         elif("Setting" == selected.get_selection().get_primary_text()):

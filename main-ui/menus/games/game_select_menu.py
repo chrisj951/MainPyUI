@@ -1,7 +1,9 @@
 
+import os
 from pathlib import Path
 from games.utils.game_entry import GameEntry
 from menus.games.roms_menu_common import RomsMenuCommon
+from menus.games.utils.collections_manager import CollectionsManager
 from utils.py_ui_state import PyUiState
 from views.grid_or_list_entry import GridOrListEntry
 from games.utils.game_system import GameSystem 
@@ -24,4 +26,27 @@ class GameSelectMenu(RomsMenuCommon):
         return_value = self._run_rom_selection(game_system.display_name)
         if(return_value is None and subfolder is None):
             PyUiState.set_in_game_selection_screen(False)
+        return return_value
+
+    def run_rom_selection_for_collection(self, collection) :
+        PyUiState.set_in_game_selection_screen(True)
+        raw_rom_list = CollectionsManager.get_games_in_collection(collection)
+        
+        rom_list = []
+
+        for rom_info in raw_rom_list:
+            rom_file_name = os.path.basename(rom_info.rom_file_path)
+            img_path = self._get_image_path(rom_info)
+            rom_list.append(
+                GridOrListEntry(
+                    primary_text=self._remove_extension(rom_file_name)  +" (" + self._extract_game_system(rom_info.rom_file_path)+")",
+                    image_path=img_path,
+                    image_path_selected=img_path,
+                    description=collection, 
+                    icon=None,
+                    value=rom_info)
+            )
+
+        return_value = self._run_rom_selection_for_rom_list(collection, rom_list)
+        PyUiState.set_in_game_selection_screen(False)
         return return_value

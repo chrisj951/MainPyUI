@@ -764,7 +764,7 @@ class Theme():
 
     @classmethod
     def get_main_menu_option_ordering(cls):
-        return cls._data.get("mainMenuOrdering", ["Recent", "Favorite", "Game", "App", "Setting"])
+        return cls._data.get("mainMenuOrdering", ["Recent", "Favorite","Collection", "Game", "App", "Setting"])
 
     @classmethod
     def get_game_select_row_count(cls):

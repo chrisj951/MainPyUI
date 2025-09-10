@@ -52,7 +52,12 @@ class RomsMenuCommon(ABC):
     def _run_subfolder_menu(self, rom_info : RomInfo) -> list[GridOrListEntry]:
         from menus.games.game_select_menu import GameSelectMenu
         return GameSelectMenu().run_rom_selection(rom_info.game_system, rom_info.rom_file_path)
+
     
+    def _load_collection_menu(self, rom_info : RomInfo) -> list[GridOrListEntry]:
+        from menus.games.game_select_menu import GameSelectMenu
+        return GameSelectMenu().run_rom_selection_for_collection(rom_info.rom_file_path)
+
     def create_view(self, page_name, rom_list, selected):
         return ViewCreator.create_view(
                         view_type=Theme.get_game_selection_view_type(),
@@ -77,11 +82,14 @@ class RomsMenuCommon(ABC):
                         )
 
     def _run_rom_selection(self, page_name) :
+        rom_list = self._get_rom_list()
+        self._run_rom_selection_for_rom_list(page_name,rom_list)
+
+    def _run_rom_selection_for_rom_list(self, page_name, rom_list) :
         selected = Selection(None,None,0)
         view = None
         last_game_file_path, last_subfolder = PyUiState.get_last_game_selection(page_name)
 
-        rom_list = self._get_rom_list()
         if(last_subfolder != '' and getattr(self, 'subfolder', '') != last_subfolder and getattr(self, 'subfolder', '') != ''):
             print(f"Subfolder does not match {last_subfolder} vs {getattr(self, 'subfolder', '') }")
             rom_info_subfolder = RomInfo(game_system=rom_list[0].get_value().game_system,rom_file_path=last_subfolder)
@@ -111,8 +119,28 @@ class RomsMenuCommon(ABC):
                         selected.get_selection().get_value().rom_file_path,
                         getattr(self, 'subfolder', '') or ''
                     )
-                    if(self.launched_via_special_case(selected.get_selection().get_value())):
+
+                    if(selected.get_selection().get_value().is_collection):
+                        PyUiState.set_last_game_selection(
+                            page_name,
+                            "Collection",
+                            selected.get_selection().get_value().rom_file_path
+                        )
+                        
+                        return_value = self._load_collection_menu(selected.get_selection().get_value())
+                        
+                        if(return_value is not None):
+                            return return_value
+                        else:
+                            PyUiState.set_last_game_selection(
+                            page_name,
+                            selected.get_selection().get_value().rom_file_path,
+                            getattr(self, 'subfolder', '') or ''
+                        )
+                            
+                    elif(self.launched_via_special_case(selected.get_selection().get_value())):
                         pass
+                    
                     elif(os.path.isdir(selected.get_selection().get_value().rom_file_path)):
                         # If the selected item is a directory, open it
                         PyUiState.set_last_game_selection(
