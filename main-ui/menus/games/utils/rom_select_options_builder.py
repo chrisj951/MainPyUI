@@ -86,7 +86,8 @@ class RomSelectOptionsBuilder:
                 if(game_entry is not None):
                     rom_file_name = game_entry.name
 
-                rom_info = RomInfo(game_system,rom_file_path)
+                display_name = os.path.splitext(rom_file_name)[0]
+                rom_info = RomInfo(game_system,rom_file_path, display_name)
 
                 file_rom_list.append(
                     GridOrListEntry(
