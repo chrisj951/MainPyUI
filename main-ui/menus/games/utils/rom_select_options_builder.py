@@ -106,7 +106,7 @@ class RomSelectOptionsBuilder:
 
                 folder_rom_list.append(
                     GridOrListEntry(
-                        primary_text=os.path.splitext(rom_file_name)[0],
+                        primary_text=rom_file_name,
                         description=game_system.folder_name, 
                         value=rom_info,
                         image_path_searcher=lambda rom_info: self.get_image_path(rom_info),
