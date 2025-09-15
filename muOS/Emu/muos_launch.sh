@@ -129,21 +129,78 @@ if [ -d "$CORE_DIR" ]; then
     fi
 fi
 
-# ---------- 8. Final output ----------
+CONFIG_FILE="/opt/muos/device/config/cpu/governor"
+
+# ---------- 1. Read the governor file path ----------
+if [ ! -r "$CONFIG_FILE" ]; then
+    echo "Error: Config file '$CONFIG_FILE' not found or not readable."
+    echo "Skipping governor changes."
+    GOV_ENABLED=false
+else
+    # Read the first line, remove any carriage returns
+    GOVERNOR_FILE=$(tr -d '\r' < "$CONFIG_FILE" | sed -n '1p')
+
+    if [ -z "$GOVERNOR_FILE" ]; then
+        echo "Error: Governor file path inside '$CONFIG_FILE' is empty."
+        echo "Skipping governor changes."
+        GOV_ENABLED=false
+    elif [ ! -f "$GOVERNOR_FILE" ]; then
+        echo "Error: Governor target file '$GOVERNOR_FILE' does not exist."
+        echo "Skipping governor changes."
+        GOV_ENABLED=false
+    elif [ ! -r "$GOVERNOR_FILE" ] || [ ! -w "$GOVERNOR_FILE" ]; then
+        echo "Error: Governor file '$GOVERNOR_FILE' is not readable or writable."
+        echo "Skipping governor changes."
+        GOV_ENABLED=false
+    else
+        GOV_ENABLED=true
+    fi
+fi
+
+# ---------- 2. Cache the current governor ----------
+if [ "$GOV_ENABLED" = true ]; then
+    ORIGINAL_GOVERNOR=$(cat "$GOVERNOR_FILE" 2>/dev/null)
+    if [ -z "$ORIGINAL_GOVERNOR" ]; then
+        echo "Warning: Unable to read current governor value from '$GOVERNOR_FILE'."
+        echo "Skipping governor changes."
+        GOV_ENABLED=false
+    fi
+fi
+
+# ---------- 3. Final output logging ----------
 echo "System Name: $SYSTEM_NAME"
 echo "Console: $CONSOLE"
 echo "Governor: $GOVERNOR_VALUE"
+echo "Original Governor: $ORIGINAL_GOVERNOR"
+echo "Governor File Path: $GOVERNOR_FILE"
 echo "Core: $CORE_VALUE"
 echo "Exec: $EXEC_VALUE"
 echo "Title: $TITLE"
 
+# ---------- 4. Handle ra_no_load toggle ----------
 if [ "$CORE_VALUE" = "km_ludicrousn64_2k22_xtreme_amped_libretro.so" ]; then
     touch /tmp/ra_no_load
 else
     rm -f /tmp/ra_no_load
 fi
 
-# ---------- 9. Execute the command ----------
-# Run: <exec> <title> <core> <filepath>
+# ---------- 5. Apply new governor ----------
+if [ "$GOV_ENABLED" = true ]; then
+    echo "Setting governor to \"$GOVERNOR_VALUE\""
+    echo "$GOVERNOR_VALUE" > "$GOVERNOR_FILE"
+else
+    echo "Governor change skipped."
+fi
+
+# ---------- 6. Execute the command ----------
 echo "Executing: $EXEC_VALUE \"$TITLE\" \"$CORE_VALUE\" \"$FILE\""
-exec "$EXEC_VALUE" "$TITLE" "$CORE_VALUE" "$FILE"
+# Uncomment to run for real
+ exec "$EXEC_VALUE" "$TITLE" "$CORE_VALUE" "$FILE"
+
+# ---------- 7. Restore original governor ----------
+if [ "$GOV_ENABLED" = true ]; then
+    echo "Restoring governor to \"$ORIGINAL_GOVERNOR\""
+    echo "$ORIGINAL_GOVERNOR" > "$GOVERNOR_FILE"
+else
+    echo "Governor restore skipped."
+fi
