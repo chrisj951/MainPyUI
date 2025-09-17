@@ -1,0 +1,8 @@
+{
+    "theme": "ALEKFULL_NX",
+    "themeDir": "/mnt/mmc/MUOS/application/PyUI/Themes/",
+    "turboDelayMs": 300,
+    "enableButtonWatchers": false,
+    "enableWifiMonitor": false,
+    "mainMenuTitle": "PyUI"
+}
