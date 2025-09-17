@@ -27,7 +27,7 @@ In the meantime you can have PyUI apply this patch by going into
 2) Rebooting your device
 3) Launching PyUI
 
-From now on when you reboot PyUI will be the app launched on startup
+From now on when you reboot PyUI will be the app launched on startup 
 
 ### Sample Images
 ## Daijishou Style Themes
