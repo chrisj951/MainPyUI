@@ -43,7 +43,7 @@ jobs:
         run: |
           mkdir PyUI
           mv main-ui muOS/source/PyUI/
-
+          mv Themes muOS/source/PyUI/
 
       - name: Create muxapp archive
         run: |
