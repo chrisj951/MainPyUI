@@ -109,29 +109,62 @@ CORE_DIR=$(dirname "$CORE_BASE")
 if [ -d "$CORE_DIR" ]; then
     GAME_BASENAME="${TITLE}"
 
-    CFG_FILE="$CORE_DIR/${GAME_BASENAME}.cfg"
-    GOV_FILE="$CORE_DIR/${GAME_BASENAME}.gov"
+    # --- Core override files ---
+    CFG_GAME="$CORE_DIR/${GAME_BASENAME}.cfg"   # Highest priority
+    CFG_CORE="$CORE_DIR/${CORE_VALUE}.cfg"      # Middle priority
+    CFG_SYSTEM="$CORE_DIR/${SYSTEM_NAME}.cfg"   # Lowest priority
 
-    # 3) Override core if .cfg exists (use second line of the file)
-    if [ -f "$CFG_FILE" ]; then
-        NEW_CORE=$(sed -n '2p' "$CFG_FILE" | tr -d '\r\n')
-        if [ -n "$NEW_CORE" ]; then
-            CORE_VALUE="$NEW_CORE"
-        fi
+    # --- Governor override files ---
+    GOV_GAME="$CORE_DIR/${GAME_BASENAME}.gov"   # Highest priority
+    GOV_CORE="$CORE_DIR/${CORE_VALUE}.gov"      # Middle priority
+    GOV_SYSTEM="$CORE_DIR/${SYSTEM_NAME}.gov"   # Lowest priority
+
+    # Helper function to safely read the core value (second line only)
+    read_core_from_cfg() {
+        local cfg_file="$1"
+        sed -n '2p' "$cfg_file" | tr -d '\r\n'
+    }
+
+    # Helper function to read governor value (entire file, trim CRLF)
+    read_gov_from_file() {
+        local gov_file="$1"
+        tr -d '\r\n' < "$gov_file"
+    }
+
+    # ---------- CORE override priority check ----------
+    if [ -f "$CFG_GAME" ]; then
+        NEW_CORE=$(read_core_from_cfg "$CFG_GAME")
+    elif [ -f "$CFG_CORE" ]; then
+        NEW_CORE=$(read_core_from_cfg "$CFG_CORE")
+    elif [ -f "$CFG_SYSTEM" ]; then
+        NEW_CORE=$(read_core_from_cfg "$CFG_SYSTEM")
+    else
+        NEW_CORE=""
     fi
 
-    # 4) Override governor if .gov exists (use entire file contents)
-    if [ -f "$GOV_FILE" ]; then
-        NEW_GOV=$(cat "$GOV_FILE" | tr -d '\r\n')
-        if [ -n "$NEW_GOV" ]; then
-            GOVERNOR_VALUE="$NEW_GOV"
-        fi
+    if [ -n "$NEW_CORE" ]; then
+        CORE_VALUE="$NEW_CORE"
+    fi
+
+    # ---------- GOVERNOR override priority check ----------
+    if [ -f "$GOV_GAME" ]; then
+        NEW_GOV=$(read_gov_from_file "$GOV_GAME")
+    elif [ -f "$GOV_CORE" ]; then
+        NEW_GOV=$(read_gov_from_file "$GOV_CORE")
+    elif [ -f "$GOV_SYSTEM" ]; then
+        NEW_GOV=$(read_gov_from_file "$GOV_SYSTEM")
+    else
+        NEW_GOV=""
+    fi
+
+    if [ -n "$NEW_GOV" ]; then
+        GOVERNOR_VALUE="$NEW_GOV"
     fi
 fi
 
+# ---------- 8. Governor handling ----------
 CONFIG_FILE="/opt/muos/device/config/cpu/governor"
 
-# ---------- 1. Read the governor file path ----------
 if [ ! -r "$CONFIG_FILE" ]; then
     echo "Error: Config file '$CONFIG_FILE' not found or not readable."
     echo "Skipping governor changes."
@@ -157,7 +190,7 @@ else
     fi
 fi
 
-# ---------- 2. Cache the current governor ----------
+# ---------- 9. Cache the current governor ----------
 if [ "$GOV_ENABLED" = true ]; then
     ORIGINAL_GOVERNOR=$(cat "$GOVERNOR_FILE" 2>/dev/null)
     if [ -z "$ORIGINAL_GOVERNOR" ]; then
@@ -167,7 +200,7 @@ if [ "$GOV_ENABLED" = true ]; then
     fi
 fi
 
-# ---------- 3. Final output logging ----------
+# ---------- 10. Final output logging ----------
 echo "System Name: $SYSTEM_NAME"
 echo "Console: $CONSOLE"
 echo "Governor: $GOVERNOR_VALUE"
@@ -177,14 +210,14 @@ echo "Core: $CORE_VALUE"
 echo "Exec: $EXEC_VALUE"
 echo "Title: $TITLE"
 
-# ---------- 4. Handle ra_no_load toggle ----------
+# ---------- 11. Handle ra_no_load toggle ----------
 if [ "$CORE_VALUE" = "km_ludicrousn64_2k22_xtreme_amped_libretro.so" ]; then
     touch /tmp/ra_no_load
 else
     rm -f /tmp/ra_no_load
 fi
 
-# ---------- 5. Apply new governor ----------
+# ---------- 12. Apply new governor ----------
 if [ "$GOV_ENABLED" = true ]; then
     echo "Setting governor to \"$GOVERNOR_VALUE\""
     echo "$GOVERNOR_VALUE" > "$GOVERNOR_FILE"
@@ -192,12 +225,11 @@ else
     echo "Governor change skipped."
 fi
 
-# ---------- 6. Execute the command ----------
+# ---------- 13. Execute the command ----------
 echo "Executing: $EXEC_VALUE \"$TITLE\" \"$CORE_VALUE\" \"$FILE\""
-# Uncomment to run for real
- exec "$EXEC_VALUE" "$TITLE" "$CORE_VALUE" "$FILE"
+exec "$EXEC_VALUE" "$TITLE" "$CORE_VALUE" "$FILE"
 
-# ---------- 7. Restore original governor ----------
+# ---------- 14. Restore original governor ----------
 if [ "$GOV_ENABLED" = true ]; then
     echo "Restoring governor to \"$ORIGINAL_GOVERNOR\""
     echo "$ORIGINAL_GOVERNOR" > "$GOVERNOR_FILE"
