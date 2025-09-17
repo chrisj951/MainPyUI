@@ -6,7 +6,7 @@ and potentially others in the future
 - Full compatability with stock Miyoo apps/emulators
 - Full compatability with stock MuOS apps/emulators
 - Improved themeing support (Can use all Miyoo/OnionOS themes. Daijisho themes can be used with minor modifications)
-
+- Menu button support in ports for easy exiting
 
 Still a WIP but works on the Miyoo Flip and partial compatibility on the TrimUI Brick
 
@@ -28,6 +28,24 @@ In the meantime you can have PyUI apply this patch by going into
 3) Launching PyUI
 
 From now on when you reboot PyUI will be the app launched on startup
+
+### Sample Images
+## Daijishou Style Themes
+# ALEKFULL NX
+<img src="docs/images/themes/alekfull_nx/system_select.png" width=320 />
+<img src="docs/images/themes/alekfull_nx/game_select.png" width=320 />
+
+# EPIC ARTBOOT NOIR
+<img src="docs/images/themes/epic_artbook_noir/system_select.png" width=320 />
+
+## Miyoo /Onion OS Style Themes
+<img src="docs/images/themes/miyoo/main_menu.png" width=320 />
+<img src="docs/images/themes/miyoo/system_select.png" width=320 />
+<img src="docs/images/themes/miyoo/game_select.png" width=320 />
+
+# MinUI Type Themes
+<img src="docs/images/themes/minimal/main_menu.png" width=320 />
+<img src="docs/images/themes/miyoo/game_select.png" width=320 />
 
 ## Thanks
 - Spruce team w/ special thanks to
