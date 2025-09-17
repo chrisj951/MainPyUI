@@ -2,17 +2,32 @@ Open Source replacement for MainUI on Miyoo and Trim Devices
 and potentially others in the future
 
 ## Features
-- Faster interface than stock Miyoo
+- Faster frontend launcher written in Python
 - Full compatability with stock Miyoo apps/emulators
-- Improved themeing support (info to be posted later)
+- Full compatability with stock MuOS apps/emulators
+- Improved themeing support (Can use all Miyoo/OnionOS themes. Daijisho themes can be used with minor modifications)
 
 
 Still a WIP but works on the Miyoo Flip and partial compatibility on the TrimUI Brick
 
 | Device | Added | Status |
 | -- | -- | -- |
-| Miyoo Flip | 865f7a3 | Work in progress |
-| TrimUI Brick | 865f7a3 | Work in progress |
+| Miyoo Flip | 865f7a3 | Supported |
+| RG34XXSP (MuOS Goose)* | c12f38b | Supported |
+| RG28XX (MuOS Goose)* | c12f38b | Supported |
+| RG34XX (MuOS Goose)* | c12f38b | In Progress |
+| RGXX Others (MuOS Goose)* | c12f38b | Untested |
+| TrimUI Brick | 865f7a3 | Supported |
+
+* NOTE: There is a PR up to allow launching to an app on startup in MuOS. Hopefully this will be an option soon after the MuOS Canada Goose release. 
+
+In the meantime you can have PyUI apply this patch by going into 
+
+1) Settings -> Extra Settings -> 'Set PyUI as Startup".
+2) Rebooting your device
+3) Launching PyUI
+
+From now on when you reboot PyUI will be the app launched on startup
 
 ## Thanks
 - Spruce team w/ special thanks to
@@ -21,6 +36,7 @@ Still a WIP but works on the Miyoo Flip and partial compatibility on the TrimUI 
    -  Testers from the Spruce Discord and 
       -  Special thanks to KuroZero for their testing and detailed reports
 - Shaun Inman - Development on MinUI making it easier to learn how to interact with the hardware
+- MuOS - For making running on devices support by MuOS much easier
 - Rest of the community that has helped document how these handhelds work
 
 ## License
