@@ -45,7 +45,7 @@ From now on when you reboot PyUI will be the app launched on startup
 
 # MinUI Type Themes
 <img src="docs/images/themes/minimal/main_menu.png" width=320 />
-<img src="docs/images/themes/miyoo/game_select.png" width=320 />
+<img src="docs/images/themes/minimal/game_select.png" width=320 />
 
 ## Thanks
 - Spruce team w/ special thanks to
