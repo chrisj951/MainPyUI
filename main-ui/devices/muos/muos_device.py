@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -27,6 +28,7 @@ from utils.config_copier import ConfigCopier
 from utils.logger import PyUiLogger
 
 from devices.device_common import DeviceCommon
+from views.grid_or_list_entry import GridOrListEntry
 
 
 class MuosDevice(DeviceCommon):
@@ -37,9 +39,9 @@ class MuosDevice(DeviceCommon):
     def setup_system_config(self):
         base_dir = os.path.abspath(sys.path[0])
         PyUiLogger.get_logger().info(f"base_dir is {base_dir}")
-        script_dir = os.path.join(base_dir, "devices","muos")
+        self.script_dir = os.path.join(base_dir, "devices","muos")
         self.parent_dir = os.path.dirname(base_dir)
-        source = os.path.join(script_dir,"muos-system.json") 
+        source = os.path.join(self.script_dir,"muos-system.json") 
         system_json_path = os.path.join(self.parent_dir,"muos-system.json")
         ConfigCopier.ensure_config(system_json_path, Path(source))
         self.system_config = SystemConfig(system_json_path)
@@ -298,4 +300,36 @@ class MuosDevice(DeviceCommon):
 
         return data
 
-    
+    def add_app_launch_as_startup(self, input):
+        if (ControllerInput.A == input):
+            muos_frontend_sh_path = "/opt/muos/script/mux/frontend.sh"        
+            updated_frontend = os.path.join(self.script_dir,"frontend.sh") 
+            
+            try:
+                shutil.copyfile(updated_frontend, muos_frontend_sh_path)
+                print(f"Copied {updated_frontend} to {muos_frontend_sh_path}")
+            except OSError as e:
+                print(f"Failed to copy file: {e}")
+                
+            startup_path = "/opt/muos/config/settings/general/startup"
+            try:
+                with open(startup_path, "w") as f:
+                    f.write("lastapp\n")
+            except OSError as e:
+                print(f"Failed to write to {startup_path}: {e}")
+
+
+    def get_extra_settings_options(self):
+        option_list = []
+        option_list.append(
+                GridOrListEntry(
+                        primary_text="Set PyUI as Startup",
+                        value_text=None,
+                        image_path=None,
+                        image_path_selected=None,
+                        description=None,
+                        icon=None,
+                        value=self.add_app_launch_as_startup
+                    )
+                )
+        return option_list
