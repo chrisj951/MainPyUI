@@ -15,7 +15,7 @@ Still a WIP but works on the Miyoo Flip and partial compatibility on the TrimUI 
 | Miyoo Flip | 865f7a3 | Supported |
 | RG34XXSP (MuOS Goose)* | c12f38b | Supported |
 | RG28XX (MuOS Goose)* | c12f38b | Supported |
-| RG34XX (MuOS Goose)* | c12f38b | In Progress |
+| RG35XXSP (MuOS Goose)* | c12f38b | In Progress |
 | RGXX Others (MuOS Goose)* | c12f38b | Untested |
 | TrimUI Brick | 865f7a3 | Supported |
 
