@@ -1,6 +1,8 @@
 import json
+from pathlib import Path
 import re
 import subprocess
+import sys
 import time
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from apps.muos.muos_app_finder import MuosAppFinder
@@ -10,6 +12,7 @@ from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 from devices.charge.charge_status import ChargeStatus
 import os
 from devices.device_common import DeviceCommon
+from devices.miyoo.system_config import SystemConfig
 from devices.miyoo.trim_ui_joystick import TrimUIJoystick
 from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.utils.process_runner import ProcessRunner
@@ -20,18 +23,26 @@ from menus.games.utils.rom_info import RomInfo
 from menus.settings.button_remapper import ButtonRemapper
 import sdl2
 from utils import throttle
+from utils.config_copier import ConfigCopier
 from utils.logger import PyUiLogger
 
 from devices.device_common import DeviceCommon
 
 
 class MuosDevice(DeviceCommon):
-    OUTPUT_MIXER = 2
-    SOUND_DISABLED = 0
-
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
         self.muos_systems = self.load_assign_json()
+
+    def setup_system_config(self):
+        base_dir = os.path.abspath(sys.path[0])
+        PyUiLogger.get_logger().info(f"base_dir is {base_dir}")
+        script_dir = os.path.join(base_dir, "devices","muos")
+        self.parent_dir = os.path.dirname(base_dir)
+        source = os.path.join(script_dir,"muos-system.json") 
+        system_json_path = os.path.join(self.parent_dir,"muos-system.json")
+        ConfigCopier.ensure_config(system_json_path, Path(source))
+        self.system_config = SystemConfig(system_json_path)
 
     def sleep(self):
         ProcessRunner.run(["/opt/muos/script/system/suspend.sh"])
@@ -201,22 +212,22 @@ class MuosDevice(DeviceCommon):
         return None
 
     def get_favorites_path(self):
-        return "/mnt/sdcard/Saves/pyui-favorites.json"
+        return os.path.join(self.parent_dir,"/pyui-favorites.json")
     
     def get_recents_path(self):
-        return "/mnt/sdcard/Saves/pyui-recents.json"
+        return os.path.join(self.parent_dir,"/pyui-recents.json")
     
     def get_collections_path(self):
-        return "/mnt/sdcard/Collections/"
+        return os.path.join(self.parent_dir,"/Collections/")
 
     def launch_stock_os_menu(self):
         os._exit(0)
 
     def get_state_path(self):
-        return "/mnt/sdcard/Saves/pyui-state.json"
+        return os.path.join(self.parent_dir,"/pyui-state.json")
 
     def calibrate_sticks(self):
-        from controller.controller import Controller
+        pass
 
     def supports_analog_calibration(self):
         return False
