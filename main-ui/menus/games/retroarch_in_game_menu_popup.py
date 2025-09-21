@@ -37,7 +37,7 @@ class RetroarchInGameMenuPopup:
 
     def run_in_game_menu(self):
         popup_options = []
-
+        self.send_cmd_to_ra(b'PAUSE_TOGGLE')
         popup_options.append(GridOrListEntry(
             primary_text="Save State",
             image_path=Theme.settings(),
@@ -79,6 +79,8 @@ class RetroarchInGameMenuPopup:
                 break
         
         if(ControllerInput.A == popup_selection.get_input()): 
+            self.send_cmd_to_ra(b'PAUSE_TOGGLE')
             return popup_selection.get_selection().get_value()(popup_selection.get_input())
-
-        return True
+        else:
+            self.send_cmd_to_ra(b'PAUSE_TOGGLE')
+            return True
