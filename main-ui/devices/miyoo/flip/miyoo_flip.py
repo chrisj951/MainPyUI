@@ -99,20 +99,23 @@ class MiyooFlip(MiyooDevice):
         self._set_volume(config_volume)
 
     def init_bluetooth(self):
-        try:
-            subprocess.Popen(["insmod","/lib/modules/rtk_btusb.ko"],
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)
-        except Exception as e:
-            PyUiLogger.get_logger().error(f"Error running insmod {e}")
-
-        if(not self.is_btmanager_runing()):
+        if(self.system_config.is_bluetooth_enabled()):
             try:
-                subprocess.Popen(["/usr/miyoo/bin/btmanager"],
+                subprocess.Popen(["insmod","/lib/modules/rtk_btusb.ko"],
                                 stdout=subprocess.DEVNULL,
                                 stderr=subprocess.DEVNULL)
             except Exception as e:
                 PyUiLogger.get_logger().error(f"Error running insmod {e}")
+
+            if(not self.is_btmanager_runing()):
+                try:
+                    subprocess.Popen(["/usr/miyoo/bin/btmanager"],
+                                    stdout=subprocess.DEVNULL,
+                                    stderr=subprocess.DEVNULL)
+                except Exception as e:
+                    PyUiLogger.get_logger().error(f"Error running insmod {e}")
+        else:
+            self.disable_bluetooth()
 
     def is_btmanager_runing(self):
         try:
