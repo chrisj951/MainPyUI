@@ -625,7 +625,27 @@ class Display:
         # Query source texture size
         w = sdl2.c_int()
         h = sdl2.c_int()
-        sdl2.SDL_QueryTexture(cls.render_canvas, None, None, w, h)
+        query_texture_result = sdl2.SDL_QueryTexture(cls.render_canvas, None, None, w, h)
+        
+        if query_texture_result != 0:
+            # Destroy the old texture if it exists
+            if cls.render_canvas:
+                sdl2.SDL_DestroyTexture(cls.render_canvas)
+                cls.render_canvas = None
+
+            # Decide default size (fallback to current display size)
+            width, height = Device.screen_width(), Device.screen_height()
+
+            cls.render_canvas = sdl2.SDL_CreateTexture(
+                cls.renderer.sdlrenderer,
+                sdl2.SDL_PIXELFORMAT_RGBA8888,
+                sdl2.SDL_TEXTUREACCESS_TARGET,
+                width,
+                height
+            )
+            if not cls.render_canvas:
+                PyUiLogger.get_logger().error("Failed to recreate render_canvas: " + sdl2.SDL_GetError().decode())
+                return None        
             
         src_w, src_h = w.value, h.value
 
