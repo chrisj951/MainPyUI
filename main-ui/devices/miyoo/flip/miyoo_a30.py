@@ -1,5 +1,7 @@
 from concurrent.futures import Future
+import fcntl
 from pathlib import Path
+import struct
 import subprocess
 import threading
 from controller.controller_inputs import ControllerInput
@@ -139,10 +141,22 @@ class MiyooA30(MiyooDevice):
             return 1
     
     def _set_lumination_to_config(self):
-        #with open("/sys/class/backlight/backlight/brightness", "w") as f:
-        #    f.write(str(self.map_backlight_from_10_to_full_255(self.system_config.backlight)))
-        pass
-    
+        DISP_LCD_SET_BRIGHTNESS = 0x102
+        try:
+            fd = os.open("/dev/disp", os.O_RDWR)
+        except OSError as e:
+            print(f"Failed to open /dev/disp: {e}")
+            return
+
+        param = struct.pack('LLLL', 0, self.map_backlight_from_10_to_full_255(self.system_config.backlight, min_level=10), 0, 0)
+
+        try:
+            fcntl.ioctl(fd, DISP_LCD_SET_BRIGHTNESS, param)
+        except OSError as e:
+            print(f"ioctl failed: {e}")
+        finally:
+            os.close(fd)
+
     def _set_contrast_to_config(self):
 #        ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
 #                                    "179:contrast:"+str(self.system_config.contrast * 5)])
