@@ -78,35 +78,54 @@ class KeyWatcherController(ControllerInterface):
 
     def restore_cached_event(self):
         self.last_held_input = self.cached_input
+    def read_event(self, fd):
+        """Read exactly one input_event from fd (blocking)."""
+        buf = b''
+        while len(buf) < EVENT_SIZE:
+            try:
+                chunk = os.read(fd, EVENT_SIZE - len(buf))
+            except BlockingIOError:
+                continue
+            if not chunk:
+                PyUiLogger.get_logger().debug("EOF or no data read from fd")
+                return None
+            buf += chunk
 
+        event = struct.unpack(EVENT_FORMAT, buf)
+        return event
 
     def poll_keyboard(self):
-        while(True):
+        logger = PyUiLogger.get_logger()
+        logger.debug("Starting keyboard polling on fd %d", self.fd)
+        while True:
             now = time.time()
             try:
-                rlist, _, _ = select.select([self.fd], [], [], 100)
-                if rlist:
-                    data = os.read(self.fd, EVENT_SIZE)
+                event = self.read_event(self.fd)
+                if event is None:
+                    logger.debug("No event returned from read_event")
+                    continue
 
-                    if len(data) == EVENT_SIZE:
-                        _, _, event_type, code, value = struct.unpack(EVENT_FORMAT, data)
-                        key_event = KeyEvent(event_type, code, value)
-                        if key_event in self.key_mappings:
-                            mapped_events = self.key_mappings[key_event]
-                            if(mapped_events is not None and len(mapped_events) > 0):
-                                for mapped_event in mapped_events:
-                                    if mapped_event.key_state == KeyState.PRESS:
-                                        self.held_controller_inputs[mapped_event.controller_input] = now
-                                        #PyUiLogger.get_logger().debug(f"Adding {mapped_event.controller_input} to held inputs")
-                                    elif mapped_event.key_state == KeyState.RELEASE:
-                                        self.held_controller_inputs.pop(mapped_event.controller_input, None)
-                                        #PyUiLogger.get_logger().debug(f"Removing {mapped_event.controller_input} from held inputs")
-                            else:
-                                PyUiLogger.get_logger().error(f"No mapping for event: {key_event}")
+                tv_sec, tv_usec, event_type, code, value = event
+
+                key_event = KeyEvent(event_type, code, value)
+                if key_event in self.key_mappings:
+                    mapped_events = self.key_mappings[key_event]
+                    if mapped_events:
+                        for mapped_event in mapped_events:
+                            if mapped_event.key_state == KeyState.PRESS:
+                                self.held_controller_inputs[mapped_event.controller_input] = now
+                                logger.debug("Pressed: %s", mapped_event.controller_input)
+                            elif mapped_event.key_state == KeyState.RELEASE:
+                                self.held_controller_inputs.pop(mapped_event.controller_input, None)
+                                logger.debug("Released: %s", mapped_event.controller_input)
+                    else:
+                        logger.error("No mapping for event: %s", key_event)
+                else:
+                    logger.debug("Unmapped key event: %s", key_event)
 
             except Exception as e:
-                PyUiLogger.get_logger().error(f"Error reading input: {e}")
-
+                logger.exception("Error reading input")
+            
     def get_input(self, timeoutInMilliseconds):
         self.last_held_input = next(iter(self.held_controller_inputs), None)
         return self.last_held_input
