@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-import mmap
 import os
-import time
 from devices.device import Device
 from display.font_purpose import FontPurpose
 from display.loaded_font import LoadedFont
@@ -81,14 +79,10 @@ class Display:
     top_bar = TopBar()
     bottom_bar = BottomBar()
     window = None
-    background_surface = None
+    background_texture = None
     top_bar_text = None
     _image_texture_cache = ImageTextureCache()
     _text_texture_cache = TextTextureCache()
-    fb_fd = None
-    fb_mem = None
-    # Software surface to render into CPU memory
-    render_surface = None
 
     @classmethod
     def init(cls):
@@ -97,22 +91,18 @@ class Display:
         if sdl2.sdlttf.TTF_Init() == -1:
             raise RuntimeError("Failed to initialize SDL_ttf")
         cls.init_fonts()
-        cls.render_canvas = sdl2.SDL_CreateRGBSurfaceWithFormat(
-            0,
+        cls.render_canvas = sdl2.SDL_CreateTexture(
+            cls.renderer.renderer,
+            sdl2.SDL_PIXELFORMAT_ARGB8888,
+            sdl2.SDL_TEXTUREACCESS_TARGET,
             Device.screen_width(),
-            Device.screen_height(),
-            32,
-            sdl2.SDL_PIXELFORMAT_ARGB8888
+            Device.screen_height()
         )
-        if not cls.render_canvas:
-            raise RuntimeError(f"Failed to create render_canvas: {sdl2.SDL_GetError().decode()}")
         PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
-       # sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
+        sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
         PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
         sdl2.SDL_SetRenderDrawBlendMode(cls.renderer.renderer, sdl2.SDL_BLENDMODE_BLEND)
         PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
-        cls.setup_fb()
-
         cls.restore_bg()
         cls.clear("init")
         cls.present()
@@ -142,7 +132,7 @@ class Display:
         cls.window.show()
 
         sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, b"2")
-        cls.renderer = sdl2.ext.Renderer(cls.window, flags=sdl2.SDL_RENDERER_SOFTWARE)
+        cls.renderer = sdl2.ext.Renderer(cls.window, flags=sdl2.SDL_RENDERER_ACCELERATED)
 
     @classmethod
     def deinit_display(cls):
@@ -201,48 +191,35 @@ class Display:
 
 
     @classmethod
-    def _unload_bg_surface(cls):
-        """Free the current background surface."""
-        if getattr(cls, "background_surface", None):
-            sdl2.SDL_FreeSurface(cls.background_surface)
-            cls.background_surface = None
-            PyUiLogger.get_logger().debug("Destroyed background surface")
+    def _unload_bg_texture(cls):
+        if cls.background_texture:
+            sdl2.SDL_DestroyTexture(cls.background_texture)
+            cls.background_texture = None
+            PyUiLogger.get_logger().debug("Destroying bg texture")
 
     @classmethod
     def restore_bg(cls, bg=None):
-        """Restore a previous or default background."""
-        if bg is not None:
+        if(bg is not None):
             cls.set_new_bg(bg)
         else:
             cls.set_new_bg(Theme.background())
 
     @classmethod
     def set_new_bg(cls, bg_path):
-        """Load a PNG background into a surface."""
-        cls._unload_bg_surface()
+        cls._unload_bg_texture()
         cls.bg_path = bg_path
-        logger = PyUiLogger.get_logger()
-        logger.info(f"Using {bg_path} as the background")
-
-        if bg_path is None:
-            return
-
-        # Load PNG using SDL_image
-        surface = sdl2.sdlimage.IMG_Load(bg_path.encode("utf-8"))
-        if not surface:
-            logger.error(f"Failed to load image: {bg_path}")
-            return
-
-        # Optional: convert surface to match render_surface pixel format
-        if cls.render_surface:
-            converted = sdl2.SDL_ConvertSurfaceFormat(surface, sdl2.SDL_PIXELFORMAT_ARGB8888, 0)
-            sdl2.SDL_FreeSurface(surface)
-            surface = converted
+        PyUiLogger.get_logger().info(f"Using {bg_path} as the background")
+        if(bg_path is not None):
+            surface = sdl2.sdlimage.IMG_Load(cls.bg_path.encode('utf-8'))
             if not surface:
-                logger.error(f"Failed to convert background surface: {bg_path}")
+                PyUiLogger.get_logger().error(f"Failed to load image: {cls.bg_path}")
                 return
 
-        cls.background_surface = surface
+            cls.background_texture = sdl2.SDL_CreateTextureFromSurface(cls.renderer.renderer, surface)
+            sdl2.SDL_FreeSurface(surface)
+
+            if not cls.background_texture:
+                PyUiLogger.get_logger().error("Failed to create texture from surface")
 
     @classmethod
     def set_page_bg(cls, page_bg):
@@ -302,43 +279,21 @@ class Display:
             cls.bg_canvas = None
 
     @classmethod
-    def clear(
-        cls,
-        top_bar_text,
-        hide_top_bar_icons=False,
-        bottom_bar_text=None,
-        render_bottom_bar_icons_and_images=True
-    ):
+    def clear(cls, 
+              top_bar_text, 
+              hide_top_bar_icons = False,
+              bottom_bar_text = None,
+              render_bottom_bar_icons_and_images = True):
         cls.top_bar_text = top_bar_text
-        logger = PyUiLogger.get_logger()
 
-        # Make sure the render_surface exists
-        if cls.render_canvas is None:
-            raise RuntimeError("Render surface not initialized; cannot clear")
+        if cls.bg_canvas is not None:
+            sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.bg_canvas, None, None)
+        elif cls.background_texture is not None:
+            sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.background_texture, None, None)
 
-        # Blit background
-        if cls.background_surface is not None:
-            ret = sdl2.SDL_BlitSurface(
-                cls.background_surface,  # source surface
-                None,                    # src rect = full surface
-                cls.render_canvas,      # destination surface
-                None                     # dst rect = upper-left
-            )
-            if ret != 0:
-                raise RuntimeError(
-                    f"SDL_BlitSurface failed for background_surface: {sdl2.SDL_GetError().decode()}"
-                )
-        else:
-            # Clear to black if no background
-            sdl2.SDL_FillRect(cls.render_canvas, None, 0x000000FF)
-
-        # Render top/bottom bars if needed
         if not Theme.render_top_and_bottom_bar_last():
-            cls.top_bar.render_top_bar(cls.top_bar_text, hide_top_bar_icons)
-            cls.bottom_bar.render_bottom_bar(
-                bottom_bar_text,
-                render_bottom_bar_icons_and_images=render_bottom_bar_icons_and_images
-            )
+            cls.top_bar.render_top_bar(cls.top_bar_text,hide_top_bar_icons)
+            cls.bottom_bar.render_bottom_bar(bottom_bar_text, render_bottom_bar_icons_and_images=render_bottom_bar_icons_and_images)
 
     @classmethod
     def _log(cls, msg):
@@ -375,57 +330,89 @@ class Display:
 
 
     @classmethod
-    def _render_surface_texture(cls, x, y, surface, render_mode: RenderMode,
+    def _render_surface_texture(cls, x, y, texture, surface, render_mode: RenderMode, texture_id,
                                 scale_width=None, scale_height=None, crop_w=None, crop_h=None,
                                 resize_type=ResizeType.FIT):
-        """Render a surface to cls.render_canvas using software blitting, keeping alignment, crop, scaling."""
-        if resize_type is None:
-            resize_type = ResizeType.FIT
-
+        #If resize_type is none set it to fit for now,
+        #Need to push this further up stream though
+        if(resize_type is None):
+            resize_type=ResizeType.FIT
+        
         orig_w = surface.contents.w
         orig_h = surface.contents.h
         render_w, render_h = cls._calculate_scaled_width_and_height(orig_w, orig_h, scale_width, scale_height, resize_type)
 
-        # Compute alignment offsets
-        adj_x, adj_y = x, y
-        if XRenderOption.CENTER == render_mode.x_mode:
-            adj_x = x - render_w // 2
-        elif XRenderOption.RIGHT == render_mode.x_mode:
-            adj_x = x - render_w
-        if YRenderOption.CENTER == render_mode.y_mode:
-            adj_y = y - render_h // 2
-        elif YRenderOption.BOTTOM == render_mode.y_mode:
-            adj_y = y - render_h
-        adj_x, adj_y = int(adj_x), int(adj_y)
+        # Adjust position based on render mode
+        adj_x = x
+        adj_y = y
+                
+        if resize_type == ResizeType.ZOOM and scale_width and scale_height:
 
-        # Crop handling
-        if crop_w is None or crop_w > orig_w:
-            crop_w = orig_w
-        if crop_h is None or crop_h > orig_h:
-            crop_h = orig_h
-        src_rect = sdl2.SDL_Rect(0, 0, crop_w, crop_h)
-        dst_rect = sdl2.SDL_Rect(adj_x, adj_y, render_w, render_h)
+            if XRenderOption.CENTER == render_mode.x_mode:
+                adj_x = x - (scale_width or render_w) // 2
+            elif XRenderOption.RIGHT == render_mode.x_mode:
+                adj_x = x - (scale_width or render_w)
 
-        # Scale surface if needed
-        if render_w != crop_w or render_h != crop_h:
-            tmp_surface = sdl2.SDL_CreateRGBSurfaceWithFormat(0, render_w, render_h, 32, sdl2.SDL_PIXELFORMAT_ARGB8888)
-            sdl2.SDL_BlitScaled(surface, src_rect, tmp_surface, sdl2.SDL_Rect(0, 0, render_w, render_h))
-            sdl2.SDL_BlitSurface(tmp_surface, None, cls.render_canvas, dst_rect)
-            sdl2.SDL_FreeSurface(tmp_surface)
+            if YRenderOption.CENTER == render_mode.y_mode:
+                adj_y = y - (scale_height or render_h) // 2
+            elif YRenderOption.BOTTOM == render_mode.y_mode:
+                adj_y = y - (scale_height or render_h)
+
+            adj_x = int(adj_x)
+            adj_y = int(adj_y)
+            # Calculate cropping to center the zoomed image
+            src_w = int(scale_width * (orig_w / render_w))
+            src_h = int(scale_height * (orig_h / render_h))
+            src_x = max(0, (orig_w - src_w) // 2)
+            src_y = max(0, (orig_h - src_h) // 2)
+
+            src_rect = sdl2.SDL_Rect(src_x, src_y, src_w, src_h)
+            dst_rect = sdl2.SDL_Rect(adj_x, adj_y, scale_width, scale_height)
+
+            sdl2.SDL_RenderCopy(cls.renderer.renderer, texture, src_rect, dst_rect)
+
+            return scale_width, scale_height
         else:
-            sdl2.SDL_BlitSurface(surface, src_rect, cls.render_canvas, dst_rect)
+                
+            if XRenderOption.CENTER == render_mode.x_mode:
+                adj_x = x - (render_w) // 2
+            elif XRenderOption.RIGHT == render_mode.x_mode:
+                adj_x = x - (render_w)
 
-        return render_w, render_h
+            if YRenderOption.CENTER == render_mode.y_mode:
+                adj_y = y - (render_h) // 2
+            elif YRenderOption.BOTTOM == render_mode.y_mode:
+                adj_y = y - (render_h)
+
+            adj_x = int(adj_x)
+            adj_y = int(adj_y)
+
+            # Handle regular FIT or uncropped draw
+            if crop_w is None and crop_h is None:
+                rect = sdl2.SDL_Rect(adj_x, adj_y, render_w, render_h)
+                sdl2.SDL_RenderCopy(cls.renderer.renderer, texture, None, rect)
+            else:
+                if crop_w is None or crop_w > orig_w:
+                    crop_w = orig_w
+                if crop_h is None or crop_h > orig_h:
+                    crop_h = orig_h
+
+                src_rect = sdl2.SDL_Rect(0, 0, crop_w, crop_h)
+                dst_rect = sdl2.SDL_Rect(adj_x, adj_y, crop_w, crop_h)
+                sdl2.SDL_RenderCopy(cls.renderer.renderer, texture, src_rect, dst_rect)
+
+            return render_w, render_h
 
 
     @classmethod
     def render_text(cls, text, x, y, color, purpose: FontPurpose, render_mode=RenderMode.TOP_LEFT_ALIGNED,
                     crop_w=None, crop_h=None, alpha=None):
         loaded_font = cls.fonts[purpose]
-        cache : CachedTextTexture = cls._text_texture_cache.get_texture(text, purpose, color)
-
+        cache : CachedImageTexture = cls._text_texture_cache.get_texture(text, purpose, color)
+        
         if cache and alpha is None:
             surface = cache.surface
+            texture = cache.texture
         else:
             sdl_color = sdl2.SDL_Color(color[0], color[1], color[2])
             surface = sdl2.sdlttf.TTF_RenderUTF8_Blended(loaded_font.font, text.encode('utf-8'), sdl_color)
@@ -433,46 +420,78 @@ class Display:
                 PyUiLogger.get_logger().error(f"Failed to render text surface for {text}: {sdl2.sdlttf.TTF_GetError().decode('utf-8')}")
                 return 0, 0
 
-            if alpha is not None:
-                # Temporary alpha blend
-                sdl2.SDL_SetSurfaceBlendMode(surface, sdl2.SDL_BLENDMODE_BLEND)
-                # SDL_SetSurfaceAlphaMod requires SDL2 >= 2.0.12; otherwise pre-multiply manually
-                sdl2.SDL_SetSurfaceAlphaMod(surface, alpha)
+            texture = sdl2.SDL_CreateTextureFromSurface(cls.renderer.renderer, surface)
+            if not texture:
+                sdl2.SDL_FreeSurface(surface)
+                PyUiLogger.get_logger().error(f"Failed to create texture from surface {text}: {sdl2.sdlttf.TTF_GetError().decode('utf-8')}")
+                return 0, 0
 
-            cls._text_texture_cache.add_texture(text, purpose, color, surface, None)
+            if(alpha is not None):
+                sdl2.SDL_SetTextureBlendMode(texture, sdl2.SDL_BLENDMODE_BLEND)
+                sdl2.SDL_SetTextureAlphaMod(texture, alpha)
+                w,h = cls._render_surface_texture(
+                        x=x,
+                        y=y, 
+                        texture=texture, 
+                        surface=surface, 
+                        render_mode=render_mode, 
+                        texture_id=text, 
+                        crop_w=crop_w, 
+                        crop_h=crop_h)
+                sdl2.SDL_DestroyTexture(texture)
+                sdl2.SDL_FreeSurface(surface)
+                return w,h
+            else:
+                cls._text_texture_cache.add_texture(text, purpose, color, surface, texture)
 
-        return cls._render_surface_texture(x=x, y=y, surface=surface, render_mode=render_mode,
-                                        crop_w=crop_w, crop_h=crop_h)
-
+        return cls._render_surface_texture(
+                x=x,
+                y=y, 
+                texture=texture, 
+                surface=surface, 
+                render_mode=render_mode, 
+                texture_id=text, 
+                crop_w=crop_w, 
+                crop_h=crop_h)
 
     @classmethod
     def render_text_centered(cls, text, x, y, color, purpose: FontPurpose):
         return cls.render_text(text, x, y, color, purpose, RenderMode.TOP_CENTER_ALIGNED)
 
-
-
     @classmethod
-    def render_image(cls, image_path: str, x: int, y: int, render_mode=RenderMode.TOP_LEFT_ALIGNED,
-                    target_width=None, target_height=None, resize_type=None):
-        if image_path is None:
+    def render_image(cls, image_path: str, x: int, y: int, render_mode=RenderMode.TOP_LEFT_ALIGNED, target_width=None, target_height=None, resize_type=None):
+        if(image_path is None):
             return 0, 0
 
         cache : CachedImageTexture = cls._image_texture_cache.get_texture(image_path)
-
+        
         if cache:
             surface = cache.surface
+            texture = cache.texture
         else:
             surface = sdl2.sdlimage.IMG_Load(image_path.encode('utf-8'))
             if not surface:
                 PyUiLogger.get_logger().error(f"Failed to load image: {image_path}")
                 return 0, 0
-            cls._image_texture_cache.add_texture(image_path, surface, None)
 
-        return cls._render_surface_texture(x=x, y=y, surface=surface, render_mode=render_mode,
-                                        scale_width=target_width, scale_height=target_height,
-                                        resize_type=resize_type)
+            texture = sdl2.SDL_CreateTextureFromSurface(cls.renderer.renderer, surface)
+            if not texture:
+                sdl2.SDL_FreeSurface(surface)
+                PyUiLogger.get_logger().error("Failed to create texture from surface")
+                return 0, 0
 
+            sdl2.SDL_SetTextureBlendMode(texture, sdl2.SDL_BLENDMODE_BLEND)
+            cls._image_texture_cache.add_texture(image_path,surface, texture)
 
+        return cls._render_surface_texture(x=x, 
+                                           y=y, 
+                                           texture=texture, 
+                                           surface=surface, 
+                                           render_mode=render_mode, 
+                                           scale_width=target_width, 
+                                           scale_height=target_height,
+                                           resize_type=resize_type, 
+                                           texture_id=image_path)
 
     @classmethod
     def render_image_centered(cls, image_path: str, x: int, y: int, target_width=None, target_height=None):
@@ -490,43 +509,46 @@ class Display:
         return cls.fonts[purpose].line_height
 
     @classmethod
-    def scale_texture_to_fit(cls, src_surface: sdl2.SDL_Surface, target_width: int, target_height: int) -> sdl2.SDL_Surface:
-        """
-        Scale src_surface to fit within target_width x target_height, preserving aspect ratio.
-        Returns a new SDL_Surface with dimensions target_width x target_height.
-        """
-        src_w = src_surface.contents.w
-        src_h = src_surface.contents.h
+    def scale_texture_to_fit(cls, src_texture: sdl2.SDL_Texture, target_width: int, target_height: int) -> sdl2.SDL_Texture:
+        width = sdl2.c_int()
+        height = sdl2.c_int()
+        sdl2.SDL_QueryTexture(src_texture, None, None, width, height)
 
-        # Compute scale factor (fit inside target)
+        src_w = width.value
+        src_h = height.value
+
         scale = min(target_width / src_w, target_height / src_h)
-        new_w = int(src_w * scale)
-        new_h = int(src_h * scale)
+        new_width = int(src_w * scale)
+        new_height = int(src_h * scale)
 
-        offset_x = (target_width - new_w) // 2
-        offset_y = (target_height - new_h) // 2
+        offset_x = (target_width - new_width) // 2
+        offset_y = (target_height - new_height) // 2
 
-        # Create target surface
-        scaled_surface = sdl2.SDL_CreateRGBSurfaceWithFormat(
-            0, target_width, target_height, 32, sdl2.SDL_PIXELFORMAT_ARGB8888
+        scaled_texture = sdl2.SDL_CreateTexture(
+            cls.renderer.sdlrenderer,
+            sdl2.SDL_PIXELFORMAT_ARGB8888,
+            sdl2.SDL_TEXTUREACCESS_TARGET,
+            target_width,
+            target_height
         )
-        if not scaled_surface:
-            raise RuntimeError(f"Failed to create target surface: {sdl2.SDL_GetError().decode()}")
 
-        # Fill target with black
-        sdl2.SDL_FillRect(scaled_surface, None, 0xFF000000)
+        if not scaled_texture:
+            raise RuntimeError("Failed to create scaled texture")
 
-        # Source rect
-        src_rect = sdl2.SDL_Rect(0, 0, src_w, src_h)
-        # Destination rect (centered)
-        dst_rect = sdl2.SDL_Rect(offset_x, offset_y, new_w, new_h)
+        old_target = sdl2.SDL_GetRenderTarget(cls.renderer.sdlrenderer)
 
-        # Blit scaled surface
-        if sdl2.SDL_BlitScaled(src_surface, src_rect, scaled_surface, dst_rect) != 0:
-            raise RuntimeError(f"SDL_BlitScaled failed: {sdl2.SDL_GetError().decode()}")
+        sdl2.SDL_SetTextureBlendMode(src_texture, sdl2.SDL_BLENDMODE_BLEND)
+        sdl2.SDL_SetTextureBlendMode(scaled_texture, sdl2.SDL_BLENDMODE_BLEND)
 
-        return scaled_surface
+        sdl2.SDL_SetRenderTarget(cls.renderer.sdlrenderer, scaled_texture)
+        sdl2.SDL_SetRenderDrawColor(cls.renderer.sdlrenderer, 0, 0, 0, 0)
+        sdl2.SDL_RenderClear(cls.renderer.sdlrenderer)
 
+        dest_rect = sdl2.SDL_Rect(offset_x, offset_y, new_width, new_height)
+        sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, src_texture, None, dest_rect)
+
+        sdl2.SDL_SetRenderTarget(cls.renderer.sdlrenderer, old_target)
+        return scaled_texture
 
     FADE_DURATION_MS = 96  # 0.25 seconds
 
@@ -687,101 +709,25 @@ class Display:
             cls.top_bar.render_top_bar(cls.top_bar_text)
             cls.bottom_bar.render_bottom_bar()
 
-        #sdl2.SDL_SetRenderTarget(cls.renderer.renderer, None)
+        sdl2.SDL_SetRenderTarget(cls.renderer.renderer, None)
 
         if Device.should_scale_screen():
             scaled_canvas = cls.scale_texture_to_fit(cls.render_canvas, Device.output_screen_width(), Device.output_screen_height())
             sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, scaled_canvas, None, None)
             sdl2.SDL_DestroyTexture(scaled_canvas)
         elif(0 == Device.screen_rotation()):
-            pass
-            #if(fade):
-            #    cls.fade_transition(cls.bg_canvas, cls.render_canvas)
-            #else:
-            #    sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.render_canvas, None, None)
+            if(fade):
+                cls.fade_transition(cls.bg_canvas, cls.render_canvas)
+            else:
+                sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.render_canvas, None, None)
         else:   
                 rotated_texture = cls.rotate_canvas()
                 if(rotated_texture is not None):
                     sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, rotated_texture, None, None)
                     sdl2.SDL_DestroyTexture(rotated_texture)  # free GPU memory
 
-        #sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
+        sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
         cls.renderer.present()
-        cls.present_to_fb()
-        #sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
-
-    @classmethod
-    def setup_fb(cls, fb_path="/dev/fb0"):
-        """Open and mmap framebuffer once at startup."""
-        cls.fb_fd = os.open(fb_path, os.O_RDWR)
-        cls.fb_mem = mmap.mmap(
-            cls.fb_fd,
-            Device.screen_width() * Device.screen_height() * 4,
-            mmap.MAP_SHARED,
-            mmap.PROT_WRITE | mmap.PROT_READ
-        )
-
-        # Create main offscreen surface (software ARGB8888)
-        cls.render_surface = sdl2.SDL_CreateRGBSurfaceWithFormat(
-            0,
-            Device.screen_width(),
-            Device.screen_height(),
-            32,
-            sdl2.SDL_PIXELFORMAT_ARGB8888
-        )
-        if not cls.render_surface:
-            raise RuntimeError(f"Failed to create software surface: {sdl2.SDL_GetError().decode()}")
-
-        # Fill black initially
-        sdl2.SDL_FillRect(cls.render_surface, None, 0xFF000000)
-
-    @classmethod
-    def present_to_fb(cls):
-        """Fast copy of cls.render_canvas (SDL_Surface) to /dev/fb0."""
-        logger = PyUiLogger.get_logger()
-        logger.debug("present_to_fb_fast called")
-
-        if cls.fb_mem is None or cls.render_surface is None:
-            logger.info("Framebuffer or render_surface not initialized; calling setup_fb")
-            cls.setup_fb()
-
-        if cls.render_canvas is None:
-            logger.warning("render_canvas is None; nothing to render")
-            return
-
-        width = Device.screen_width()
-        height = Device.screen_height()
-        surface = cls.render_canvas
-
-        # Lock surface if needed
-        if sdl2.SDL_MUSTLOCK(surface):
-            sdl2.SDL_LockSurface(surface)
-
-        src_ptr = ctypes.cast(surface.contents.pixels, ctypes.POINTER(ctypes.c_uint8))
-        fb_ptr = ctypes.cast(ctypes.addressof(ctypes.c_char.from_buffer(cls.fb_mem)), ctypes.POINTER(ctypes.c_uint8))
-
-        src_pitch = surface.contents.pitch
-        fb_pitch = cls.render_surface.contents.pitch
-
-        if src_pitch == fb_pitch:
-            # Direct block copy
-            size = src_pitch * height
-            ctypes.memmove(fb_ptr, src_ptr, size)
-        else:
-            # Row-by-row copy (slower)
-            logger.debug(f"Pitch mismatch detected (src: {src_pitch}, fb: {fb_pitch}), copying row by row")
-            for y in range(height):
-                src_offset = y * src_pitch
-                fb_offset = y * fb_pitch
-                ctypes.memmove(ctypes.byref(fb_ptr, fb_offset),
-                            ctypes.byref(src_ptr, src_offset),
-                            min(src_pitch, fb_pitch))
-
-        if sdl2.SDL_MUSTLOCK(surface):
-            sdl2.SDL_UnlockSurface(surface)
-
-        logger.debug("Frame copied to framebuffer (fast)")
-
 
     #TODO make default false and fix everywhere
     @classmethod
