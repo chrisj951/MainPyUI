@@ -94,20 +94,25 @@ class KeyWatcherController(ControllerInterface):
         event = struct.unpack(EVENT_FORMAT, buf)
         return event
 
+
     def poll_keyboard(self):
         logger = PyUiLogger.get_logger()
         logger.debug("Starting keyboard polling on fd %d", self.fd)
+
         while True:
             now = time.time()
             try:
-                event = self.read_event(self.fd)
-                if event is None:
-                    logger.debug("No event returned from read_event")
+                # One blocking read per event — no extra loop
+                data = os.read(self.fd, EVENT_SIZE)
+
+                if len(data) != EVENT_SIZE:
+                    logger.error("Short read: got %d bytes, expected %d", len(data), EVENT_SIZE)
                     continue
 
-                tv_sec, tv_usec, event_type, code, value = event
+                tv_sec, tv_usec, event_type, code, value = struct.unpack(EVENT_FORMAT, data)
 
                 key_event = KeyEvent(event_type, code, value)
+
                 if key_event in self.key_mappings:
                     mapped_events = self.key_mappings[key_event]
                     if mapped_events:
@@ -125,7 +130,8 @@ class KeyWatcherController(ControllerInterface):
 
             except Exception as e:
                 logger.exception("Error reading input")
-            
+
+
     def get_input(self, timeoutInMilliseconds):
         self.last_held_input = next(iter(self.held_controller_inputs), None)
         return self.last_held_input
