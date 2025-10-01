@@ -44,7 +44,7 @@ def log_renderer_info():
 def initialize_device(device):
     if "MIYOO_FLIP" == device:
         Device.init(MiyooFlip())
-    if "MIYOO_MINI_FLIP" == device:
+    elif "MIYOO_MINI_FLIP" == device:
         Device.init(MiyooMiniFlip())
     elif "TRIMUI_BRICK" == device:
         from devices.trimui.trim_ui_brick import TrimUIBrick
