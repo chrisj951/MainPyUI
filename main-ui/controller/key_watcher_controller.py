@@ -45,7 +45,7 @@ class KeyWatcherController(ControllerInterface):
         self.held_controller_inputs = OrderedDict()
 
         try:
-            self.fd = os.open(self.event_path, os.O_RDONLY | os.O_NONBLOCK)
+            self.fd = os.open(self.event_path, os.O_RDONLY)
         except OSError as e:
             print(f"Error opening {self.event_path}: {e}")
             self.fd = None
@@ -129,7 +129,7 @@ class KeyWatcherController(ControllerInterface):
                     logger.debug("Unmapped key event: %s", key_event)
 
             except Exception as e:
-                logger.exception("Error reading input")
+                logger.exception("Error reading input: %s", e)
 
 
     def get_input(self, timeoutInMilliseconds):

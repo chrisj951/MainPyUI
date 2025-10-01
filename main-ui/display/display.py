@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum, auto
+import fcntl
+import mmap
 import os
+import struct
+import time
 from devices.device import Device
 from display.font_purpose import FontPurpose
 from display.loaded_font import LoadedFont
@@ -17,6 +21,8 @@ from themes.theme import Theme
 from utils.logger import PyUiLogger
 import ctypes
 from ctypes import c_double
+
+FBIOGET_FSCREENINFO = 0x4602
 
 @dataclass
 class CachedImageTexture:
@@ -83,6 +89,7 @@ class Display:
     top_bar_text = None
     _image_texture_cache = ImageTextureCache()
     _text_texture_cache = TextTextureCache()
+    fb_mem = None
 
     @classmethod
     def init(cls):
@@ -132,7 +139,7 @@ class Display:
         cls.window.show()
 
         sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, b"2")
-        cls.renderer = sdl2.ext.Renderer(cls.window, flags=sdl2.SDL_RENDERER_ACCELERATED)
+        cls.renderer = sdl2.ext.Renderer(cls.window, flags=sdl2.SDL_RENDERER_SOFTWARE)
 
     @classmethod
     def deinit_display(cls):
@@ -554,7 +561,7 @@ class Display:
 
     @classmethod
     def fade_transition(cls, texture1, texture2):
-        renderer = cls.renderer.renderer
+        renderer = cls.renderer.sdlrenderer
 
         # Get renderer output size (window size)
         width = ctypes.c_int()
@@ -702,14 +709,117 @@ class Display:
         sdl2.SDL_SetRenderTarget(cls.renderer.sdlrenderer, None)
 
         return rotated_texture
-         
+
+    @classmethod
+    def get_fb_info(cls, fd):
+        FBIOGET_FSCREENINFO = 0x4602
+        FBIOGET_VSCREENINFO = 0x4600
+        # struct fb_fix_screeninfo has line_length at offset 16, 32-bit
+        fix_info = fcntl.ioctl(fd, FBIOGET_FSCREENINFO, b"\x00"*64)
+        line_length = struct.unpack_from("I", fix_info, 16)[0]
+        return line_length
+
+
+    @classmethod
+    def get_fb_line_length(cls,fb_fd):
+        FBIOGET_FSCREENINFO = 0x4602
+        # fb_fix_screeninfo is 64 bytes; line_length is at offset 16 (uint32)
+        buf = bytearray(64)
+        fcntl.ioctl(fb_fd, FBIOGET_FSCREENINFO, buf)
+        return struct.unpack_from("I", buf, 16)[0]
+
+    @staticmethod
+    def _get_fb_line_length(fd):
+        buf = bytearray(160)  # struct fb_fix_screeninfo
+        fcntl.ioctl(fd, FBIOGET_FSCREENINFO, buf, True)
+        line_length = struct.unpack_from("I", buf, 32)[0]
+        return line_length
+
+    @classmethod 
+    def setup_fb(cls, fb_path="/dev/fb0"):
+        """ Open and mmap framebuffer once at startup and create a single readback surface. 
+        Uses the same mmap sizing as your working surface-based code (width * height * 4). 
+        """ 
+        logger = PyUiLogger.get_logger() 
+        if getattr(cls, "fb_mem", None) is not None: 
+            # already initialized 
+            return 
+        # open fb device 
+        try: 
+            cls.fb_fd = os.open(fb_path, os.O_RDWR) 
+        except Exception as e: 
+            raise RuntimeError(f"Failed to open {fb_path}: {e}") 
+            
+        # mmap size exactly like your working code 
+        fb_size = Device.screen_width() * Device.screen_height() * 4 
+        try: 
+            cls.fb_mem = mmap.mmap(cls.fb_fd, fb_size, mmap.MAP_SHARED,mmap.PROT_WRITE | mmap.PROT_READ) 
+        except Exception as e: 
+            os.close(cls.fb_fd) 
+            cls.fb_fd = None 
+            raise RuntimeError(f"Failed to mmap framebuffer: {e}") 
+            
+        logger.info(f"Framebuffer mmaped: fd={cls.fb_fd}, size={fb_size} bytes")
+
+    @classmethod
+    def present_to_fb(cls):
+        """
+        Copy the renderer output (cls.render_canvas) into /dev/fb0.
+        Works directly with SDL_Texture using SDL_RenderReadPixels and ctypes.memmove.
+        """
+        logger = PyUiLogger.get_logger()
+        start_total = time.time()
+
+        if cls.render_canvas is None or getattr(cls, "renderer", None) is None:
+            logger.info("Renderer or render_canvas not initialized")
+            return
+
+        if getattr(cls, "fb_mem", None) is None:
+            logger.info("Framebuffer not initialized; calling setup_fb()")
+            cls.setup_fb()
+
+        sdl_renderer = cls.renderer.sdlrenderer
+
+        width = Device.screen_width()
+        height = Device.screen_height()
+        fb_pitch = width * 4  # framebuffer bytes per row
+
+        # Allocate a temporary buffer for pixels
+        pixel_buffer = (ctypes.c_uint32 * (width * height))()
+
+        # Ensure we read from the render_canvas texture
+        old_target = sdl2.SDL_GetRenderTarget(sdl_renderer)
+        sdl2.SDL_SetRenderTarget(sdl_renderer, cls.render_canvas)
+
+        # Read pixels into the buffer
+        ret = sdl2.SDL_RenderReadPixels(
+            sdl_renderer,
+            None,  # full rect
+            sdl2.SDL_PIXELFORMAT_ARGB8888,
+            pixel_buffer,
+            width * 4  # pitch in bytes
+        )
+
+        # Restore previous render target
+        sdl2.SDL_SetRenderTarget(sdl_renderer, old_target)
+
+        if ret != 0:
+            raise RuntimeError(f"SDL_RenderReadPixels failed: {sdl2.SDL_GetError().decode()}")
+
+        # Fast copy to framebuffer using memmove
+        fb_base = ctypes.addressof(ctypes.c_char.from_buffer(cls.fb_mem))
+        ctypes.memmove(fb_base, pixel_buffer, width * height * 4)
+
+        t_total = time.time() - start_total
+        logger.debug(f"Total present_to_fb duration: {t_total*1000:.2f} ms")
+
     @classmethod
     def present(cls, fade=False):
         if Theme.render_top_and_bottom_bar_last():
             cls.top_bar.render_top_bar(cls.top_bar_text)
             cls.bottom_bar.render_bottom_bar()
 
-        sdl2.SDL_SetRenderTarget(cls.renderer.renderer, None)
+        sdl2.SDL_SetRenderTarget(cls.renderer.sdlrenderer, None)
 
         if Device.should_scale_screen():
             scaled_canvas = cls.scale_texture_to_fit(cls.render_canvas, Device.output_screen_width(), Device.output_screen_height())
@@ -726,7 +836,8 @@ class Display:
                     sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, rotated_texture, None, None)
                     sdl2.SDL_DestroyTexture(rotated_texture)  # free GPU memory
 
-        sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
+        sdl2.SDL_SetRenderTarget(cls.renderer.sdlrenderer, cls.render_canvas)
+        cls.present_to_fb()
         cls.renderer.present()
 
     #TODO make default false and fix everywhere
