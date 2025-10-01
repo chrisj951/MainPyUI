@@ -62,8 +62,9 @@ class MiyooTrimCommon():
         #miyoo maps it to /media/sdcard0/Emu/FAKE08/../../Roms/FAKE08/Alpine Alpaca.p8
         miyoo_app_path = MiyooTrimCommon.convert_game_path_to_miyoo_path(rom_info.rom_file_path, remap_sdcard_path)
         MiyooTrimCommon.write_cmd_to_run(f'''chmod a+x "{launch_path}";"{launch_path}" "{miyoo_app_path}"''')
-
         device.fix_sleep_sound_bug()
+        PyUiLogger.get_logger().info(f"Writing cmd to run: chmod a+x \"{launch_path}\";\"{launch_path}\" \"{miyoo_app_path}\"")
+
 
         Device.exit_pyui()
         #try:
@@ -78,6 +79,14 @@ class MiyooTrimCommon():
         device.fix_sleep_sound_bug()
         PyUiLogger.get_logger().debug(f"About to launch app {args} from dir {dir}")
         subprocess.run(args, cwd = dir)
+
+    @staticmethod
+    def run_app(device, app):
+        directory = os.path.dirname(app)
+        device.fix_sleep_sound_bug()
+        PyUiLogger.get_logger().info(f"Writing cmd to run: chmod a+x \"{app}\";\"{app}\"")
+        MiyooTrimCommon.write_cmd_to_run(f'''chmod a+x "{app}"; "{app}"''')
+        Device.exit_pyui()
 
     @staticmethod
     def stop_wifi_services(device):

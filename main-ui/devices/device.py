@@ -107,6 +107,10 @@ class Device:
         return Device._impl.run_cmd(args, dir)
 
     @staticmethod
+    def run_app(app):
+        return Device._impl.run_app(app)
+
+    @staticmethod
     def map_digital_input(sdl_input):
         return Device._impl.map_digital_input(sdl_input)
 

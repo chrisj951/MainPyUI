@@ -103,6 +103,10 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
+    def run_app(self, app):
+        pass
+
+    @abstractmethod
     def map_digital_input(self, sdl_input):
         pass
 

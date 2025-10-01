@@ -62,6 +62,9 @@ class MiyooDevice(DeviceCommon):
     def run_cmd(self, args, dir = None):
         MiyooTrimCommon.run_cmd(self, args, dir)
 
+    def run_app(self, app):
+        MiyooTrimCommon.run_app(self, app)
+
     #TODO untested
     def map_analog_axis(self,sdl_input, value, threshold=16000):
         if sdl_input == sdl2.SDL_CONTROLLER_AXIS_LEFTX:
