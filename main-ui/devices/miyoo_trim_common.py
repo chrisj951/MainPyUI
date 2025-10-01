@@ -74,7 +74,7 @@ class MiyooTrimCommon():
         #    return None
         
     @staticmethod
-    def run_app(device, args, dir = None):
+    def run_cmd(device, args, dir = None):
         device.fix_sleep_sound_bug()
         PyUiLogger.get_logger().debug(f"About to launch app {args} from dir {dir}")
         subprocess.run(args, cwd = dir)

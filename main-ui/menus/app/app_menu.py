@@ -82,7 +82,7 @@ class AppMenu:
                 filepath = selected.get_selection().get_value().get_launch()
                 directory = selected.get_selection().get_value().get_folder()
                 Display.deinit_display()
-                Device.run_app(["sh", filepath], directory)
+                Device.run_cmd(["sh", filepath], directory)
                 Controller.clear_input_queue()
                 Display.reinitialize()
             elif(ControllerInput.B == selected.get_input()):

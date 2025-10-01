@@ -99,7 +99,7 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def run_app(self, args, dir = None):
+    def run_cmd(self, args, dir = None):
         pass
 
     @abstractmethod

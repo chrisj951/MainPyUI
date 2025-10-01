@@ -103,8 +103,8 @@ class Device:
         return Device._impl.run_game(rom_info)
 
     @staticmethod
-    def run_app(args, dir=None):
-        return Device._impl.run_app(args, dir)
+    def run_cmd(args, dir=None):
+        return Device._impl.run_cmd(args, dir)
 
     @staticmethod
     def map_digital_input(sdl_input):

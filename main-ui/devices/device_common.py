@@ -31,9 +31,9 @@ class DeviceCommon(AbstractDevice):
             Display.present()
             if(Controller.get_input()):
                 if(Controller.last_input() == ControllerInput.A):
-                    self.run_app([self.power_off_cmd])
+                    self.run_cmd([self.power_off_cmd])
                 elif(Controller.last_input() == ControllerInput.X and self.reboot_cmd is not None):
-                    self.run_app([self.reboot_cmd])
+                    self.run_cmd([self.reboot_cmd])
                 elif(Controller.last_input() == ControllerInput.B):
                     return
 
