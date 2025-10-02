@@ -72,9 +72,6 @@ class MiyooMiniFlip(MiyooDevice):
             Controller.add_button_watcher(self.volume_key_watcher.poll_keyboard)
             volume_key_polling_thread = threading.Thread(target=self.volume_key_watcher.poll_keyboard, daemon=True)
             volume_key_polling_thread.start()
-            self.power_key_watcher = KeyWatcher("/dev/input/event2")
-            power_key_polling_thread = threading.Thread(target=self.power_key_watcher.poll_keyboard, daemon=True)
-            power_key_polling_thread.start()
 
         self.unknown_axis_ranges = {}  # axis -> (min, max)
         self.unknown_axis_stats = {}   # axis -> (sum, count)
@@ -132,12 +129,17 @@ class MiyooMiniFlip(MiyooDevice):
 
 
     def init_gpio(self):
+        #self.init_sleep_gpio()
+        pass
+
+    def init_sleep_gpio(self):
         try:
-            if not os.path.exists("/sys/class/gpio150"):
+            if not os.path.exists("/sys/class/export"):
                 with open("/sys/class/gpio/export", "w") as f:
-                    f.write("150")
+                    f.write("4")
         except Exception as e:
-            PyUiLogger.get_logger().error(f"Error exportiing gpio150 {e}")
+            PyUiLogger.get_logger().error(f"Error exporting gpio 4 {e}")
+
 
     def are_headphones_plugged_in(self):
         try:
@@ -282,7 +284,7 @@ class MiyooMiniFlip(MiyooDevice):
         return None
 
     def get_wpa_supplicant_conf_path(self):
-        return "/config/wpa_supplicant.conf"
+        return "/appconfigs/wpa_supplicant.conf"
 
     def get_volume(self):
         return self.system_config.get_volume()
