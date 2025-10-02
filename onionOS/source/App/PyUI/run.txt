@@ -1,0 +1,749 @@
+1970-01-01 08:09:12,701 - mainui.py:96 - main - INFO - logDir: /mnt/SDCARD/App/PyUI/logs
+1970-01-01 08:09:12,703 - mainui.py:97 - main - INFO - pyUiConfig: /mnt/SDCARD/App/PyUI/py-ui-config.json
+1970-01-01 08:09:12,704 - mainui.py:98 - main - INFO - device: MIYOO_MINI_FLIP
+1970-01-01 08:09:12,706 - logger.py:16 - write - INFO - Found Renderer 0: software
+1970-01-01 08:09:12,707 - logger.py:16 - write - INFO - Found Renderer 1: MMIYOO
+1970-01-01 08:09:12,709 - logger.py:16 - write - INFO - Found Video Decoder 0: mmiyoo
+1970-01-01 08:09:12,712 - config_copier.py:19 - ensure_config - ERROR - /mnt/SDCARD/App/PyUI/py-ui-config.json already exists
+1970-01-01 08:09:12,714 - py_ui_config.py:44 - _read_from_file - INFO - Settings loaded from /mnt/SDCARD/App/PyUI/py-ui-config.json
+1970-01-01 08:09:12,716 - mainui.py:106 - main - INFO - /mnt/SDCARD/Themes/Silky by DiMo
+1970-01-01 08:09:12,717 - miyoo_mini_flip.py:32 - __init__ - INFO - Initializing Miyoo Mini Flip
+1970-01-01 08:09:12,720 - config_copier.py:19 - ensure_config - ERROR - /mnt/SDCARD/Saves/mini-flip-system.json already exists
+1970-01-01 08:09:12,722 - logger.py:16 - write - INFO - Failed to open /dev/disp: [Errno 2] No such file or directory: '/dev/disp'
+1970-01-01 08:09:12,725 - miyoo_trim_common.py:143 - ensure_wpa_supplicant_conf - ERROR - Error creating /userdata/cfg/wpa_supplicant.conf: [Errno 30] Read-only file system: '/config/wpa_supplicant.conf'
+1970-01-01 08:09:12,727 - miyoo_mini_flip.py:140 - init_gpio - ERROR - Error exportiing gpio150 [Errno 22] Invalid argument
+1970-01-01 08:09:12,971 - process_runner.py:20 - run - DEBUG - miyoo_mini_flip.py:292 in _set_volume() Executing ['amixer', 'set', 'headphone volume', '0%']
+1970-01-01 08:09:12,974 - miyoo_mini_flip.py:294 - _set_volume - ERROR - Failed to set volume: [Errno 2] No such file or directory: 'amixer'
+1970-01-01 08:09:12,976 - button_remapper.py:16 - __init__ - INFO - Button Mapping = {}
+1970-01-01 08:09:12,979 - theme.py:99 - _load_from_file - INFO - Loaded Theme : [Onion default theme]
+1970-01-01 08:09:12,981 - theme.py:86 - _get_asset_folder - INFO - No resolution specific assets skin_-1x-1 found, using skin
+1970-01-01 08:09:12,982 - theme.py:86 - _get_asset_folder - INFO - No resolution specific assets icons_-1x-1 found, using icons
+1970-01-01 08:09:12,984 - theme.py:34 - set_theme_path - INFO - Resolution specific config found, using config_750x560.json
+1970-01-01 08:09:12,986 - theme.py:99 - _load_from_file - INFO - Loaded Theme : [Onion default theme]
+1970-01-01 08:09:12,988 - theme.py:83 - _get_asset_folder - INFO - Resolution specific assets found, using skin_750x560
+1970-01-01 08:09:12,989 - theme.py:83 - _get_asset_folder - INFO - Resolution specific assets found, using icons_750x560
+1970-01-01 08:09:12,991 - theme.py:59 - set_theme_path - ERROR - DaijishoThemeIndex does not exist at: /mnt/SDCARD/Themes/Silky by DiMo/icons_750x560/index.json
+1970-01-01 08:09:13,011 - display.py:134 - _init_display - INFO - Display size: 752x560
+INFO: Created renderer: MMIYOO
+1970-01-01 08:09:13,051 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,052 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,059 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,060 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,066 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,068 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,074 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,076 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,082 - display.py:103 - init - INFO - sdl2.SDL_GetError() : b''
+1970-01-01 08:09:13,084 - display.py:105 - init - INFO - sdl2.SDL_GetError() : b''
+1970-01-01 08:09:13,086 - display.py:107 - init - INFO - sdl2.SDL_GetError() : b''
+1970-01-01 08:09:13,088 - display.py:216 - set_new_bg - INFO - Using /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/background.png as the background
+1970-01-01 08:09:13,113 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:13,150 - display.py:203 - _unload_bg_texture - DEBUG - Destroying bg texture
+1970-01-01 08:09:13,208 - display.py:161 - deinit_display - DEBUG - Display deinitialized
+1970-01-01 08:09:13,210 - display.py:188 - reinitialize - INFO - reinitialize display
+1970-01-01 08:09:13,212 - display.py:161 - deinit_display - DEBUG - Display deinitialized
+WARN: [MMIYOO] VideoInit: native_w=752 native_h=560 format=0x16362004
+WARN: [MMIYOO] VideoInit: display.current_mode set to 752x560
+WARN: [MMIYOO] VideoInit: after SDL_AddVideoDisplay, checking _this->displays[0].current_mode...
+WARN: [MMIYOO] VideoInit: _this->displays[0].current_mode = 752x560
+1970-01-01 08:09:13,231 - display.py:134 - _init_display - INFO - Display size: 752x560
+INFO: Created renderer: MMIYOO
+1970-01-01 08:09:13,279 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,281 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,289 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,291 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,299 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,301 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,308 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,310 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,318 - display.py:216 - set_new_bg - INFO - Using /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/background.png as the background
+1970-01-01 08:09:13,352 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:13,366 - theme.py:99 - _load_from_file - INFO - Loaded Theme : [Onion default theme]
+1970-01-01 08:09:13,370 - theme.py:86 - _get_asset_folder - INFO - No resolution specific assets skin_-1x-1 found, using skin
+1970-01-01 08:09:13,372 - theme.py:86 - _get_asset_folder - INFO - No resolution specific assets icons_-1x-1 found, using icons
+1970-01-01 08:09:13,375 - theme.py:34 - set_theme_path - INFO - Resolution specific config found, using config_750x560.json
+1970-01-01 08:09:13,378 - theme.py:99 - _load_from_file - INFO - Loaded Theme : [Onion default theme]
+1970-01-01 08:09:13,380 - theme.py:83 - _get_asset_folder - INFO - Resolution specific assets found, using skin_750x560
+1970-01-01 08:09:13,383 - theme.py:83 - _get_asset_folder - INFO - Resolution specific assets found, using icons_750x560
+1970-01-01 08:09:13,384 - theme.py:59 - set_theme_path - ERROR - DaijishoThemeIndex does not exist at: /mnt/SDCARD/Themes/Silky by DiMo/icons_750x560/index.json
+1970-01-01 08:09:13,386 - display.py:172 - clear_image_cache - DEBUG - Clearing image cache
+1970-01-01 08:09:13,387 - display.py:165 - clear_text_cache - DEBUG - Clearing text cache
+1970-01-01 08:09:13,426 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,427 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,433 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,435 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,441 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,443 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,448 - theme.py:347 - get_font - ERROR - get_font error occurred: 'shadowed'
+1970-01-01 08:09:13,450 - theme.py:392 - get_font_size - ERROR - get_font_size error occurred: 'shadowed'
+1970-01-01 08:09:13,457 - key_watcher_controller_miyoo_mini.py:100 - poll_keyboard - DEBUG - Starting keyboard polling on fd 23
+1970-01-01 08:09:13,459 - miyoo_trim_game_system_utils.py:19 - __init__ - INFO - Emu folder is /mnt/SDCARD/Emu/
+1970-01-01 08:09:13,516 - collections_menu.py:15 - __init__ - INFO - CollectionsMenu.init(None)
+1970-01-01 08:09:13,538 - miyoo_trim_game_system_utils.py:19 - __init__ - INFO - Emu folder is /mnt/SDCARD/Emu/
+1970-01-01 08:09:13,541 - miyoo_trim_game_system_utils.py:19 - __init__ - INFO - Emu folder is /mnt/SDCARD/Emu/
+1970-01-01 08:09:13,545 - miyoo_trim_game_system_utils.py:19 - __init__ - INFO - Emu folder is /mnt/SDCARD/Emu/
+1970-01-01 08:09:13,568 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:13,716 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:13,840 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:13,962 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:14,087 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:14,211 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:14,334 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:14,458 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:14,584 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:14,710 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:14,834 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:14,957 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:15,088 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:15,212 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+1970-01-01 08:09:15,335 - display.py:485 - render_image - ERROR - Failed to load image: /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+Out of memory
+That operation is not supported
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+Invalid renderer
+Invalid window
+SDL_DestroyTexture_REAL, Invalid texture
+SDL_DestroyTexture_REAL, Invalid texture
+SDL_DestroyTexture_REAL, Invalid texture
+SDL_DestroyTexture_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+Couldn't open /mnt/SDCARD/Themes/Silky by DiMo/skin_750x560/icon-volume-00.png
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+SDL_RenderCopyF_REAL, Invalid texture
+S1970-01-01 08:11:16,530 - key_watcher_controller_miyoo_mini.py:122 - poll_keyboard - DEBUG - Pressed: ControllerInput.DPAD_LEFT
+1970-01-01 08:11:17,841 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,912 - key_watcher_controller_miyoo_mini.py:125 - poll_keyboard - DEBUG - Released: ControllerInput.DPAD_LEFT
+1970-01-01 08:11:17,914 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,916 - key_watcher_controller_miyoo_mini.py:122 - poll_keyboard - DEBUG - Pressed: ControllerInput.DPAD_RIGHT
+1970-01-01 08:11:17,917 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,928 - key_watcher_controller_miyoo_mini.py:125 - poll_keyboard - DEBUG - Released: ControllerInput.DPAD_RIGHT
+1970-01-01 08:11:17,929 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,931 - key_watcher_controller_miyoo_mini.py:122 - poll_keyboard - DEBUG - Pressed: ControllerInput.DPAD_RIGHT
+1970-01-01 08:11:17,932 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,934 - key_watcher_controller_miyoo_mini.py:125 - poll_keyboard - DEBUG - Released: ControllerInput.DPAD_RIGHT
+1970-01-01 08:11:17,935 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,937 - key_watcher_controller_miyoo_mini.py:122 - poll_keyboard - DEBUG - Pressed: ControllerInput.DPAD_RIGHT
+1970-01-01 08:11:17,938 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,940 - key_watcher_controller_miyoo_mini.py:125 - poll_keyboard - DEBUG - Released: ControllerInput.DPAD_RIGHT
+1970-01-01 08:11:17,941 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,943 - key_watcher_controller_miyoo_mini.py:122 - poll_keyboard - DEBUG - Pressed: ControllerInput.DPAD_RIGHT
+1970-01-01 08:11:17,944 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)
+1970-01-01 08:11:17,945 - key_watcher_controller_miyoo_mini.py:125 - poll_keyboard - DEBUG - Released: ControllerInput.DPAD_RIGHT
+1970-01-01 08:11:17,946 - key_watcher_controller_miyoo_mini.py:129 - poll_keyboard - DEBUG - Unmapped key event: KeyEvent(event_type=0, code=0, value=0)

@@ -1,0 +1,8 @@
+{
+    "theme": "Silky by DiMo",
+    "themeDir": "/mnt/SDCARD/Themes/",
+    "turboDelayMs": 300,
+    "enableButtonWatchers": false,
+    "enableWifiMonitor": true,
+    "mainMenuTitle": "onionOS"
+}
