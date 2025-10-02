@@ -48,7 +48,6 @@ jobs:
       - name: Create onionOS folder
         run: |
           cp -R main-ui onionOS/source/App/PyUI/
-          cp -R Themes/* onionOS/source/App/PyUI/Themes/
 
       - name: Create muxapp archive
         run: |
@@ -61,7 +60,7 @@ jobs:
 
       - name: Create onionOS archives
         run: |
-          cd onionOS/source && zip -r ../../onion-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.zip ./onionOS \
+          cd onionOS/source && zip -r ../../onion-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.zip ./ \
             -xr'!.git' \
             -xr'!.github' \
             -xr'!.gitignore' \
