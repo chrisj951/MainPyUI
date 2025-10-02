@@ -156,11 +156,11 @@ class MiyooMiniFlip(MiyooDevice):
 
     @property
     def screen_width(self):
-        return 640
+        return 750
 
     @property
     def screen_height(self):
-        return 480
+        return 560
         
     @property
     def screen_rotation(self):
@@ -178,7 +178,7 @@ class MiyooMiniFlip(MiyooDevice):
         if(self.should_scale_screen()):
             return 1080
         else:
-            return self.screen_widths
+            return self.screen_width
 
     def get_scale_factor(self):
         if(self.is_hdmi_connected()):
@@ -303,4 +303,10 @@ class MiyooMiniFlip(MiyooDevice):
         return MiyooTrimCommon.run_game(self,rom_info,run_prefix="LD_PRELOAD=/mnt/SDCARD/miyoo/app/../lib/libpadsp.so ")
 
     def double_init_sdl_display(self):
+        return True
+    
+    def image_texture_caching_enabled(self):
+        return False
+
+    def text_texture_caching_enabled(self):
         return True

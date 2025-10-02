@@ -306,4 +306,12 @@ class Device:
     def double_init_sdl_display():
         return Device._impl.double_init_sdl_display()
 
+    @staticmethod
+    def image_texture_caching_enabled():
+        return Device._impl.image_texture_caching_enabled()
+    
+    @staticmethod
+    def text_texture_caching_enabled():
+        return Device._impl.text_texture_caching_enabled()
+
     

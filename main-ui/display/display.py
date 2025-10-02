@@ -32,7 +32,8 @@ class ImageTextureCache:
         return self.cache.get(texture_id)
 
     def add_texture(self, texture_id, surface, texture):
-        self.cache[texture_id] = CachedImageTexture(surface,texture)
+        if(Device.image_texture_caching_enabled()):
+            self.cache[texture_id] = CachedImageTexture(surface,texture)
     
     def clear_cache(self):
         for entry in self.cache.values():
@@ -60,7 +61,8 @@ class TextTextureCache:
         return self.cache.get(TextTextureKey(texture_id, font, color))
 
     def add_texture(self, texture_id, font, color, surface, texture):
-        self.cache[TextTextureKey(texture_id, font, color)] = CachedTextTexture(surface,texture)
+        if(Device.text_texture_caching_enabled()):
+            self.cache[TextTextureKey(texture_id, font, color)] = CachedTextTexture(surface,texture)
     
     def clear_cache(self):
         for entry in self.cache.values():
@@ -447,7 +449,7 @@ class Display:
             else:
                 cls._text_texture_cache.add_texture(text, purpose, color, surface, texture)
 
-        return cls._render_surface_texture(
+        w,h = cls._render_surface_texture(
                 x=x,
                 y=y, 
                 texture=texture, 
@@ -456,6 +458,12 @@ class Display:
                 texture_id=text, 
                 crop_w=crop_w, 
                 crop_h=crop_h)
+        
+        if not Device.text_texture_caching_enabled():
+            sdl2.SDL_DestroyTexture(texture)
+            sdl2.SDL_FreeSurface(surface)
+
+        return w,h
 
     @classmethod
     def render_text_centered(cls, text, x, y, color, purpose: FontPurpose):
@@ -486,7 +494,7 @@ class Display:
             sdl2.SDL_SetTextureBlendMode(texture, sdl2.SDL_BLENDMODE_BLEND)
             cls._image_texture_cache.add_texture(image_path,surface, texture)
 
-        return cls._render_surface_texture(x=x, 
+        w,h = cls._render_surface_texture(x=x, 
                                            y=y, 
                                            texture=texture, 
                                            surface=surface, 
@@ -495,6 +503,12 @@ class Display:
                                            scale_height=target_height,
                                            resize_type=resize_type, 
                                            texture_id=image_path)
+        
+        if(not Device.image_texture_caching_enabled()):
+            sdl2.SDL_DestroyTexture(texture)
+            sdl2.SDL_FreeSurface(surface)
+        
+        return w,h
 
     @classmethod
     def render_image_centered(cls, image_path: str, x: int, y: int, target_width=None, target_height=None):
