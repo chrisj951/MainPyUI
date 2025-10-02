@@ -265,7 +265,7 @@ class MiyooMiniFlip(MiyooDevice):
     @throttle.limit_refresh(15)
     def get_battery_percent(self):
         try:
-            with open("/sys/class/power_supply/battery/capacity", "r") as f:
+            with open("/tmp/percBat", "r") as f:
                 return int(f.read().strip()) 
         except Exception:
             return 0
