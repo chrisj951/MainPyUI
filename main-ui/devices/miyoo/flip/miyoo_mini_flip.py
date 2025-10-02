@@ -309,4 +309,4 @@ class MiyooMiniFlip(MiyooDevice):
         return False
 
     def text_texture_caching_enabled(self):
-        return True
+        return False

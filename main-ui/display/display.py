@@ -32,14 +32,21 @@ class ImageTextureCache:
         return self.cache.get(texture_id)
 
     def add_texture(self, texture_id, surface, texture):
-        if(Device.image_texture_caching_enabled()):
+        #Always cache theme
+        if(Device.image_texture_caching_enabled() or "Theme" in texture_id):
             self.cache[texture_id] = CachedImageTexture(surface,texture)
+            return True
+        else:
+            return False
     
     def clear_cache(self):
         for entry in self.cache.values():
             sdl2.SDL_DestroyTexture(entry.texture)
             sdl2.SDL_FreeSurface(entry.surface)
         self.cache.clear()
+
+    def size(self):
+        return len(self.cache)
 
 @dataclass(frozen=True)
 class TextTextureKey:
@@ -63,6 +70,9 @@ class TextTextureCache:
     def add_texture(self, texture_id, font, color, surface, texture):
         if(Device.text_texture_caching_enabled()):
             self.cache[TextTextureKey(texture_id, font, color)] = CachedTextTexture(surface,texture)
+            return True
+        else:
+            return False
     
     def clear_cache(self):
         for entry in self.cache.values():
@@ -414,7 +424,7 @@ class Display:
                     crop_w=None, crop_h=None, alpha=None):
         loaded_font = cls.fonts[purpose]
         cache : CachedImageTexture = cls._text_texture_cache.get_texture(text, purpose, color)
-        
+        cached = True
         if cache and alpha is None:
             surface = cache.surface
             texture = cache.texture
@@ -447,7 +457,7 @@ class Display:
                 sdl2.SDL_FreeSurface(surface)
                 return w,h
             else:
-                cls._text_texture_cache.add_texture(text, purpose, color, surface, texture)
+                cached = cls._text_texture_cache.add_texture(text, purpose, color, surface, texture)
 
         w,h = cls._render_surface_texture(
                 x=x,
@@ -459,7 +469,7 @@ class Display:
                 crop_w=crop_w, 
                 crop_h=crop_h)
         
-        if not Device.text_texture_caching_enabled():
+        if not cached:
             sdl2.SDL_DestroyTexture(texture)
             sdl2.SDL_FreeSurface(surface)
 
@@ -475,7 +485,7 @@ class Display:
             return 0, 0
 
         cache : CachedImageTexture = cls._image_texture_cache.get_texture(image_path)
-        
+        cached = True
         if cache:
             surface = cache.surface
             texture = cache.texture
@@ -492,7 +502,7 @@ class Display:
                 return 0, 0
 
             sdl2.SDL_SetTextureBlendMode(texture, sdl2.SDL_BLENDMODE_BLEND)
-            cls._image_texture_cache.add_texture(image_path,surface, texture)
+            cached = cls._image_texture_cache.add_texture(image_path,surface, texture)
 
         w,h = cls._render_surface_texture(x=x, 
                                            y=y, 
@@ -504,9 +514,10 @@ class Display:
                                            resize_type=resize_type, 
                                            texture_id=image_path)
         
-        if(not Device.image_texture_caching_enabled()):
+        if(not cached):
             sdl2.SDL_DestroyTexture(texture)
             sdl2.SDL_FreeSurface(surface)
+            PyUiLogger.get_logger().info(f"Destroyed {image_path}. Image cache size is {cls._image_texture_cache.size()}");
         
         return w,h
 
