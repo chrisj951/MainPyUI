@@ -13,7 +13,7 @@ on:
         default: 'main'
 
 jobs:
-  build-muxapp:
+  build-zips:
     runs-on: ubuntu-latest
     outputs:
       short_sha: ${{ steps.get_sha.outputs.short_sha }}
@@ -91,7 +91,7 @@ jobs:
         run: |
           TAG_NAME=pyui-${{ steps.set_version_suffix.outputs.version_suffix }}
           MUOS_FILE=muOS-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.muxapp
-          ONION_FILE=onion-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.muxapp
+          ONION_FILE=onion-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.zip
 
           gh release delete "$TAG_NAME" -y || true
           gh release create "$TAG_NAME" "$MUOS_FILE" "$ONION_FILE"\
