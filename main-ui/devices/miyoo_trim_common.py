@@ -63,7 +63,7 @@ class MiyooTrimCommon():
         #file_path = /mnt/SDCARD/Roms/FAKE08/Alpine Alpaca.p8
         #miyoo maps it to /media/sdcard0/Emu/FAKE08/../../Roms/FAKE08/Alpine Alpaca.p8
         miyoo_app_path = MiyooTrimCommon.convert_game_path_to_miyoo_path(rom_info.rom_file_path, remap_sdcard_path)
-        MiyooTrimCommon.write_cmd_to_run(f'''chmod a+x "{launch_path}";"{launch_path}" "{miyoo_app_path}"''')
+        MiyooTrimCommon.write_cmd_to_run(f'''chmod a+x "{launch_path}";{run_prefix}"{launch_path}" "{miyoo_app_path}"''')
         device.fix_sleep_sound_bug()
 
 
