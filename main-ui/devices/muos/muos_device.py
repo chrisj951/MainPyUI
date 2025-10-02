@@ -103,10 +103,10 @@ class MuosDevice(DeviceCommon):
         PyUiLogger.get_logger().debug(f"About to launch app {args} from dir {dir}")
         subprocess.run(args, cwd = dir)
     
-    def run_app(self, app):
-        directory = os.path.dirname(app)
-        PyUiLogger.get_logger().debug(f"About to launch app {app} from dir {directory}")
-        subprocess.run([app], cwd = directory)
+    def run_app(self, folder,launch):
+        directory = os.path.dirname(launch)
+        PyUiLogger.get_logger().debug(f"About to launch app {launch} from dir {directory}")
+        subprocess.run([launch], cwd = directory)
 
     
     def map_digital_input(self, sdl_input):

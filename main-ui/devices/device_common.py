@@ -309,3 +309,6 @@ class DeviceCommon(AbstractDevice):
     def exit_pyui(self):
         Display.deinit_display()
         sys.exit()
+
+    def double_init_sdl_display(self):
+        return False

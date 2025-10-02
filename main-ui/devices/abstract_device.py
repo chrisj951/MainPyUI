@@ -103,7 +103,7 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def run_app(self, app):
+    def run_app(self, folder,launch):
         pass
 
     @abstractmethod
@@ -261,3 +261,8 @@ class AbstractDevice(ABC):
     @abstractmethod
     def exit_pyui(self):
         pass
+
+    @abstractmethod
+    def double_init_sdl_display(self):
+        pass
+

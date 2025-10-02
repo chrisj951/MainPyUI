@@ -106,6 +106,9 @@ class Display:
         cls.restore_bg()
         cls.clear("init")
         cls.present()
+        if(Device.double_init_sdl_display()):
+            Display.deinit_display()
+            Display.reinitialize()
 
     @classmethod
     def init_fonts(cls):

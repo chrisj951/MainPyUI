@@ -62,8 +62,8 @@ class MiyooDevice(DeviceCommon):
     def run_cmd(self, args, dir = None):
         MiyooTrimCommon.run_cmd(self, args, dir)
 
-    def run_app(self, app):
-        MiyooTrimCommon.run_app(self, app)
+    def run_app(self, folder,launch):
+        MiyooTrimCommon.run_app(self, folder,launch)
 
     #TODO untested
     def map_analog_axis(self,sdl_input, value, threshold=16000):

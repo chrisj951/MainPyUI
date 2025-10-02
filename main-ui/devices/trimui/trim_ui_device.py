@@ -134,8 +134,8 @@ class TrimUIDevice(DeviceCommon):
     def run_cmd(self, args, dir = None):
         MiyooTrimCommon.run_cmd(self, args, dir)
         
-    def run_app(self, app):
-        MiyooTrimCommon.run_cmd(self, app)
+    def run_app(self, folder,launch):
+        MiyooTrimCommon.run_cmd(self, folder,launch)
 
     def map_digital_input(self, sdl_input):
         mapping = self.sdl_button_to_input.get(sdl_input, ControllerInput.UNKNOWN)

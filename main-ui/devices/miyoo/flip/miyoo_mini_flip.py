@@ -9,7 +9,7 @@ from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
 import os
-from controller.key_watcher_controller import InputResult, KeyEvent, KeyWatcherController
+from controller.key_watcher_controller_miyoo_mini import InputResult, KeyEvent, KeyWatcherControllerMiyooMini
 from devices.charge.charge_status import ChargeStatus
 from devices.miyoo.flip.miyoo_flip_poller import MiyooFlipPoller
 from devices.miyoo.miyoo_device import MiyooDevice
@@ -128,7 +128,7 @@ class MiyooMiniFlip(MiyooDevice):
         key_mappings[KeyEvent(1, 106, 0)] = [InputResult(ControllerInput.DPAD_RIGHT, KeyState.RELEASE)]
 
         
-        return KeyWatcherController(event_path="/dev/input/event0", key_mappings=key_mappings)
+        return KeyWatcherControllerMiyooMini(event_path="/dev/input/event0", key_mappings=key_mappings)
 
 
     def init_gpio(self):
@@ -300,16 +300,7 @@ class MiyooMiniFlip(MiyooDevice):
         self._set_volume(config_volume)
 
     def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
-        def delayed_fix():
-            total_time = 2.0
-            interval = 0.1
-            elapsed = 0.0
-            config_volume = self.system_config.get_volume()
-            while elapsed < total_time:
-                time.sleep(interval)
-                elapsed += interval 
-                self._set_volume(config_volume)
+        return MiyooTrimCommon.run_game(self,rom_info,run_prefix="LD_PRELOAD=/mnt/SDCARD/miyoo/app/../lib/libpadsp.so ")
 
-        # Start the thread
-        threading.Thread(target=delayed_fix, daemon=True).start()
-        return MiyooTrimCommon.run_game(self,rom_info)
+    def double_init_sdl_display(self):
+        return True

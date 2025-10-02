@@ -107,8 +107,8 @@ class Device:
         return Device._impl.run_cmd(args, dir)
 
     @staticmethod
-    def run_app(app):
-        return Device._impl.run_app(app)
+    def run_app(folder,launch):
+        return Device._impl.run_app(folder,launch)
 
     @staticmethod
     def map_digital_input(sdl_input):
@@ -301,5 +301,9 @@ class Device:
     @staticmethod
     def exit_pyui():
         return Device._impl.exit_pyui()
+
+    @staticmethod
+    def double_init_sdl_display():
+        return Device._impl.double_init_sdl_display()
 
     
