@@ -61,7 +61,7 @@ jobs:
 
       - name: Create onionOS archives
         run: |
-          zip -r onion-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.zip ./onionOS \
+          cd onionOS/source && zip -r ../../onion-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.zip ./onionOS \
             -xr'!.git' \
             -xr'!.github' \
             -xr'!.gitignore' \
