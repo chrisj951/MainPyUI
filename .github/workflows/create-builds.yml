@@ -42,12 +42,26 @@ jobs:
       - name: Create muxapp folder
         run: |
           mkdir PyUI
-          mv main-ui muOS/source/PyUI/
-          mv Themes muOS/source/PyUI/
+          cp -R main-ui muOS/source/PyUI/
+          cp -R Themes muOS/source/PyUI/
+
+      - name: Create onionOS folder
+        run: |
+          cp -R main-ui onionOS/source/App/PyUI/
+          cp -R Themes/* onionOS/source/App/PyUI/Themes/
 
       - name: Create muxapp archive
         run: |
-          cd muOS/source && zip -r ../../pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.muxapp ./ \
+          cd muOS/source && zip -r ../../muOS-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.muxapp ./ \
+            -xr'!.git' \
+            -xr'!.github' \
+            -xr'!.gitignore' \
+            -xr'!.gitattributes' \
+            -xr'!.gitkeep'   
+
+      - name: Create onionOS archives
+        run: |
+          zip -r onion-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.zip ./onionOS \
             -xr'!.git' \
             -xr'!.github' \
             -xr'!.gitignore' \
@@ -76,10 +90,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME=pyui-${{ steps.set_version_suffix.outputs.version_suffix }}
-          FILE_NAME=pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.muxapp
+          MUOS_FILE=muOS-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.muxapp
+          ONION_FILE=onion-pyui-v${{ steps.set_version_suffix.outputs.version_suffix }}.muxapp
 
           gh release delete "$TAG_NAME" -y || true
-          gh release create "$TAG_NAME" "$FILE_NAME" \
+          gh release create "$TAG_NAME" "$MUOS_FILE" "$ONION_FILE"\
             --title "Nightly Build $TAG_NAME" \
             --notes-file release_notes.txt \
             --prerelease

@@ -2,5 +2,5 @@
   "label": "PyUI",
 	"icon":	"/mnt/SDCARD/Icons/Default/app/themes.png",
   "launch": "toggle.sh",
-  "description": "Toggle between PyUI / MainUI"
+  "description": "Toggle between PyUI / MainUI (Reboot 1st time)"
 }
