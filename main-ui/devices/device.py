@@ -241,6 +241,10 @@ class Device:
     @staticmethod  
     def supports_wifi():
         return Device._impl.supports_wifi()
+    
+    @staticmethod  
+    def supports_volume():
+        return Device._impl.supports_volume()
 
     @staticmethod  
     def get_ip_addr_text():

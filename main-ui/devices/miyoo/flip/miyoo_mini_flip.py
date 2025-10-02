@@ -312,3 +312,6 @@ class MiyooMiniFlip(MiyooDevice):
 
     def text_texture_caching_enabled(self):
         return False
+
+    def supports_volume(self):
+        return False

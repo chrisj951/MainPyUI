@@ -318,3 +318,6 @@ class DeviceCommon(AbstractDevice):
 
     def text_texture_caching_enabled(self):
         return True
+
+    def supports_volume(self):
+        return True
