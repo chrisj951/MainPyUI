@@ -1,8 +1,10 @@
 from concurrent.futures import Future
 import fcntl
+import json
 from pathlib import Path
 import struct
 import subprocess
+import sys
 import threading
 import time
 from controller.controller_inputs import ControllerInput
@@ -30,7 +32,6 @@ class MiyooMiniFlip(MiyooDevice):
 
     def __init__(self):
         PyUiLogger.get_logger().info("Initializing Miyoo Mini Flip")        
-        
         self.sdl_button_to_input = {
             sdl2.SDL_CONTROLLER_BUTTON_A: ControllerInput.B,
             sdl2.SDL_CONTROLLER_BUTTON_B: ControllerInput.A,
@@ -125,7 +126,6 @@ class MiyooMiniFlip(MiyooDevice):
 
         
         return KeyWatcherControllerMiyooMini(event_path="/dev/input/event0", key_mappings=key_mappings)
-
 
     def init_gpio(self):
         #self.init_sleep_gpio()
@@ -253,10 +253,18 @@ class MiyooMiniFlip(MiyooDevice):
     @throttle.limit_refresh(5)
     def get_charge_status(self):
         try:
-            with open("/sys/class/power_supply/ac/online", "r") as f:
-                ac_online = int(f.read().strip())
-                
-            if(ac_online):
+            # Run axp_test and parse JSON
+            result = subprocess.run(
+                ["/customer/app/axp_test"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=2
+            )
+            data = json.loads(result.stdout.strip())
+            charging = int(data.get("charging", 0))
+            
+            if charging == 1:
                 return ChargeStatus.CHARGING
             else:
                 return ChargeStatus.DISCONNECTED
@@ -266,8 +274,16 @@ class MiyooMiniFlip(MiyooDevice):
     @throttle.limit_refresh(15)
     def get_battery_percent(self):
         try:
-            with open("/tmp/percBat", "r") as f:
-                return int(f.read().strip()) 
+            # Run axp_test and capture its JSON output
+            result = subprocess.run(
+                ["/customer/app/axp_test"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=2
+            )
+            data = json.loads(result.stdout.strip())
+            return data.get("battery", 0)
         except Exception:
             return 0
     
