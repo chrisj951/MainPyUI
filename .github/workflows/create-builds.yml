@@ -95,8 +95,7 @@ jobs:
           gh release delete "$TAG_NAME" -y || true
           gh release create "$TAG_NAME" "$MUOS_FILE" "$ONION_FILE"\
             --title "Nightly Build $TAG_NAME" \
-            --notes-file release_notes.txt \
-            --prerelease
+            --notes-file release_notes.txt 
 
       - name: Prune old nightly builds (keep latest 10)
         env:
