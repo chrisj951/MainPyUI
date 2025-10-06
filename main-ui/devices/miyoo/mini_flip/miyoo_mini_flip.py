@@ -1,6 +1,8 @@
 from concurrent.futures import Future
+import ctypes
 import fcntl
 import json
+import math
 from pathlib import Path
 import struct
 import subprocess
@@ -27,9 +29,18 @@ from utils.config_copier import ConfigCopier
 from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 
+MAX_VOLUME = 20
+MIN_RAW_VALUE = -60
+MAX_RAW_VALUE = 30
+
+MI_AO_SETVOLUME = 0x4008690b
+MI_AO_GETVOLUME = 0xc008690c
+MI_AO_SETMUTE   = 0x4008690d
+
 class MiyooMiniFlip(MiyooDevice):
     OUTPUT_MIXER = 2
     SOUND_DISABLED = 0
+
 
     def __init__(self):
         PyUiLogger.get_logger().info("Initializing Miyoo Mini Flip")        
@@ -336,13 +347,56 @@ class MiyooMiniFlip(MiyooDevice):
     def get_volume(self):
         return self.system_config.get_volume()
 
-    def _set_volume(self, volume):
+    def _set_volume_raw(self, value: int, add: int = 0) -> int:
         try:
-            ProcessRunner.run(["amixer","set","headphone volume",str(volume)+"%"], print=True)            
-        except Exception as e:
-            PyUiLogger.get_logger().error(f"Failed to set volume: {e}")
+            fd = os.open("/dev/mi_ao", os.O_RDWR)
+        except OSError:
+            return 0
 
-        return volume 
+        # Prepare buffers
+        buf2 = (ctypes.c_int * 2)(0, 0)
+        buf1 = (ctypes.c_uint64 * 2)(ctypes.sizeof(buf2), ctypes.cast(buf2, ctypes.c_void_p).value)
+
+        # Get previous volume
+        fcntl.ioctl(fd, MI_AO_GETVOLUME, buf1)
+        prev_value = buf2[1]
+
+        if add:
+            value = prev_value + add
+        else:
+            value += MIN_RAW_VALUE
+
+        # Clamp value
+        value = max(MIN_RAW_VALUE, min(MAX_RAW_VALUE, value))
+
+        if value == prev_value:
+            os.close(fd)
+            return prev_value
+
+        buf2[1] = value
+        fcntl.ioctl(fd, MI_AO_SETVOLUME, buf1)
+
+        # Handle mute
+        if prev_value <= MIN_RAW_VALUE < value:
+            buf2[1] = 0
+            fcntl.ioctl(fd, MI_AO_SETMUTE, buf1)
+        elif prev_value > MIN_RAW_VALUE >= value:
+            buf2[1] = 1
+            fcntl.ioctl(fd, MI_AO_SETMUTE, buf1)
+
+        os.close(fd)
+        return value
+
+
+    def _set_volume(self, volume: int) -> int:
+        volume = max(0, min(MAX_VOLUME, volume))
+
+        volume_raw = 0
+        if volume != 0:
+            volume_raw = round(48 * math.log10(1 + volume))  # volume curve
+
+        self._set_volume_raw(volume_raw, 0)
+        return volume
 
     def fix_sleep_sound_bug(self):
         config_volume = self.system_config.get_volume()
@@ -359,9 +413,6 @@ class MiyooMiniFlip(MiyooDevice):
 
     def double_init_sdl_display(self):
         return True
-
-    def supports_volume(self):
-        return False
             
     def shrink_text_if_needed(self, text):
         return text[:40]
