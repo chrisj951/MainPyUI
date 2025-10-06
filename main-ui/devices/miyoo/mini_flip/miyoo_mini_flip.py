@@ -14,6 +14,7 @@ import os
 from controller.key_watcher_controller_miyoo_mini import InputResult, KeyEvent, KeyWatcherControllerMiyooMini
 from devices.charge.charge_status import ChargeStatus
 from devices.miyoo.flip.miyoo_flip_poller import MiyooFlipPoller
+from devices.miyoo.mini_flip.miyoo_mini_flip_shared_memory_writer import MiyooMiniFlipSharedMemoryWriter
 from devices.miyoo.miyoo_device import MiyooDevice
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.miyoo.system_config import SystemConfig
@@ -54,6 +55,7 @@ class MiyooMiniFlip(MiyooDevice):
         source = script_dir / 'mini-flip-system.json'
         ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-flip-system.json", source)
         self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-flip-system.json")
+        self.miyoo_mini_flip_shared_memory_writer = MiyooMiniFlipSharedMemoryWriter()
         self.miyoo_games_file_parser = MiyooGamesFileParser()        
         self._set_lumination_to_config()
         self._set_contrast_to_config()
@@ -193,35 +195,23 @@ class MiyooMiniFlip(MiyooDevice):
             return 1
     
     def _set_lumination_to_config(self):
-        DISP_LCD_SET_BRIGHTNESS = 0x102
-        try:
-            fd = os.open("/dev/disp", os.O_RDWR)
-        except Exception as e:
-            print(f"Failed to open /dev/disp: {e}")
-            return
-
-        param = struct.pack('LLLL', 0, self.map_backlight_from_10_to_full_255(self.system_config.backlight, min_level=10), 0, 0)
-
-        try:
-            fcntl.ioctl(fd, DISP_LCD_SET_BRIGHTNESS, param)
-        except Exception as e:
-            print(f"ioctl failed: {e}")
-        finally:
-            os.close(fd)
+        # Miyoo internally has lumination but it does not work
+        #self.miyoo_mini_flip_shared_memory_writer.set_lumination(self.system_config.backlight)
+        self.miyoo_mini_flip_shared_memory_writer.set_brightness(self.system_config.backlight)
 
     def _set_contrast_to_config(self):
-#        ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
-#                                    "179:contrast:"+str(self.system_config.contrast * 5)])
+        #Doesn't seem to work?
+        #self.miyoo_mini_flip_shared_memory_writer.set_contrast(self.system_config.contrast)
         pass
     
     def _set_saturation_to_config(self):
-#        ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
-#                                    "179:saturation:"+str(self.system_config.saturation * 5)])
+        #Doesn't seem to work?
+        #self.miyoo_mini_flip_shared_memory_writer.set_saturation(self.system_config.saturation)
         pass
 
     def _set_brightness_to_config(self):
-#        ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
-#                                     "179:brightness:"+str(self.system_config.brightness * 5)])
+        #Doesn't seem to work?
+        #self.miyoo_mini_flip_shared_memory_writer.set_brightness(self.system_config.brightness)
         pass
 
     def take_snapshot(self, path):
