@@ -389,13 +389,15 @@ class MiyooMiniFlip(MiyooDevice):
 
 
     def _set_volume(self, volume: int) -> int:
-        volume = max(0, min(MAX_VOLUME, volume))
+        #Breaks keymon somehow
+        if(False):
+            volume = max(0, min(MAX_VOLUME, volume))
 
-        volume_raw = 0
-        if volume != 0:
-            volume_raw = round(48 * math.log10(1 + volume))  # volume curve
+            volume_raw = 0
+            if volume != 0:
+                volume_raw = round(48 * math.log10(1 + volume))  # volume curve
 
-        self._set_volume_raw(volume_raw, 0)
+            self._set_volume_raw(volume_raw, 0)
         return volume
 
     def fix_sleep_sound_bug(self):
@@ -416,3 +418,6 @@ class MiyooMiniFlip(MiyooDevice):
             
     def shrink_text_if_needed(self, text):
         return text[:40]
+    
+    def supports_volume(self):
+        return False
