@@ -83,9 +83,14 @@ class MiyooMiniFlip(MiyooDevice):
             4: "SDL_CONTROLLER_AXIS_TRIGGERLEFT",
             5: "SDL_CONTROLLER_AXIS_TRIGGERRIGHT"
         }
+        threading.Thread(target=self.startup_init, daemon=True).start()
+        super().__init__()
+
+    def startup_init(self):
         config_volume = self.system_config.get_volume()
         self._set_volume(config_volume)
-        super().__init__()
+        if(self.is_wifi_enabled()):
+            self.start_wifi_services()
 
     def get_controller_interface(self):
         key_mappings = {}  
