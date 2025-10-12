@@ -12,7 +12,7 @@ from views.grid_or_list_entry import GridOrListEntry
 
 GAME_SYSTEM_SORT_MODE_OPTIONS = ["Alphabetical","SortOrderKey","Custom"]
 
-class MiscSettingsMenu(settings_menu.SettingsMenu):
+class GameSystemSelectSettingsMenu(settings_menu.SettingsMenu):
     def __init__(self):
         super().__init__()
     
