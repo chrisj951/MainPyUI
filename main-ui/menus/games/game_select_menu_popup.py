@@ -105,7 +105,7 @@ class GameSelectMenuPopup:
         ))
 
 
-        popup_options.extend(self.get_game_options(rom_info, additional_popup_options, rom_list)) 
+        popup_options.extend(self.get_game_options(rom_info, additional_popup_options, rom_list, use_full_text=False)) 
 
         popup_options.append(GridOrListEntry(
             primary_text=f"Toggle View",
