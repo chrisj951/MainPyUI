@@ -339,7 +339,7 @@ class MiyooMiniFlip(MiyooDevice):
         
     @property
     def reboot_cmd(self):
-        return None
+        return "reboot"
 
     def get_wpa_supplicant_conf_path(self):
         return "/appconfigs/wpa_supplicant.conf"
