@@ -54,7 +54,7 @@ class FullScreenGridView(View):
         self.x_text_pad = 20 #TODO
         self.option_text_widths = []
         for option in self.options:
-            self.option_text_widths.append(Display.get_text_dimensions(self.font_purpose, option.get_primary_text())[0])
+            self.option_text_widths.append(Display.get_text_dimensions(self.font_purpose, option.get_primary_text()[:10])[0])
 
         self.last_selected = self.selected
         self.last_start = 0
@@ -207,7 +207,7 @@ class FullScreenGridView(View):
             actual_index = start_index + visible_index
             color = Theme.text_color_selected(
                 self.font_purpose) if actual_index == self.selected else Theme.text_color(self.font_purpose)
-            w, h = Display.render_text(imageTextPair.get_primary_text(),
+            w, h = Display.render_text(imageTextPair.get_primary_text()[:10],
                                  x_offset,
                                  y_offset,
                                  color,
