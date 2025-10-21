@@ -88,14 +88,14 @@ class CarouselView(View):
         n = len(self.options)
 
         half = self.cols // 2
-        if(self.sides_hang_off_edge):
+        if(self.sides_hang_off_edge and not self.shrink_further_away):
             start = (self.selected - half - 1) % n
         else:
             start = (self.selected - half) % n
 
         visible = []
         range_amt = self.cols
-        if(self.sides_hang_off_edge):
+        if(self.sides_hang_off_edge and not self.shrink_further_away):
             range_amt += 2
 
         #PyUiLogger.get_logger().info(f"Selected: {self.options[self.selected].get_primary_text()}, cols = {self.cols}")
@@ -192,7 +192,7 @@ class CarouselView(View):
         x_offsets = [0] + [sum(widths[:i]) for i in range(1, len(widths))]
 
 
-        if(self.sides_hang_off_edge):
+        if(self.sides_hang_off_edge and not self.shrink_further_away):
             #Add one extra that is offscreen
             x_offsets = [-x_offsets[1]] + x_offsets + [x_offsets[len(x_offsets)-1] + (x_offsets[len(x_offsets)-1] - x_offsets[len(x_offsets)-2])]
             widths = [widths[0]] + widths + [widths[len(widths)-1]]
