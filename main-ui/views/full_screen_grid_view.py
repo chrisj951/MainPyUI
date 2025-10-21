@@ -256,20 +256,25 @@ class FullScreenGridView(View):
             elif Controller.last_input() == ControllerInput.B:
                 return Selection(self.get_selected_option(), Controller.last_input(), self.selected)
             elif Controller.last_input() == ControllerInput.DPAD_LEFT:
-                self.selected -= 1
-                self.correct_selected_for_off_list()
+                self.adjust_selected(-1, skip_by_letter=False)
             elif Controller.last_input() == ControllerInput.DPAD_RIGHT:
-                self.selected += 1
-                self.correct_selected_for_off_list()
+                self.adjust_selected(+1, skip_by_letter=False)
             elif Controller.last_input() == ControllerInput.L1:
-                self.selected -= 1
-                self.correct_selected_for_off_list()
+                self.adjust_selected(-5, skip_by_letter=False)
             elif Controller.last_input() == ControllerInput.R1:
-                self.selected += 1
-                self.correct_selected_for_off_list()
+                self.adjust_selected(+5, skip_by_letter=False)
+            elif Controller.last_input() == ControllerInput.L2:
+                self.adjust_selected(-5, skip_by_letter=True if not Theme.skip_main_menu() else Device.get_system_config().get_skip_by_letter())
+            elif Controller.last_input() == ControllerInput.R2:
+                self.adjust_selected(+5, skip_by_letter=True if not Theme.skip_main_menu() else Device.get_system_config().get_skip_by_letter())
 
         return Selection(self.get_selected_option(), None, self.selected)
     
+    def adjust_selected(self, amount, skip_by_letter):
+        amount = self.calculate_amount_to_move_by(amount, skip_by_letter)
+        self.selected += amount
+        self.correct_selected_for_off_list()
+
     def animate_transition(self):
         if not PyUiConfig.animations_enabled():
             return
