@@ -149,10 +149,11 @@ class SystemConfig:
         return self.config.get("bluetooth") == 1
 
     def get_skip_by_letter(self):
-        return self.config.get("skip_by_letter", 0) == 1
+        return self.config.get("skip_by_letter", False)
 
     def set_skip_by_letter(self,value):
         self.config["skip_by_letter"] = value
+        self.save_config()
 
     def get(self, property):
         return self.config.get(property)
