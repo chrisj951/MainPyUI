@@ -105,8 +105,8 @@ class Controller:
         was_hotkey = False
         started_held_down = Controller.still_held_down()
         if not Controller.still_held_down():
-            if(Controller.last_controller_input is not None):
-                PyUiLogger.get_logger().info(f"Controller input is not longer held down")
+            #if(Controller.last_controller_input is not None):
+            #    PyUiLogger.get_logger().info(f"Controller input is not longer held down")
             # Reset hold delay and clear any lingering event
             Controller.hold_delay = PyUiConfig.get_turbo_delay_ms()
 
@@ -151,13 +151,13 @@ class Controller:
                     Controller.clear_last_input()
                     Controller.gs_triggered = False
             elif(started_held_down):
-                if(Controller.last_controller_input is not None):
-                    PyUiLogger.get_logger().info(f"Controller input held down but isn't menu")
+                #if(Controller.last_controller_input is not None):
+                #    PyUiLogger.get_logger().info(f"Controller input held down but isn't menu")
                 Controller.hold_delay = 0.0  # No input was released yet
 
         Controller.last_input_time = time.time()
-        if(Controller.last_controller_input is not None):
-            PyUiLogger.get_logger().info(f"last_controller_input is: {Controller.last_controller_input}")
+        #if(Controller.last_controller_input is not None):
+        #    PyUiLogger.get_logger().info(f"last_controller_input is: {Controller.last_controller_input}")
 
         return Controller.last_controller_input is not None and not was_hotkey
 
@@ -171,8 +171,8 @@ class Controller:
 
     @staticmethod
     def last_input():
-        if(Controller.last_controller_input is not None):
-            PyUiLogger.get_logger().info(f"Returning last input: {Controller.last_controller_input}")
+        #if(Controller.last_controller_input is not None):
+        #    PyUiLogger.get_logger().info(f"Returning last input: {Controller.last_controller_input}")
         return Controller.last_controller_input
 
     @staticmethod 
