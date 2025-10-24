@@ -72,7 +72,7 @@ class RomsMenuCommon(ABC):
         rom_list = []
 
         for rom_info in raw_rom_list:
-            rom_file_name = os.path.basename(rom_info.rom_file_path)
+            rom_file_name = self.rom_select_options_builder.get_rom_name_without_extensions(rom_info.game_system, rom_info.rom_file_path)
             img_path = self._get_image_path(rom_info)
             rom_list.append(
                 GridOrListEntry(

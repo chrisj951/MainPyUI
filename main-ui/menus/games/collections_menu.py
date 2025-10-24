@@ -47,7 +47,7 @@ class CollectionsMenu(RomsMenuCommon):
     #    else:
     #s        return None
 
-    def _menu_pressed(self, selection):
+    def _menu_pressed(self, selection, rom_list):
         if(selection.is_collection):
             pass        
         else:
