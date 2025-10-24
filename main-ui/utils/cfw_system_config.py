@@ -25,7 +25,12 @@ class CfwSystemConfig():
             json.dump(cls._data, f, indent=4)
 
     @classmethod
-    def get_menu_options(cls, category=None):
+    def get_categories(cls):
+        """Return a list of all category names under menuOptions."""
+        return list(cls._data.get('menuOptions', {}).keys())
+
+    @classmethod
+    def get_menu_options(cls, category):
         """Return the menu options. If category is given, return only that category."""
         menu_options = cls._data.get('menuOptions', {})
         if category:
