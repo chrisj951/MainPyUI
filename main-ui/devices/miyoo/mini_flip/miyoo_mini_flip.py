@@ -482,7 +482,7 @@ class MiyooMiniFlip(MiyooDevice):
         return FfmpegImageUtils()
 
     def get_boxart_resize_dimensions(self):
-        return 256, 256
+        return 300, 300
 
     def get_boxart_small_resize_dimensions(self):
-        return 128, 128
+        return 150, 150

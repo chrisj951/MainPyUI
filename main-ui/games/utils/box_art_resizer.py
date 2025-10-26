@@ -35,30 +35,40 @@ class BoxArtResizer():
                 imgs_path = os.path.join(folder_path, "Imgs")
                 if not os.path.exists(imgs_path):
                     continue
-                imgs_small_path = os.path.join(folder_path, "Imgs_small")
-                os.makedirs(imgs_small_path, exist_ok=True)
+                os.makedirs(os.path.join(folder_path, "Imgs_small"), exist_ok=True)
+                os.makedirs(os.path.join(folder_path, "Imgs_med"), exist_ok=True)
 
                 for root, _, files in os.walk(imgs_path):
                     for file in files:
                         if file.lower().endswith((".png", ".jpg", ".jpeg")):
                             full_path = os.path.join(root, file)
                             try:
-                                PyUiLogger().get_logger().info(f"Checking {full_path} for resizing")
-                                cls.scale_image(full_path,full_path, target_width, target_height)
+                                # Replace 'Imgs' with 'Imgs_small' in the path
+                                small_image_path = full_path.replace(
+                                    os.path.join(folder_path, "Imgs"),
+                                    os.path.join(folder_path, "Imgs_small"),
+                                )
+
+                                if os.path.exists(small_image_path):
+                                    cls.scale_image(small_image_path,small_image_path, target_small_width, target_small_height)
+                                else:
+                                    cls.scale_image(full_path,small_image_path, target_small_width, target_small_height)
                             except Exception as e:
                                 print(f"Error processing {full_path}: {e}")
 
-                           
-                            # Replace 'Imgs' with 'Imgs_small' in the path
-                            small_image_path = full_path.replace(
-                                os.path.join(folder_path, "Imgs"),
-                                os.path.join(folder_path, "Imgs_small"),
-                            )
+                            try:
+                                # Replace 'Imgs' with 'Imgs_med' in the path
+                                medium_image_path = full_path.replace(
+                                    os.path.join(folder_path, "Imgs"),
+                                    os.path.join(folder_path, "Imgs_med"),
+                                )
+                                if os.path.exists(medium_image_path):
+                                    cls.scale_image(medium_image_path,medium_image_path, target_small_width, target_small_height)
+                                else:
+                                    cls.scale_image(full_path,medium_image_path, target_small_width, target_small_height)
+                            except Exception as e:
+                                print(f"Error processing {full_path}: {e}")
 
-                            if os.path.exists(small_image_path):
-                                cls.scale_image(small_image_path,small_image_path, target_small_width, target_small_height)
-                            else:
-                                cls.scale_image(full_path,small_image_path, target_small_width, target_small_height)
 
 
     @classmethod

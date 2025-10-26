@@ -3,7 +3,9 @@ import os
 import threading
 from typing import Callable, TypeVar
 
+from devices.device import Device
 from menus.games.utils.rom_info import RomInfo
+from utils.logger import PyUiLogger
 
 T = TypeVar('T')  # Generic input type
 
@@ -87,25 +89,51 @@ class GridOrListEntry:
         if self.image_path_selected is None and self.image_path_selected_searcher is not None:
             return self.image_path_selected_searcher(self.value)
         return self.image_path_selected
-    
-    def get_image_path_small(self):
+        
+    def get_image_path_variant(self, variant_name: str):
         image_path = self.get_image_path()
         if image_path is None:
             return image_path
 
-        # Check if it ends with \Imgs\filename
-        if os.path.sep + "Imgs" + os.path.sep in image_path:
-            small_image_path = image_path.replace(
-                os.path.sep + "Imgs" + os.path.sep,
-                os.path.sep + "Imgs_small" + os.path.sep,
+        # Check if it contains the base "Imgs" directory
+        marker = os.path.sep + "Imgs" + os.path.sep
+        if marker in image_path:
+            variant_path = image_path.replace(
+                marker, os.path.sep + f"Imgs_{variant_name}" + os.path.sep
             )
 
-            # If the small version exists, return that
-            if os.path.exists(small_image_path):
-                return small_image_path
+            if os.path.exists(variant_path):
+                return variant_path
 
-        # Fallback to original
         return image_path
+
+
+    def get_image_path_small(self):
+        return self.get_image_path_variant("small")
+
+    def get_image_path_medium(self):
+        return self.get_image_path_variant("med")
+    
+    def get_image_path_ideal(self, target_width, target_height):
+        small_width, small_height = Device.get_boxart_small_resize_dimensions()
+        medium_width, medium_height = Device.get_boxart_resize_dimensions()
+
+        if(target_width <= small_width):
+            PyUiLogger.get_logger().info(f"Going with small due to width {target_width} <= {small_width}")
+            return self.get_image_path_small()
+        elif(target_height <= small_height):
+            PyUiLogger.get_logger().info(f"Going with small due to height {target_height} <= {small_height}")
+            return self.get_image_path_small()
+        elif(target_width <= medium_width):
+            PyUiLogger.get_logger().info(f"Going with medium due to width {target_width} <= {medium_width}")
+            return self.get_image_path_medium()
+        elif(target_height <= medium_height):
+            PyUiLogger.get_logger().info(f"Going with medium due to width {target_height} <= {medium_height}")
+            return self.get_image_path_medium()
+        else:
+            PyUiLogger.get_logger().info(f"Going with full size image")
+            return self.get_image_path()
+
 
     def get_primary_text(self):
         return self.primary_text

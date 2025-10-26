@@ -220,7 +220,7 @@ class CarouselView(View):
 
             y_image_offset = Display.get_center_of_usable_screen_height()
             
-            self._render_image(imageTextPair.get_image_path(), 
+            self._render_image(imageTextPair.get_image_path_ideal(widths[visible_index],Display.get_usable_screen_height()), 
                                     x_offset, 
                                     y_image_offset,
                                     render_mode,
@@ -278,13 +278,6 @@ class CarouselView(View):
         self.current_right += amount
         self.correct_selected_for_off_list()
 
-    def get_image_path(self, imageTextPair, targer_width, target_height):
-        small_width, small_height = Device.get_boxart_small_resize_dimensions()
-        if(targer_width <= small_width or target_height <= small_height):
-            return imageTextPair.get_image_path_small()
-        else:
-            return imageTextPair.get_image_path()
-
     def animate_transition(self):
         if(not self.skip_next_animation):
             animation_frames = 10 - self.animated_count*2
@@ -336,7 +329,7 @@ class CarouselView(View):
 
                         y_image_offset = Display.get_center_of_usable_screen_height()
                         
-                        self._render_image(imageTextPair.get_image_path(), 
+                        self._render_image(imageTextPair.get_image_path_ideal(frame_widths[visible_index],Display.get_usable_screen_height()), 
                                                 x_offset, 
                                                 y_image_offset,
                                                 render_mode,
