@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+import os
 import threading
 from typing import Callable, TypeVar
 
@@ -87,6 +88,25 @@ class GridOrListEntry:
             return self.image_path_selected_searcher(self.value)
         return self.image_path_selected
     
+    def get_image_path_small(self):
+        image_path = self.get_image_path()
+        if image_path is None:
+            return image_path
+
+        # Check if it ends with \Imgs\filename
+        if os.path.sep + "Imgs" + os.path.sep in image_path:
+            small_image_path = image_path.replace(
+                os.path.sep + "Imgs" + os.path.sep,
+                os.path.sep + "Imgs_small" + os.path.sep,
+            )
+
+            # If the small version exists, return that
+            if os.path.exists(small_image_path):
+                return small_image_path
+
+        # Fallback to original
+        return image_path
+
     def get_primary_text(self):
         return self.primary_text
     
