@@ -9,7 +9,7 @@ from utils.logger import PyUiLogger
 
 class FfmpegImageUtils(ImageUtils):
 
-    def convert_from_jpg_to_png(self,jpg_path, png_path):
+    def convert_from_jpg_to_tga(self,jpg_path, png_path):
         """Convert a JPG image to PNG using ffmpeg."""
         try:
             subprocess.run([

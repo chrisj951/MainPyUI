@@ -7,9 +7,9 @@ from utils.logger import PyUiLogger
 
 
 class PilImageUtils(ImageUtils):
-    def convert_from_jpg_to_png(self, jpg_path, png_path):
+    def convert_from_jpg_to_tga(self, jpg_path, png_path):
         with Image.open(jpg_path) as img:
-            img.save(png_path, "PNG")
+            img.save(png_path, "TGA")
 
     def shrink_image_if_needed(self, input_path, output_path, width, height):
         img = Image.open(input_path)
