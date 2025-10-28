@@ -55,7 +55,9 @@ class AppMenu:
             app_list = []
             view = None
             idx = 0
-            for app in self.appFinder.get_apps():
+            device_apps = self.appFinder.get_apps()
+            device_apps.sort(key=lambda app: app.get_label() or "")
+            for app in device_apps:
                 hidden = AppsManager.is_hidden(app) and not self.show_all_apps
                 devices = app.get_devices()
                 supported_device = not devices or Device.get_device_name() in devices
