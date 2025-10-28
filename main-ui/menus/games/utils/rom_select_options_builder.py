@@ -126,7 +126,10 @@ class RomSelectOptionsBuilder:
         if os.path.exists(imgs_folder_equal_to_roms_path_with_thumb_suffix):
             return imgs_folder_equal_to_roms_path_with_thumb_suffix
 
-
+        #File itself is a png
+        if rom_info.rom_file_path.lower().endswith(".png"):
+            return rom_info.rom_file_path
+        
         return None
 
     def _build_favorites_dict(self):
