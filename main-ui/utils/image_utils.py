@@ -18,3 +18,9 @@ class ImageUtils(ABC):
     @abstractmethod
     def get_image_dimensions(self, path):
         pass
+
+    @abstractmethod
+    def convert_from_png_to_tga(self, png_path):
+        pass
+
+    
