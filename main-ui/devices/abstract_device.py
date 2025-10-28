@@ -137,6 +137,10 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
+    def get_apps_config_path(self):
+        pass
+
+    @abstractmethod
     def parse_favorites(self) -> list[GameEntry]:
         pass
 

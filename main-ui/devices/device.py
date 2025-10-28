@@ -141,6 +141,10 @@ class Device:
         return Device._impl.get_collections_path()
 
     @staticmethod
+    def get_apps_config_path():
+        return Device._impl.get_apps_config_path()
+
+    @staticmethod
     def parse_favorites():
         return Device._impl.parse_favorites()
 
