@@ -293,6 +293,6 @@ class MiyooA30(MiyooDevice):
         return self.device_name
 
     def supports_tga(self):
-        return False
+        return True
     
     
