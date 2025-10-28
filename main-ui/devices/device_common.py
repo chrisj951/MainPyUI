@@ -342,3 +342,4 @@ class DeviceCommon(AbstractDevice):
 
     def get_boxart_large_resize_dimensions(self):
         return 1024, 1024
+

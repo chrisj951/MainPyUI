@@ -1044,6 +1044,15 @@ class Theme():
         cls._data["gameSwitcherResizeType"] = resize_type.name
         cls.save_changes()
 
+    @classmethod
+    def get_full_screen_grid_game_menu_resize_type(cls):
+        view_type_str = cls._data.get("fullScreenGridGameMenuResizeType", "ZOOM")
+        return getattr(ResizeType, view_type_str, ResizeType.ZOOM)
+
+    @classmethod
+    def set_full_screen_grid_game_menu_resize_type(cls, resize_type):
+        cls._data["fullScreenGridGameMenuResizeType"] = resize_type.name
+        cls.save_changes()
 
     @classmethod
     def get_set_top_bar_text_to_game_selection_for_game_switcher(cls):
