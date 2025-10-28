@@ -340,5 +340,10 @@ class AbstractDevice(ABC):
     def get_device_name(self):
         pass
 
+    @abstractmethod
+    def supports_tga(self):
+        pass
+
+
 
 
