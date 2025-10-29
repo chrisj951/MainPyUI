@@ -57,7 +57,6 @@
     "listGameSelectImgHeight": 294,
     "gameSelectShowTextGridMode": false,
     "gameSelectShowSelectedBgGridMode": true,
-    "setTopBarTextToGameSelection": true,
     "gridMultiRowSelBgResizePadWidth": 20,
     "gridMultiRowSelBgResizePadHeight": 20,
     "gridMultiRowExtraYPad": 17,
