@@ -38,12 +38,12 @@
     },
     "shadowed": {
         "font": "nunwen.ttf",
-        "shadowedFontSize":40,
-        "shadowedFontBackdropSize":40,
+        "shadowedFontSize": 40,
+        "shadowedFontBackdropSize": 40,
         "shadowedFontColor": "#000000",
         "shadowedFontBackdropColor": "#FFFFFF",
-        "shadowedFontSmallSize":26,
-        "shadowedFontBackdropSmallSize":26,
+        "shadowedFontSmallSize": 26,
+        "shadowedFontBackdropSmallSize": 26,
         "shadowedFontSmallColor": "#000000",
         "shadowedFontBackdropSmallColor": "#FFFFFF"
     },
@@ -63,5 +63,6 @@
     "gridMultiRowExtraYPad": 17,
     "gameSelectGridResizeType": "ZOOM",
     "skipMainMenu": true,
-    "mainMenuColCount": 5
+    "mainMenuColCount": 5,
+    "systemSelectFullScreenGridTextOverlay": false
 }
