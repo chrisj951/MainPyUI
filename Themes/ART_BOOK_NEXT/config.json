@@ -64,5 +64,9 @@
     "gameSelectGridResizeType": "ZOOM",
     "skipMainMenu": true,
     "mainMenuColCount": 5,
-    "systemSelectFullScreenGridTextOverlay": false
+    "systemSelectFullScreenGridTextOverlay": false,
+    "gameSystemSelectColCount": 1,
+    "gameSystemSelectRowCount": 1,
+    "systemSelectShowTextGridMode": false,
+    "systemSelectShowSelectedBgGridMode": false
 }
