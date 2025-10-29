@@ -34,7 +34,7 @@ class FullScreenGridView(View):
             self.resize_type = ResizeType.ZOOM
 
         self.top_bar_text = top_bar_text
-        self.set_top_bar_text_to_selection = set_top_bar_text_to_selection
+        self.set_top_bar_text_to_selection = set_top_bar_text_to_selection and not Theme.skip_main_menu()
         self.options: List[GridOrListEntry] = options
 
         self.max_img_height = self.resized_height
