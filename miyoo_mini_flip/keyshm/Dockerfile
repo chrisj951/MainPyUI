@@ -24,9 +24,14 @@ WORKDIR /src
 
 # Copy the source
 COPY set_monitor.c .
+COPY send_event.c .
 
 # Build the binary
 RUN gcc -Os -s -o set_monitor set_monitor.c -ldl -lpthread
 
+# Build the send_event binary
+RUN gcc -Os -s -o send_event send_event.c -ldl -lpthread
+
 # Default command (verify binary)
 CMD ["file", "./set_monitor"]
+CMD ["file", "./send_event"]
