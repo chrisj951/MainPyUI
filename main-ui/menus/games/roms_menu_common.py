@@ -238,18 +238,19 @@ class RomsMenuCommon(ABC):
                         view = self.create_view(page_name,rom_list,selected)
                 elif(ControllerInput.B == selected.get_input()):
                     
-                    PyUiState.set_last_game_selection(
-                        page_name,
-                        selected.get_selection().get_value().rom_file_path,
-                        getattr(self, 'subfolder', '') or ''
-                    )
-
-                    if(selected.get_selection().get_value().is_collection):
+                    if(selected is not None):
                         PyUiState.set_last_game_selection(
                             page_name,
-                            "Collection",
-                            selected.get_selection().get_value().rom_file_path
+                            selected.get_selection().get_value().rom_file_path,
+                            getattr(self, 'subfolder', '') or ''
                         )
+
+                        if(selected.get_selection().get_value().is_collection):
+                            PyUiState.set_last_game_selection(
+                                page_name,
+                                "Collection",
+                                selected.get_selection().get_value().rom_file_path
+                            )
                         
                     return ControllerInput.B
                 elif(ControllerInput.SELECT == selected.get_input()):
