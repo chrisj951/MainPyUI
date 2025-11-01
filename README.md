@@ -1,5 +1,5 @@
-Open Source replacement for MainUI on Miyoo and Trim Devices
-and potentially others in the future
+Open Source frontend primarily designed as a replacement for MainUI on Miyoo Devices.
+This is a personal project to learn python / sdl2 / have fun
 
 ## Features
 - Faster frontend launcher written in Python
@@ -8,21 +8,20 @@ and potentially others in the future
 - Improved themeing support (Can use all Miyoo/OnionOS themes. Daijisho themes can be used with minor modifications)
 - Menu button support in ports for easy exiting
 
-Still a WIP but works on the Miyoo Flip and partial compatibility on the TrimUI Brick
-
 | Device | Added | Status |
 | -- | -- | -- |
-| Miyoo Flip | 865f7a3 | Supported |
+| Miyoo A30 (Spruce) | bca477e | Supported |
+| Miyoo Flip (Stock/SpruceOS) | 865f7a3 | Supported |
+| Miyoo Mini Flip (OnionOS/SprigUI) | bca477e | Supported |
 | RG34XXSP (MuOS Goose)* | c12f38b | Supported |
 | RG28XX (MuOS Goose)* | c12f38b | Supported |
 | RG35XXSP (MuOS Goose)* | c12f38b | In Progress |
 | RGXX Others (MuOS Goose)* | c12f38b | Untested |
-| TrimUI Brick | 865f7a3 | Supported |
+| TrimUI Brick (Spruce/Stock) | 865f7a3 | Supported |
 
-* NOTE: There is a PR up to allow launching to an app on startup in MuOS. Hopefully this will be an option soon after the MuOS Canada Goose release. 
+* NOTE: This is not endorsed/supported by MuOS and is just for personal usage. Do not bother their devs with this. 
 
-In the meantime you can have PyUI apply this patch by going into 
-
+To Have PyUI launch at startup on MuOS
 1) Settings -> Extra Settings -> 'Set PyUI as Startup".
 2) Rebooting your device
 3) Launching PyUI
