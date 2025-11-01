@@ -33,13 +33,15 @@ class PilImageUtils(ImageUtils):
 
             img = img.resize((new_width, new_height), Image.LANCZOS)
             img.save(output_path)
-            PyUiLogger().get_logger().info(f"Scaled: {input_path} to {output_path} -> {new_width}x{new_height}")
+            PyUiLogger().get_logger().info(f"Scaled: {input_path} to {output_path} ({actual_width}x{actual_height}) -> {new_width}x{new_height}")
+            return True
         else:
             # Image is already small enough; just copy
-            shutil.copyfile(input_path, output_path)
+            # shutil.copyfile(input_path, output_path)
             PyUiLogger().get_logger().info(
-                f"Copied without scaling: {input_path} → {output_path} ({actual_width}x{actual_height})"
+                f"Skipping as already small enough: {input_path} → {output_path} ({actual_width}x{actual_height})"
             )
+            return False
             
     def resize_image(self, input_path, output_path, width, height):
         img = Image.open(input_path)

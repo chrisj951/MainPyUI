@@ -104,8 +104,12 @@ class GridOrListEntry:
             if os.path.exists(variant_path):
                 return variant_path
 
-        return image_path
-
+        if("small" == variant_name):
+            return self.get_image_path_variant(image_path,"med")
+        elif("med" == variant_name):
+            return self.get_image_path_variant(image_path,"large")
+        else:
+            return image_path
 
     def get_image_path_small(self,image_path: str):
         return self.get_image_path_variant(image_path,"small")

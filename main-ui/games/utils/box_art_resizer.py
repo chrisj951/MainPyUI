@@ -14,7 +14,7 @@ class BoxArtResizer():
     _last_display_time = 0  # class-level timestamp
     _aborted = False
     _monitoring = False
-
+    _to_delete = []
     @classmethod
     def patch_boxart(cls):
         cls.process_rom_folders()
@@ -62,6 +62,7 @@ class BoxArtResizer():
                     for file in files:
                         if file.lower().endswith((".png", ".jpg", ".jpeg")):
                             scan_count = scan_count + 1
+                            cls._to_delete = []
                             if(cls._aborted):
                                 Display.display_message(f"Aborting boxart patching", 2000)
                                 cls._monitoring = False
@@ -83,27 +84,7 @@ class BoxArtResizer():
                                 Device.get_image_utils().convert_from_png_to_tga(full_path)
                             except Exception as e:
                                 PyUiLogger().get_logger().warning(f"Unable to convert {full_path} : {e}")
-
-                            try:
-                                # Replace 'Imgs' with 'Imgs_small' in the path
-                                small_image_path = full_path.replace(
-                                    os.path.join(folder_path, "Imgs"),
-                                    os.path.join(folder_path, "Imgs_small"),
-                                )
-
-                                cls.scale_image(full_path,small_image_path, target_small_width, target_small_height)
-                            except Exception as e:
-                                print(f"Error processing {full_path}: {e}")
-
-                            try:
-                                # Replace 'Imgs' with 'Imgs_med' in the path
-                                medium_image_path = full_path.replace(
-                                    os.path.join(folder_path, "Imgs"),
-                                    os.path.join(folder_path, "Imgs_med"),
-                                )
-                                cls.scale_image(full_path,medium_image_path, target_medium_width, target_medium_height)
-                            except Exception as e:
-                                print(f"Error processing {full_path}: {e}")
+                                continue
 
                             try:
                                 # Replace 'Imgs' with 'Imgs_large' in the path
@@ -111,9 +92,42 @@ class BoxArtResizer():
                                     os.path.join(folder_path, "Imgs"),
                                     os.path.join(folder_path, "Imgs_large"),
                                 )
-                                cls.scale_image(full_path,large_image_path, target_large_width, target_large_height)
+                                if(not cls.scale_image(full_path,large_image_path, target_large_width, target_large_height)):
+                                    large_image_path = full_path
                             except Exception as e:
-                                print(f"Error processing {full_path}: {e}")
+                                print(f"Error converting for large image {full_path} : {e}")
+                                continue
+
+
+                            try:
+                                # Replace 'Imgs' with 'Imgs_med' in the path
+                                medium_image_path = full_path.replace(
+                                    os.path.join(folder_path, "Imgs"),
+                                    os.path.join(folder_path, "Imgs_med"),
+                                )
+                                if(not cls.scale_image(large_image_path,medium_image_path, target_medium_width, target_medium_height)):
+                                    medium_image_path = full_path
+                            except Exception as e:
+                                print(f"Error converting for medium image {full_path} : {e}")
+                                continue
+
+                            try:
+                                # Replace 'Imgs' with 'Imgs_small' in the path
+                                small_image_path = full_path.replace(
+                                    os.path.join(folder_path, "Imgs"),
+                                    os.path.join(folder_path, "Imgs_small"),
+                                )
+                                cls.scale_image(medium_image_path,small_image_path, target_small_width, target_small_height)
+                            except Exception as e:
+                                print(f"Error converting for small image {full_path} : {e}")
+                                continue
+
+                            for output_path in cls._to_delete:
+                                try:
+                                    os.remove(output_path)
+                                except Exception as e:
+                                    print(f"Error deleting {output_path}")
+
                             patched_count = patched_count + 1
 
         cls._monitoring = False
@@ -127,14 +141,16 @@ class BoxArtResizer():
         # Early return if the TGA version already exists
         tga_path = os.path.splitext(output_path)[0] + ".tga"
         if os.path.exists(tga_path):
-            return
+            return True
         
 
-        Device.get_image_utils().shrink_image_if_needed(image_file,output_path,target_width, target_height)
-        #Remove the png
-        try:
-            Device.get_image_utils().convert_from_png_to_tga(output_path)
-            os.remove(output_path)
-        except Exception as e:
-            PyUiLogger().get_logger().warning(f"Unable to convert {output_path} : {e}")
+        needed_shrink = Device.get_image_utils().shrink_image_if_needed(image_file,output_path,target_width, target_height)
+        if(needed_shrink):
+            try:
+                Device.get_image_utils().convert_from_png_to_tga(output_path)
+                #cls._to_delete.append(output_path)
+                return needed_shrink
+            except Exception as e:
+                PyUiLogger().get_logger().warning(f"Unable to convert {output_path} : {e}")
 
+        return needed_shrink
