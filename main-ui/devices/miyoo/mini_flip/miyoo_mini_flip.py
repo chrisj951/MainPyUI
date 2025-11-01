@@ -506,7 +506,9 @@ class MiyooMiniFlip(MiyooDevice):
         if (tz is not None):
             self.system_config.set_timezone(tz)
             self.apply_timezone(tz)
+            Display.display_message_multiline(["Timezone changed","Reloading UI..."],2000)           
+            self.exit_pyui()
 
     def apply_timezone(self, timezone):
-        ProcessRunner.run(["rm", "-rf", "/tmp/localtime"])
+        ProcessRunner.run(["rm", "-f", "/tmp/localtime"])
         ProcessRunner.run(["ln", "-s", "/mnt/SDCARD/miyoo285/zoneinfo/"+timezone ,"/tmp/localtime"])

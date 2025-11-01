@@ -337,7 +337,6 @@ class DeviceCommon(AbstractDevice):
     def supports_timezone_setting(self):
         return False
 
-
     def apply_timezone(self, timezone):
         pass
 
