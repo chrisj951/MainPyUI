@@ -132,7 +132,7 @@ class MiyooMiniFlip(MiyooDevice):
         if(self.is_wifi_enabled()):
             self.start_wifi_services()
         self.on_mainui_config_change()
-        self.apply_timezone(PyUiConfig.get("timezone",'America/New_York'))
+        self.apply_timezone(self.system_config.get_timezone())
 
     def get_controller_interface(self):
         key_mappings = {}  
@@ -504,7 +504,7 @@ class MiyooMiniFlip(MiyooDevice):
         tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/mnt/SDCARD/miyoo285/zoneinfo/', verify_via_datetime=False))
 
         if (tz is not None):
-            PyUiConfig.set_timezone(tz)
+            self.system_config.set_timezone(tz)
             self.apply_timezone(tz)
 
     def apply_timezone(self, timezone):

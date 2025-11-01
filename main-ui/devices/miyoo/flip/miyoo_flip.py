@@ -121,7 +121,7 @@ class MiyooFlip(MiyooDevice):
         self.init_bluetooth()
         config_volume = self.system_config.get_volume()
         self._set_volume(config_volume)
-        self.apply_timezone(PyUiConfig.get("timezone",'America/New_York'))
+        self.apply_timezone(self.system_config.get_timezone())
 
     def init_bluetooth(self):
         if(self.system_config.is_bluetooth_enabled()):
@@ -448,7 +448,7 @@ class MiyooFlip(MiyooDevice):
         tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/usr/share/zoneinfo', verify_via_datetime=True))
 
         if (tz is not None):
-            PyUiConfig.set_timezone(tz)
+            self.system_config.set_timezone(tz)
             self.apply_timezone(tz)
 
     def apply_timezone(self, timezone):

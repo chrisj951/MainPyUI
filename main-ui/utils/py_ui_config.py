@@ -94,15 +94,6 @@ class PyUiConfig:
         return cls._data.get("mainMenuTitle", "PyUI")
 
     @classmethod
-    def get_timezone(cls):
-        return cls.get("timezone",'America/New_York')
-   
-    @classmethod
-    def set_timezone(cls, tz):
-        cls._data["timezone"] = tz
-        cls.save()
-
-    @classmethod
     def show_clock(cls):
         return cls.get("showClock",True)
 
