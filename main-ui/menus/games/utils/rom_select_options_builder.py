@@ -26,7 +26,15 @@ class RomSelectOptionsBuilder:
         self.rom_utils : RomUtils= RomUtils(self.roms_path)
         
     
-    def get_image_path(self, rom_info: RomInfo, game_entry = None) -> str:
+    def get_image_path(self, rom_info: RomInfo, game_entry = None, prefer_savestate_screenshot = False) -> str:
+
+        if(prefer_savestate_screenshot):
+            # Use RA savestate image
+            save_state_image_path = Device.get_save_state_image(rom_info)
+            if save_state_image_path is not None and os.path.exists(save_state_image_path):
+                return save_state_image_path
+
+
         if(game_entry is not None):
             if(os.path.exists(game_entry.image)):
                 return game_entry.image
@@ -128,11 +136,12 @@ class RomSelectOptionsBuilder:
         if rom_info.rom_file_path.lower().endswith(".png"):
             return rom_info.rom_file_path
         
-        # Use RA savestate image
-        save_state_image_path = Device.get_save_state_image(rom_info)
-        if save_state_image_path is not None and os.path.exists(save_state_image_path):
-            return save_state_image_path
-
+        if(not prefer_savestate_screenshot):
+            # Use RA savestate image
+            save_state_image_path = Device.get_save_state_image(rom_info)
+            if save_state_image_path is not None and os.path.exists(save_state_image_path):
+                return save_state_image_path
+        
         return None
 
     def _build_favorites_dict(self):
