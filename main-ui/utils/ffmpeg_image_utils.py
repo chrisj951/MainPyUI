@@ -183,7 +183,7 @@ class FfmpegImageUtils(ImageUtils):
             PyUiLogger().get_logger().info(f"Error getting dimens of {path} : {e}")
             return 0, 0
 
-    def convert_from_png_to_tga(self, png_path):
+    def convert_from_png_to_tga(self, png_path, tga_path=None):
         """
         Converts a PNG file to a 32-bit RGBA TGA using ffmpeg.
         The TGA will be in the same directory with the same basename.
@@ -193,7 +193,8 @@ class FfmpegImageUtils(ImageUtils):
             return
         PyUiLogger().get_logger().info(f"Converting {png_path} to tga")
 
-        tga_path = os.path.splitext(png_path)[0] + ".tga"
+        if(tga_path is None):
+            tga_path = os.path.splitext(png_path)[0] + ".tga"
 
         # Call ffmpeg to convert PNG → 32-bit RGBA TGA
         subprocess.run([
