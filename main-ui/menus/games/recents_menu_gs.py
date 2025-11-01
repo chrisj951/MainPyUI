@@ -29,4 +29,4 @@ class RecentsMenuGS(RecentsMenu):
         return False
    
     def prefer_savestate_screenshot(self):
-        return True #TODO
+        return Device.get_system_config().use_savestate_screenshots_for_gameswitcher()
