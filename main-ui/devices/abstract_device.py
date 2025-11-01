@@ -322,6 +322,10 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
+    def supports_timezone(self):
+        pass
+
+    @abstractmethod
     def get_image_utils(self) -> ImageUtils:
         pass
 

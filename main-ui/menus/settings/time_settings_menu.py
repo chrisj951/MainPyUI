@@ -35,17 +35,18 @@ class TimeSettingsMenu(settings_menu.SettingsMenu):
 
     def build_options_list(self):
         option_list = []
-        option_list.append(
-            GridOrListEntry(
-                primary_text="Set Timezone",
-                value_text=None,
-                image_path=None,
-                image_path_selected=None,
-                description=None,
-                icon=None,
-                value=self.set_timezone
+        if(Device.supports_timezone()):
+            option_list.append(
+                GridOrListEntry(
+                    primary_text="Set Timezone",
+                    value_text=None,
+                    image_path=None,
+                    image_path_selected=None,
+                    description=None,
+                    icon=None,
+                    value=self.set_timezone
+                )
             )
-        )
 
         option_list.append(
             GridOrListEntry(
