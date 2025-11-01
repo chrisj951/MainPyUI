@@ -322,7 +322,15 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def supports_timezone(self):
+    def supports_timezone_setting(self):
+        pass
+
+    @abstractmethod
+    def apply_timezone(self, timezone):
+        pass
+
+    @abstractmethod
+    def prompt_timezone_update(self):
         pass
 
     @abstractmethod

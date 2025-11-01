@@ -2,7 +2,6 @@ import json
 import os
 
 from utils.logger import PyUiLogger
-import time
 
 class PyUiConfig:
     _data = {}
@@ -13,9 +12,6 @@ class PyUiConfig:
         cls._config_path = config_path
         cls._data = initial_data or {}
         cls.load()
-
-        os.environ['TZ'] = cls.get("timezone",'America/New_York')
-        time.tzset()  
 
     @classmethod
     def save(cls):
@@ -104,8 +100,6 @@ class PyUiConfig:
     @classmethod
     def set_timezone(cls, tz):
         cls._data["timezone"] = tz
-        os.environ['TZ'] = tz
-        time.tzset()  
         cls.save()
 
     @classmethod
