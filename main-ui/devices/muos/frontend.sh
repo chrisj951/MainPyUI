@@ -63,6 +63,20 @@ handle_app_go() {
     fi
 }
 
+restore_app_or_game_cleanup() {
+	# We'll set a few extra things here so that the user doesn't get
+	# a stupid "yOu UsEd tHe ReSeT bUtToN" message because ultimately
+	# we don't really care in this particular instance...
+	[ -e "/tmp/safe_quit" ] && ENSURE_REMOVED "/tmp/safe_quit"
+	[ ! -e "/tmp/done_reset" ] && printf 1 >"/tmp/done_reset"
+	[ ! -e "/tmp/chime_done" ] && printf 1 >"/tmp/chime_done"
+	SET_VAR "config" "system/used_reset" 0
+
+	# Reset audio control status
+	RESET_AMIXER
+
+
+}
 
 #:] ### Wait for audio stack
 #:] Don't proceed to the frontend until PipeWire reports that it is ready.
@@ -155,16 +169,7 @@ if [ $SKIP -eq 0 ]; then
 					fi
 				done
 
-				# We'll set a few extra things here so that the user doesn't get
-				# a stupid "yOu UsEd tHe ReSeT bUtToN" message because ultimately
-				# we don't really care in this particular instance...
-				[ -e "/tmp/safe_quit" ] && ENSURE_REMOVED "/tmp/safe_quit"
-				[ ! -e "/tmp/done_reset" ] && printf 1 >"/tmp/done_reset"
-				[ ! -e "/tmp/chime_done" ] && printf 1 >"/tmp/chime_done"
-				SET_VAR "config" "system/used_reset" 0
-
-				# Reset audio control status
-				RESET_AMIXER
+				restore_app_or_game_cleanup
 
 				# Okay we're all set, time to launch whatever we were playing last
 				/opt/muos/script/mux/launch.sh
@@ -176,6 +181,7 @@ if [ $SKIP -eq 0 ]; then
         LOG_INFO "$0" 0 "FRONTEND" "Startup is last app and LAST_APP is ${LAST_APP}"
         # Check if LAST_APP is not an empty string
         if [ -n "$LAST_APP" ]; then
+			restore_app_or_game_cleanup
             # Write LAST_APP to the file path stored in $APP_GO
             echo "$LAST_APP" > "$APP_GO"
             echo app >"$ACT_GO"
