@@ -16,7 +16,7 @@ python3 pip_offline/pip-25.2-py3-none-any.whl/pip install --no-index --find-link
 python3 -m pip install --no-index --find-links=pip_offline pip setuptools wheel
 
 # Step 2: Use pip via python to install your project dependencies
-python3 -m pip install --no-index --find-links=offline_packages psutil pyserial pillow pysdl2
+python3 -m pip install --no-index --find-links=offline_packages psutil pyserial pysdl2
 
 echo "Offline installation completed successfully!"
 

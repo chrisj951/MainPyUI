@@ -344,3 +344,21 @@ class MuosDevice(DeviceCommon):
     def get_save_state_image(self, rom_info: RomInfo):
         #TODO, where does it store this?
         return None
+
+    def get_wpa_supplicant_conf_path(self):
+        return None
+
+    def supports_brightness_calibration(self):
+        return False
+
+    def supports_contrast_calibration(self):
+        return False
+
+    def supports_saturation_calibration(self):
+        return False
+
+    def supports_hue_calibration(self):
+        return False
+
+    def supports_qoi(self):
+        return False
