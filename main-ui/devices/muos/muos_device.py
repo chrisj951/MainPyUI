@@ -375,3 +375,6 @@ class MuosDevice(DeviceCommon):
 
     def supports_qoi(self):
         return False
+
+    def keep_running_on_error(self):
+        return False
