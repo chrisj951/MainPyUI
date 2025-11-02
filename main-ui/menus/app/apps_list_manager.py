@@ -3,8 +3,6 @@ import json
 import os
 from typing import List, Optional
 from apps.app_config import AppConfig
-from devices.device import Device
-from menus.games.utils.rom_info import RomInfo
 from utils.logger import PyUiLogger
 
 @dataclass

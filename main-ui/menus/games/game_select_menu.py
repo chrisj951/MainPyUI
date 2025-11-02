@@ -1,10 +1,8 @@
 
-import os
 from pathlib import Path
 from devices.device import Device
 from games.utils.game_entry import GameEntry
 from menus.games.roms_menu_common import RomsMenuCommon
-from menus.games.utils.collections_manager import CollectionsManager
 from utils.consts import GAME_SELECT
 from utils.py_ui_state import PyUiState
 from views.grid_or_list_entry import GridOrListEntry

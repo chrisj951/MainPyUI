@@ -1,12 +1,9 @@
 
 import os
-import subprocess
 from devices.device import Device
 from games.utils.game_system import GameSystem
 from menus.games.roms_menu_common import RomsMenuCommon
 from menus.games.utils.rom_select_options_builder import get_rom_select_options_builder
-from menus.games.utils.rom_info import RomInfo
-from menus.games.utils.rom_select_options_builder import RomSelectOptionsBuilder
 from utils.consts import GAME_SELECT
 from views.grid_or_list_entry import GridOrListEntry
 

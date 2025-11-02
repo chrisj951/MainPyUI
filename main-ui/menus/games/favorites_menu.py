@@ -1,6 +1,4 @@
 
-import os
-import subprocess
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from menus.games.roms_menu_common import RomsMenuCommon

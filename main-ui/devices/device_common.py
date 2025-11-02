@@ -6,7 +6,6 @@ import sys
 import time
 from controller.controller_inputs import ControllerInput
 from devices.abstract_device import AbstractDevice
-from devices.device import Device
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_status import WifiStatus
 from display.display import Display

@@ -9,8 +9,6 @@ from menus.games.game_system_select_menu_popup import GameSystemSelectMenuPopup
 from menus.games.utils.rom_select_options_builder import get_rom_select_options_builder
 from menus.language.language import Language
 from themes.theme import Theme
-from utils.logger import PyUiLogger
-from utils.py_ui_config import PyUiConfig
 from utils.py_ui_state import PyUiState
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection

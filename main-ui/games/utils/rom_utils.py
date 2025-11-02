@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-import time
 
 from devices.device import Device
 from games.utils.game_system import GameSystem

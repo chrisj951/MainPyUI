@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import re
 import subprocess
-import sys
 import time
 from devices.device import Device
 from devices.utils.process_runner import ProcessRunner

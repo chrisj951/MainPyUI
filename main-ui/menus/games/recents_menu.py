@@ -1,6 +1,4 @@
 
-import os
-import subprocess
 import sys
 from devices.device import Device
 from menus.games.roms_menu_common import RomsMenuCommon

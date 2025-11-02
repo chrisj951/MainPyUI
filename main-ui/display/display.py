@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum, auto
 import os
 import time
 from devices.device import Device
@@ -17,7 +16,6 @@ import sdl2.sdlttf
 from themes.theme import Theme
 from utils.logger import PyUiLogger
 import ctypes
-from ctypes import c_double
 import traceback
 
 @dataclass

@@ -1,5 +1,4 @@
 
-import os
 from pathlib import Path
 from controller.controller_inputs import ControllerInput
 from display.display import Display

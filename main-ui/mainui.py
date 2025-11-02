@@ -1,12 +1,10 @@
 import argparse
 import os
 from pathlib import Path
-import shutil
 import signal
 import sys
 import threading
 from devices.device import Device
-from devices.miyoo.system_config import SystemConfig
 from menus.app.hidden_apps_manager import AppsManager
 from menus.games.utils.collections_manager import CollectionsManager
 from menus.games.utils.favorites_manager import FavoritesManager

@@ -1,12 +1,8 @@
-import re
 import subprocess
 import time
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from controller.controller_inputs import ControllerInput
 from controller.sdl.sdl2_controller_interface import Sdl2ControllerInterface
-from devices.bluetooth.bluetooth_scanner import BluetoothScanner
-from devices.charge.charge_status import ChargeStatus
-import os
 from devices.device_common import DeviceCommon
 from devices.miyoo.trim_ui_joystick import TrimUIJoystick
 from devices.miyoo_trim_common import MiyooTrimCommon
@@ -17,7 +13,6 @@ from games.utils.game_entry import GameEntry
 from menus.games.utils.rom_info import RomInfo
 from menus.settings.button_remapper import ButtonRemapper
 import sdl2
-from utils import throttle
 from utils.logger import PyUiLogger
 
 from devices.device_common import DeviceCommon

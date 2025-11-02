@@ -2,7 +2,6 @@
 
 from controller.controller_inputs import ControllerInput
 from devices.miyoo.system_config import SystemConfig
-from utils.logger import PyUiLogger
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
 from views.view_creator import ViewCreator

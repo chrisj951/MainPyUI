@@ -1,7 +1,6 @@
 
 import os
 import subprocess
-import traceback
 from controller.controller import Controller
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
@@ -56,7 +55,6 @@ class RomsMenuCommon(ABC):
 
 
     def _load_collection_menu(self, rom_info : RomInfo) -> list[GridOrListEntry]:
-        from menus.games.game_select_menu import GameSelectMenu
         self.current_collection = rom_info.rom_file_path
         PyUiState.set_in_game_selection_screen(True)
         rom_list = self.build_rom_selection_for_collection(self.current_collection)
