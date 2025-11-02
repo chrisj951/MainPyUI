@@ -288,7 +288,7 @@ class MuosDevice(DeviceCommon):
         Loads the assign.json file from MUOS info path.
         If uppercase_keys is True, all keys are converted to uppercase.
         """
-        assign_path = "/mnt/mmc/MUOS/info/assign/assign.json"
+        assign_path = "/opt/muos/share/info/assign/assign.json"
         try:
             with open(assign_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -305,6 +305,7 @@ class MuosDevice(DeviceCommon):
         return data
 
     def add_app_launch_as_startup(self, input):
+        from display.display import Display
         if (ControllerInput.A == input):
             muos_frontend_sh_path = "/opt/muos/script/mux/frontend.sh"        
             updated_frontend = os.path.join(self.script_dir,"frontend.sh") 
@@ -319,8 +320,11 @@ class MuosDevice(DeviceCommon):
             try:
                 with open(startup_path, "w") as f:
                     f.write("lastapp\n")
+                
+                Display.display_message("Last muOS launched App will launch on startup",2000)
             except OSError as e:
                 print(f"Failed to write to {startup_path}: {e}")
+                Display.display_message("Error updating startup script",2000)
 
 
     def get_extra_settings_options(self):

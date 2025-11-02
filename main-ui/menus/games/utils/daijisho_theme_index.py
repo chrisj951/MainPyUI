@@ -119,20 +119,8 @@ class DaijishoThemeIndex:
                         Device.get_image_utils().convert_from_jpg_to_qoi(jpg_path, qoi_path)
                     except Exception as e:
                         PyUiLogger.get_logger().warning(
-                            f"Failed to convert {jpg_path} to qoi: {e}"
+                            f"Failed to convert {jpg_path} to PNG: {e}"
                         )
-
-                        try:
-                            png_filename = os.path.splitext(filename)[0] + ".png"
-                            png_path = os.path.join(self.foldername, png_filename)
-                            if not os.path.exists(qoi_path):
-                                Device.get_image_utils().convert_from_jpg_to_qoi(jpg_path, png_path)
-                            return png_path
-                        except Exception as pngE:
-                            PyUiLogger.get_logger().warning(
-                                f"Failed to convert {jpg_path} to PNG: {pngE}"
-                            )
-
                         return jpg_path  # fallback: return original JPG
 
                 return qoi_path  # Return full path to PNG
@@ -161,6 +149,7 @@ class DaijishoThemeIndex:
 
 
     def get_file_name_for_system(self, system):
+        #PyUiLogger.get_logger().info(f"Looking up {system}")
         if(system in self.name_mapping):
             names_to_try = self.name_mapping[system]
             for name in names_to_try:
