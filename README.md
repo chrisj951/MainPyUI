@@ -13,10 +13,10 @@ This is a personal project to learn python / sdl2 / have fun
 | Miyoo A30 (Spruce) | bca477e | Supported |
 | Miyoo Flip (Stock/SpruceOS) | 865f7a3 | Supported |
 | Miyoo Mini Flip (OnionOS/SprigUI) | bca477e | Supported |
-| RG34XXSP (MuOS Goose)* | c12f38b | Supported |
-| RG28XX (MuOS Goose)* | c12f38b | Supported |
-| RG35XXSP (MuOS Goose)* | c12f38b | In Progress |
-| RGXX Others (MuOS Goose)* | c12f38b | Untested |
+| RG34XXSP (MuOS GoldenGoose)* | c392823 | Supported |
+| RG28XX (MuOS GoldenGoose)* | c392823 | Supported |
+| RG35XXSP (MuOS GoldenGoose)* | c392823 | In Progress |
+| RGXX Others (MuOS GoldenGoose)* | c392823 | Untested |
 | TrimUI Brick (Spruce/Stock) | 865f7a3 | Supported |
 
 * NOTE: This is not endorsed/supported by MuOS and is just for personal usage. Do not bother their devs with this. 
