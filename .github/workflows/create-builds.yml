@@ -72,11 +72,11 @@ jobs:
 
       - name: Generate release notes
         run: |
-          echo "Automated nightly build from commit ${{ steps.get_sha.outputs.short_sha }}." > release_notes.txt
+          echo "Automated build from commit ${{ steps.get_sha.outputs.short_sha }}." > release_notes.txt
           echo "" >> release_notes.txt
           echo "Changes since last release:" >> release_notes.txt
 
-          LATEST_TAG=$(gh release list --limit 2 --json tagName --jq '.[1].tagName' 2>/dev/null || echo "")
+          LATEST_TAG=$(gh release list --json tagName --jq '.[1].tagName' 2>/dev/null || echo "")
 
           if git rev-parse "$LATEST_TAG" >/dev/null 2>&1; then
             git log "$LATEST_TAG"..HEAD --pretty=format:"- %s" >> release_notes.txt
@@ -94,7 +94,7 @@ jobs:
 
           gh release delete "$TAG_NAME" -y || true
           gh release create "$TAG_NAME" "$MUOS_FILE" "$ONION_FILE"\
-            --title "Nightly Build $TAG_NAME" \
+            --title "Build $TAG_NAME" \
             --notes-file release_notes.txt 
 
       - name: Prune old nightly builds (keep latest 10)
