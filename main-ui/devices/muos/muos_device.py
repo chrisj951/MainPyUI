@@ -55,6 +55,15 @@ class MuosDevice(DeviceCommon):
     def reboot_cmd(self):
         return "reboot"
 
+    # Why does this break? Using the script should be better than just
+    # Running the direct command
+    #def power_off(self):
+    #    ProcessRunner.run(["/opt/muos/script/system/halt.sh", "poweroff"])
+    #def reboot(self):
+    #    ProcessRunner.run(["/opt/muos/script/system/halt.sh", "reboot"])
+
+
+
     def _set_volume(self, volume):
         ProcessRunner.run(["/opt/muos/device/script/audio.sh", str(volume)])
         return volume 
