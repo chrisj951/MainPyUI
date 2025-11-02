@@ -513,4 +513,4 @@ class MiyooMiniFlip(MiyooDevice):
         ProcessRunner.run(["ln", "-s", "/mnt/SDCARD/miyoo285/zoneinfo/"+timezone ,"/tmp/localtime"])
 
     def supports_caching_rom_lists(self):
-        return False #to little ram
+        return True #Is there enough RAM
