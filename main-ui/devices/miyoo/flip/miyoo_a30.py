@@ -33,7 +33,6 @@ class MiyooA30(MiyooDevice):
 
     def __init__(self, device_name):
         self.device_name = device_name
-        PyUiLogger.get_logger().info("Initializing Miyoo A30")        
         
         self.sdl_button_to_input = {
             sdl2.SDL_CONTROLLER_BUTTON_A: ControllerInput.B,

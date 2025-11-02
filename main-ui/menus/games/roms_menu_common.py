@@ -12,7 +12,7 @@ from menus.games.in_game_menu_listener import InGameMenuListener
 from menus.games.utils.collections_manager import CollectionsManager
 from menus.games.utils.recents_manager import RecentsManager
 from menus.games.utils.rom_info import RomInfo
-from menus.games.utils.rom_select_options_builder import RomSelectOptionsBuilder
+from menus.games.utils.rom_select_options_builder import get_rom_select_options_builder
 from themes.theme import Theme
 from utils.logger import PyUiLogger
 from utils.py_ui_state import PyUiState
@@ -26,7 +26,6 @@ from views.view_type import ViewType
 
 class RomsMenuCommon(ABC):
     def __init__(self):
-        self.rom_select_options_builder = RomSelectOptionsBuilder()
         self.in_game_menu_listener = InGameMenuListener()
         self.popup_menu = GameSelectMenuPopup()
 
@@ -35,9 +34,7 @@ class RomsMenuCommon(ABC):
     
     def _get_image_path(self, rom_path):
         # Get the base filename without extension (e.g., "DKC")
-        traceback.print_exc()
-        PyUiLogger.get_logger().info(f"self.prefer_savestate_screenshot() = {self.prefer_savestate_screenshot()}")
-        return self.rom_select_options_builder.get_image_path(rom_path, prefer_savestate_screenshot=self.prefer_savestate_screenshot())
+        return get_rom_select_options_builder().get_image_path(rom_path, prefer_savestate_screenshot=self.prefer_savestate_screenshot())
         
     def _extract_game_system(self, rom_path):
         rom_path = os.path.abspath(os.path.normpath(rom_path))
@@ -75,7 +72,7 @@ class RomsMenuCommon(ABC):
         rom_list = []
 
         for rom_info in raw_rom_list:
-            rom_file_name = self.rom_select_options_builder.get_rom_name_without_extensions(rom_info.game_system, rom_info.rom_file_path)
+            rom_file_name = get_rom_select_options_builder().get_rom_name_without_extensions(rom_info.game_system, rom_info.rom_file_path)
             img_path = self._get_image_path(rom_info)
             rom_list.append(
                 GridOrListEntry(

@@ -105,11 +105,11 @@ class Display:
             Device.screen_width(),
             Device.screen_height()
         )
-        PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
+        cls.log_sdl_error_if_any()
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
-        PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
+        cls.log_sdl_error_if_any()
         sdl2.SDL_SetRenderDrawBlendMode(cls.renderer.renderer, sdl2.SDL_BLENDMODE_BLEND)
-        PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {sdl2.SDL_GetError()}")
+        cls.log_sdl_error_if_any()
         cls.restore_bg()
         cls.clear("")
         cls.present()
@@ -137,6 +137,12 @@ class Display:
             )
 
     @classmethod
+    def log_sdl_error_if_any(cls):
+        err = sdl2.SDL_GetError()
+        if err:  # Only log if not empty
+            PyUiLogger.get_logger().info(f"sdl2.SDL_GetError() : {err}")
+
+    @classmethod
     def init_fonts(cls):
         cls.fonts = {
             purpose: cls._load_font(purpose)
@@ -155,7 +161,7 @@ class Display:
             width, height = Device.screen_width(), Device.screen_height()
         else:
             width, height = display_mode.w, display_mode.h
-            PyUiLogger.get_logger().info(f"Display size: {width}x{height}")
+            #PyUiLogger.get_logger().info(f"Display size: {width}x{height}")
 
         cls.window = sdl2.ext.Window("Minimal SDL2 GUI", size=(width, height), flags=sdl2.SDL_WINDOW_FULLSCREEN)
         cls.window.show()
@@ -237,7 +243,7 @@ class Display:
     def set_new_bg(cls, bg_path):
         cls._unload_bg_texture()
         cls.bg_path = bg_path
-        PyUiLogger.get_logger().info(f"Using {bg_path} as the background")
+        #PyUiLogger.get_logger().info(f"Using {bg_path} as the background")
         if(bg_path is not None):
             surface = Display.image_load(cls.bg_path)
             if not surface:
@@ -257,8 +263,6 @@ class Display:
             background = Theme.background(page_bg)
             if(os.path.exists(background)):
                 cls.set_new_bg(background)
-            else:
-                PyUiLogger.get_logger().debug(f"Theme did not provide bg for {background}")
 
     @classmethod
     def set_selected_tab(cls, tab):

@@ -46,7 +46,6 @@ class MiyooMiniFlip(MiyooDevice):
 
     def __init__(self, device_name):
         self.device_name = device_name
-        PyUiLogger.get_logger().info("Initializing Miyoo Mini Flip")        
         os.environ["TZPATH"] = "/mnt/SDCARD/miyoo285/zoneinfo"
         reset_tzpath()  # reload TZPATH
         self.sdl_button_to_input = {
@@ -512,3 +511,6 @@ class MiyooMiniFlip(MiyooDevice):
     def apply_timezone(self, timezone):
         ProcessRunner.run(["rm", "-f", "/tmp/localtime"])
         ProcessRunner.run(["ln", "-s", "/mnt/SDCARD/miyoo285/zoneinfo/"+timezone ,"/tmp/localtime"])
+
+    def supports_caching_rom_lists(self):
+        return False #to little ram

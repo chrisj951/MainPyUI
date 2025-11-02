@@ -29,6 +29,7 @@ class MiyooDevice(DeviceCommon):
 
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
+        self.game_utils = MiyooTrimGameSystemUtils()
 
     def get_controller_interface(self):
         return Sdl2ControllerInterface()
@@ -277,7 +278,7 @@ class MiyooDevice(DeviceCommon):
         return True
     
     def get_game_system_utils(self):
-        return MiyooTrimGameSystemUtils()
+        return self.game_utils
     
     def get_roms_dir(self):
         return "/mnt/SDCARD/Roms/"

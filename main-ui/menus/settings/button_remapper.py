@@ -13,7 +13,7 @@ class ButtonRemapper:
     def __init__(self, system_config : SystemConfig):
         self.system_config = system_config
         self.button_mapping = self.system_config.get_button_mapping()
-        PyUiLogger.get_logger().info(f"Button Mapping = {self.button_mapping}")
+        #PyUiLogger.get_logger().info(f"Button Mapping = {self.button_mapping}")
     
     def get_mappping(self, controller_input):
         if(controller_input in self.button_mapping):

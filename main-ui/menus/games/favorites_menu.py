@@ -8,8 +8,7 @@ from menus.games.utils.favorites_manager import FavoritesManager
 from menus.games.utils.rom_info import RomInfo
 from utils.consts import FAVORITES
 from views.grid_or_list_entry import GridOrListEntry
-
-
+from menus.games.utils.rom_select_options_builder import get_rom_select_options_builder
 class FavoritesMenu(RomsMenuCommon):
     def __init__(self):
         super().__init__()
@@ -22,7 +21,7 @@ class FavoritesMenu(RomsMenuCommon):
 
             display_name = rom_info.display_name
             if(display_name is None):
-                display_name =  self.rom_select_options_builder.get_rom_name_without_extensions(rom_info.game_system, rom_info.rom_file_path)
+                display_name =  get_rom_select_options_builder().get_rom_name_without_extensions(rom_info.game_system, rom_info.rom_file_path)
 
             rom_list.append(
                 GridOrListEntry(

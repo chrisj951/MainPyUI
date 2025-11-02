@@ -165,8 +165,6 @@ class MainMenu:
             Controller.gs_triggered = True
             RecentsMenuGS().run_rom_selection()
             Controller.gs_triggered = False
-        else:
-            PyUiLogger.get_logger().info(f"No GS Trigger file found at {gs_trigger_file}")         
 
     def check_for_boxart_resizing(self):
         from games.utils.box_art_resizer import BoxArtResizer
