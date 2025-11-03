@@ -236,7 +236,8 @@ class RomsMenuCommon(ABC):
                         view = self.create_view(page_name,rom_list,selected)
                 elif(ControllerInput.B == selected.get_input()):
                     
-                    if(selected is not None):
+                    #What is happening on muOS where this is becoming None?
+                    if(selected is not None and selected.get_selection() is not None and selected.get_selection().get_value() is not None):
                         PyUiState.set_last_game_selection(
                             page_name,
                             selected.get_selection().get_value().rom_file_path,
