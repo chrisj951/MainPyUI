@@ -43,10 +43,6 @@ cat "performance" >"$(GET_VAR "device" "cpu/governor")"
 SETUP_SDL_ENVIRONMENT
 
 
-killall -9 hotkey.sh
-killall -9 muhotkey
-
-
 mkdir -p /mnt/mmc/MUOS/log/pyui/
 
 cd "${SCRIPT_DIR}/setup"
