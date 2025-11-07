@@ -22,7 +22,7 @@ class PyUiLogger:
     _logger = None  # Class-level cache for the logger
 
     @classmethod
-    def init(cls, log_dir, logger_name):
+    def init(cls, log_dir, logger_name, log_to_console=True):
         if cls._logger is not None:
             return cls._logger
 
@@ -36,10 +36,12 @@ class PyUiLogger:
                 "%(asctime)s - %(filename)s:%(lineno)d - %(funcName)s - %(levelname)s - %(message)s"
             )
 
-            # Console handler
-            console_handler = logging.StreamHandler()
-            console_handler.setLevel(logging.DEBUG)
-            console_handler.setFormatter(formatter)
+            if(log_to_console):
+                # Console handler
+                console_handler = logging.StreamHandler()
+                console_handler.setLevel(logging.DEBUG)
+                console_handler.setFormatter(formatter)
+                logger.addHandler(console_handler)
 
             # File handler
             file_handler = RotatingFileHandler(os.path.join(log_dir,"pyui.log"),
@@ -49,12 +51,12 @@ class PyUiLogger:
             file_handler.setLevel(logging.DEBUG)
             file_handler.setFormatter(formatter)
 
-            logger.addHandler(console_handler)
             logger.addHandler(file_handler)
             
-        # Redirect stdout and stderr to logger
-        sys.stdout = StreamToLogger(logger, logging.INFO)
-        sys.stderr = StreamToLogger(logger, logging.ERROR)
+        if(not log_to_console):
+            # Redirect stdout and stderr to logger
+            sys.stdout = StreamToLogger(logger, logging.INFO)
+            sys.stderr = StreamToLogger(logger, logging.ERROR)
 
         cls._logger = logger
         return cls._logger
