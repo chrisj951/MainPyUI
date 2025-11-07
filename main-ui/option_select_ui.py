@@ -11,6 +11,20 @@ from views.selection import Selection
 from views.view_creator import ViewCreator
 from views.view_type import ViewType
 
+"""
+Sample Input
+{
+    "A/Z/Q": "touch /mnt/SDCARD/q",
+    "A/Z/R": "touch /mnt/SDCARD/R",
+    "A/Y/S/T": "touch /mnt/SDCARD/T",
+    "A/Y/S/U": "touch /mnt/SDCARD/U",
+    "B/M": "touch /mnt/SDCARD/M",
+    "B/N": "touch /mnt/SDCARD/N",
+    "C": "touch /mnt/SDCARD/C",
+    "D/E/F": "touch /mnt/SDCARD/F",
+    "D/G": "touch /mnt/SDCARD/G"
+}
+"""
 class OptionSelectUI:
 
     @staticmethod
