@@ -289,7 +289,7 @@ class DeviceCommon(AbstractDevice):
             self.start_udhcpc()
 
 
-    @throttle.limit_refresh(15)
+    @throttle.limit_refresh(10)
     def get_ip_addr_text(self):
         import psutil
         if self.is_wifi_enabled():
