@@ -15,6 +15,11 @@ class ThemeSoundSettings(ThemeSettingsMenuCommon):
     def selection_made(self):
         Display.clear_text_cache()
 
+    def toggle_button_press_sound(self, input):
+        if (input == ControllerInput.A or input == ControllerInput.DPAD_LEFT or input == ControllerInput.DPAD_RIGHT):
+            Device.get_system_config().set_play_button_press_sound(not Device.get_system_config().play_button_press_sound())
+            Theme.button_press_sounds_changed()
+            
     def toggle_bgm(self, input):
         if (input == ControllerInput.A or input == ControllerInput.DPAD_LEFT or input == ControllerInput.DPAD_RIGHT):
             Device.get_system_config().set_play_bgm(not Device.get_system_config().play_bgm())
@@ -36,6 +41,18 @@ class ThemeSoundSettings(ThemeSettingsMenuCommon):
     def build_options_list(self) -> list[GridOrListEntry]:
         option_list = []
 
+
+        option_list.append(
+            GridOrListEntry(
+                primary_text="Play Button Press Sound",
+                value_text="<    " + str(Device.get_system_config().play_button_press_sound()) + "    >",
+                image_path=None,
+                image_path_selected=None,
+                description=None,
+                icon=None,
+                value=self.toggle_button_press_sound
+            )
+        )
 
         option_list.append(
             GridOrListEntry(
