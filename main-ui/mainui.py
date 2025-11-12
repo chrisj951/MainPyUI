@@ -198,8 +198,7 @@ def main():
         except Exception as e:
             PyUiLogger.get_logger().exception("Unhandled exception occurred")
             PyUiState.clear()
-            if(not Device.keep_running_on_error()):
-                keep_running = False
+            sys.exit()
 
 def sigterm_handler(signum, frame):
     PyUiLogger.get_logger().info(f"Received SIGTERM (Signal {signum}). Shutting down...")
