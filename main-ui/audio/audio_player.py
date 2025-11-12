@@ -13,13 +13,25 @@ class AudioPlayer:
 
     @staticmethod
     def _init():
-        if not AudioPlayer._initialized:
-            sdl2.SDL_Init(sdl2.SDL_INIT_AUDIO)
-            if sdlmixer.Mix_OpenAudio(44100, sdlmixer.MIX_DEFAULT_FORMAT, 2, 1024) != 0:
-                PyUiLogger.get_logger().warning(
-                    f"Failed to initialize audio: SDL_mixer error: {sdlmixer.Mix_GetError().decode()}"
-                )
-            AudioPlayer._initialized = True
+        if AudioPlayer._initialized:
+            return
+
+        PyUiLogger.get_logger().info("Initializing audio system...")
+        if sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO) != 0:
+            PyUiLogger.get_logger().warning(
+                f"Failed to init SDL audio subsystem: {sdl2.SDL_GetError().decode()}"
+            )
+            return
+
+        if sdlmixer.Mix_OpenAudio(44100, sdl2.AUDIO_S16SYS, 2, 1024) != 0:
+            PyUiLogger.get_logger().warning(
+                f"Failed to open audio device: {sdlmixer.Mix_GetError().decode()}"
+            )
+            return
+
+        sdlmixer.Mix_AllocateChannels(8)
+        AudioPlayer._initialized = True
+        PyUiLogger.get_logger().info("Audio system initialized successfully.")
 
     @staticmethod
     def set_volume(volume: int):
@@ -43,7 +55,7 @@ class AudioPlayer:
     @staticmethod
     def play_wav(file_path: str):
         """Plays the WAV file once (blocking)."""
-        PyUiLogger.get_logger().info(f"Playing {file_path}")
+        #PyUiLogger.get_logger().info(f"Playing {file_path}")
         AudioPlayer._init()
         sound = sdlmixer.Mix_LoadWAV(file_path.encode())
         if not sound:
@@ -70,7 +82,7 @@ class AudioPlayer:
 
     @staticmethod
     def loop_wav(file_path: str):
-        PyUiLogger.get_logger().info(f"Looping {file_path}")
+        #PyUiLogger.get_logger().info(f"Looping {file_path}")
 
         def loop():
             sound = sdlmixer.Mix_LoadWAV(file_path.encode())
@@ -105,7 +117,7 @@ class AudioPlayer:
     @staticmethod
     def loop_mp3(file_path: str):
         """Loops an MP3 file until stop_loop is called (non-blocking)."""
-        PyUiLogger.get_logger().info(f"Looping MP3 {file_path}")
+        #PyUiLogger.get_logger().info(f"Looping MP3 {file_path}")
 
         def loop():
             music = sdlmixer.Mix_LoadMUS(file_path.encode())
