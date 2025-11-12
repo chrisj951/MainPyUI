@@ -27,10 +27,18 @@ class AudioPlayer:
         Sets the playback volume in real-time.
         volume: 0 (silent) to 10 (max)
         """
-        #SDL maxes at 128, so scale 0-10 based on that
-        AudioPlayer._current_volume = max(0, min(128, int(volume*12.8)))
-        # Apply volume to all channels (-1)
+        AudioPlayer._current_volume = max(0, min(128, int(volume * 12.8)))
+
+        # Apply volume to all active WAV channels (-1)
         sdlmixer.Mix_Volume(-1, AudioPlayer._current_volume)
+
+        # Apply volume to music (MP3/OGG)
+        sdlmixer.Mix_VolumeMusic(AudioPlayer._current_volume)
+
+        PyUiLogger.get_logger().info(
+            f"Volume set to {AudioPlayer._current_volume}/128"
+        )
+
 
     @staticmethod
     def play_wav(file_path: str):
@@ -93,6 +101,42 @@ class AudioPlayer:
         AudioPlayer._stop_loop = False
         AudioPlayer._loop_thread = threading.Thread(target=loop, daemon=True)
         AudioPlayer._loop_thread.start()
+
+    @staticmethod
+    def loop_mp3(file_path: str):
+        """Loops an MP3 file until stop_loop is called (non-blocking)."""
+        PyUiLogger.get_logger().info(f"Looping MP3 {file_path}")
+
+        def loop():
+            music = sdlmixer.Mix_LoadMUS(file_path.encode())
+            if not music:
+                PyUiLogger.get_logger().warning(
+                    f"Failed to load MP3: {file_path}, SDL_mixer error: {sdlmixer.Mix_GetError().decode()}"
+                )
+                return
+
+            # Set initial volume
+            sdlmixer.Mix_VolumeMusic(AudioPlayer._current_volume)
+
+            if sdlmixer.Mix_PlayMusic(music, -1) == -1:  # -1 = loop forever
+                PyUiLogger.get_logger().warning(
+                    f"Failed to play MP3: {file_path}, SDL_mixer error: {sdlmixer.Mix_GetError().decode()}"
+                )
+                sdlmixer.Mix_FreeMusic(music)
+                return
+
+            # Keep the thread alive until stop is requested
+            while not AudioPlayer._stop_loop:
+                sdl2.SDL_Delay(50)
+
+            sdlmixer.Mix_HaltMusic()
+            sdlmixer.Mix_FreeMusic(music)
+
+        AudioPlayer._init()
+        AudioPlayer._stop_loop = False
+        AudioPlayer._loop_thread = threading.Thread(target=loop, daemon=True)
+        AudioPlayer._loop_thread.start()
+
 
     @staticmethod
     def stop_loop():
