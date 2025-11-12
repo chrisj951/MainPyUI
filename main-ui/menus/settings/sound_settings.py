@@ -3,12 +3,12 @@ from audio.audio_player import AudioPlayer
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from display.display import Display
-from menus.settings.theme.theme_settings_menu_common import ThemeSettingsMenuCommon
+from menus.settings.settings_menu import SettingsMenu
 from themes.theme import Theme
 from views.grid_or_list_entry import GridOrListEntry
 
 
-class ThemeSoundSettings(ThemeSettingsMenuCommon):
+class SoundSettings(SettingsMenu):
     def __init__(self):
         super().__init__()
 
@@ -19,7 +19,7 @@ class ThemeSoundSettings(ThemeSettingsMenuCommon):
         if (input == ControllerInput.A or input == ControllerInput.DPAD_LEFT or input == ControllerInput.DPAD_RIGHT):
             Device.get_system_config().set_play_button_press_sound(not Device.get_system_config().play_button_press_sound())
             Theme.button_press_sounds_changed()
-            
+
     def toggle_bgm(self, input):
         if (input == ControllerInput.A or input == ControllerInput.DPAD_LEFT or input == ControllerInput.DPAD_RIGHT):
             Device.get_system_config().set_play_bgm(not Device.get_system_config().play_bgm())
