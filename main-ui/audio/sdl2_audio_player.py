@@ -13,10 +13,16 @@ class Sdl2AudioPlayer:
     _current_volume = 128  # max volume by default
 
     @staticmethod
-    def _init():
-        if Sdl2AudioPlayer._initialized:
+    def _init():       
+        if Sdl2AudioPlayer._initialized or Sdl2AudioPlayer._init_failed:
             return
 
+        driver = sdl2.SDL_GetCurrentAudioDriver()
+        if not driver:
+            PyUiLogger.get_logger().warning("No SDL audio driver available.")
+        else:
+            PyUiLogger.get_logger().info(f"Using SDL audio driver: {driver.decode()}")
+            
         PyUiLogger.get_logger().info("Initializing audio system...")
         if sdl2.SDL_InitSubSystem(sdl2.SDL_INIT_AUDIO) != 0:
             PyUiLogger.get_logger().warning(
@@ -25,10 +31,16 @@ class Sdl2AudioPlayer:
             Sdl2AudioPlayer._init_failed = True
             return
 
-        if sdlmixer.Mix_OpenAudio(44100, sdl2.AUDIO_S16SYS, 2, 1024) != 0:
-            PyUiLogger.get_logger().warning(
-                f"Failed to open audio device: {sdlmixer.Mix_GetError().decode()}"
-            )
+        # Try multiple sample rates and buffer sizes
+        for freq, bufsize in [(44100, 1024), (22050, 1024), (16000, 512)]:
+            if sdlmixer.Mix_OpenAudio(freq, sdl2.AUDIO_S16SYS, 2, bufsize) == 0:
+                PyUiLogger.get_logger().info(f"Audio device opened at {freq} Hz, {bufsize} buffer")
+                break
+            else:
+                PyUiLogger.get_logger().warning(
+                    f"Mix_OpenAudio({freq}) failed: {sdlmixer.Mix_GetError().decode()}"
+                )
+        else:
             Sdl2AudioPlayer._init_failed = True
             return
 
@@ -42,25 +54,27 @@ class Sdl2AudioPlayer:
         Sets the playback volume in real-time.
         volume: 0 (silent) to 10 (max)
         """
-        Sdl2AudioPlayer._current_volume = max(0, min(128, int(volume * 12.8)))
+        Sdl2AudioPlayer._init()
+        if(not Sdl2AudioPlayer._init_failed):
+            Sdl2AudioPlayer._current_volume = max(0, min(128, int(volume * 12.8)))
 
-        # Apply volume to all active WAV channels (-1)
-        sdlmixer.Mix_Volume(-1, Sdl2AudioPlayer._current_volume)
+            # Apply volume to all active WAV channels (-1)
+            sdlmixer.Mix_Volume(-1, Sdl2AudioPlayer._current_volume)
 
-        # Apply volume to music (MP3/OGG)
-        sdlmixer.Mix_VolumeMusic(Sdl2AudioPlayer._current_volume)
+            # Apply volume to music (MP3/OGG)
+            sdlmixer.Mix_VolumeMusic(Sdl2AudioPlayer._current_volume)
 
-        PyUiLogger.get_logger().info(
-            f"Volume set to {Sdl2AudioPlayer._current_volume}/128"
-        )
+            PyUiLogger.get_logger().info(
+                f"Volume set to {Sdl2AudioPlayer._current_volume}/128"
+            )
 
 
     @staticmethod
     def audio_play_wav(file_path: str):
         """Plays the WAV file once (blocking)."""
+        Sdl2AudioPlayer._init()
         #PyUiLogger.get_logger().info(f"Playing {file_path}")
         if(not Sdl2AudioPlayer._init_failed):
-            Sdl2AudioPlayer._init()
             sound = sdlmixer.Mix_LoadWAV(file_path.encode())
             if not sound:
                 PyUiLogger.get_logger().warning(
@@ -87,6 +101,7 @@ class Sdl2AudioPlayer:
     @staticmethod
     def audio_loop_wav(file_path: str):
         #PyUiLogger.get_logger().info(f"Looping {file_path}")
+        Sdl2AudioPlayer._init()
         if(not Sdl2AudioPlayer._init_failed):
 
             def loop():
@@ -123,6 +138,7 @@ class Sdl2AudioPlayer:
     def audio_loop_mp3(file_path: str):
         """Loops an MP3 file until stop_loop is called (non-blocking)."""
         #PyUiLogger.get_logger().info(f"Looping MP3 {file_path}")
+        Sdl2AudioPlayer._init()        
         if(not Sdl2AudioPlayer._init_failed):
 
             def loop():
