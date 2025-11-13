@@ -104,6 +104,11 @@ class Sdl2AudioPlayer:
         Sdl2AudioPlayer._init_failed = False
         PyUiLogger.get_logger().info("Sdl2AudioPlayer cleaned up.")
 
+    @staticmethod
+    def load_wav(file_path: str):
+        """Preload a WAV file into the worker's chunk_map."""
+        return Sdl2AudioPlayer._send_cmd("preload_wav", file_path, expect_reply=True)
+    
     # --------------------------
     # Worker implementation below
     # --------------------------
@@ -245,12 +250,31 @@ class Sdl2AudioPlayer:
                     except Exception as e:
                         PyUiLogger.get_logger().warning(f"set_volume exception: {e}")
                     reply_ok(cmd.resp_q, True)
+                elif name == "preload_wav":
+                    path = cmd.args[0]
+                    if path in chunk_map:
+                        reply_ok(cmd.resp_q, True)
+                        continue
+                    try:
+                        c = sdlmixer.Mix_LoadWAV(path.encode())
+                        if not c:
+                            PyUiLogger.get_logger().warning(f"preload_wav: Mix_LoadWAV failed for {path}: {sdlmixer.Mix_GetError().decode()}")
+                            reply_ok(cmd.resp_q, False)
+                            continue
+                        chunk_map[path] = c
+                        PyUiLogger.get_logger().info(f"preload_wav: {path} loaded successfully")
+                        reply_ok(cmd.resp_q, True)
+                    except Exception as e:
+                        PyUiLogger.get_logger().warning(f"preload_wav exception for {path}: {e}")
+                        reply_ok(cmd.resp_q, False)
                 elif name == "play_wav_once":
                     path = cmd.args[0]
-                    c = safe_load_chunk(path)
+                    c = chunk_map.get(path)
                     if not c:
+                        PyUiLogger.get_logger().warning(f"WAV {path} not preloaded, cannot play safely while MP3 is active")
                         reply_ok(cmd.resp_q, False)
                         continue
+
                     try:
                         sdlmixer.Mix_VolumeChunk(c, Sdl2AudioPlayer._current_volume)
                         ch = sdlmixer.Mix_PlayChannel(-1, c, 0)
@@ -258,12 +282,10 @@ class Sdl2AudioPlayer:
                             PyUiLogger.get_logger().warning(f"Mix_PlayChannel failed for {path}: {sdlmixer.Mix_GetError().decode()}")
                             reply_ok(cmd.resp_q, False)
                             continue
-                        # Wait for playback to complete (poll)
-                        while sdlmixer.Mix_Playing(ch) != 0:
-                            sdl2.SDL_Delay(20)
+                        reply_ok(cmd.resp_q, True)
                     except Exception as e:
                         PyUiLogger.get_logger().warning(f"play_wav_once exception: {e}")
-                    reply_ok(cmd.resp_q, True)
+                        reply_ok(cmd.resp_q, False)
                 elif name == "start_loop_wav":
                     path = cmd.args[0]
                     # stop any existing loop
