@@ -34,7 +34,6 @@ class RecentsMenuGS(RecentsMenu):
         else:
             return RecentsManager.get_recents()
         
-        
     def get_view_type(self):
         return Theme.get_view_type_for_game_switcher()
     
