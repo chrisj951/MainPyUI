@@ -17,8 +17,12 @@ class RecentsMenuGS(RecentsMenu):
 
     
     def run_rom_selection(self) :
-        return self._run_rom_selection("Game Switcher")
-
+        original_value = Theme.skip_main_menu()
+        Theme.set_skip_main_menu(True)
+        return_value = self._run_rom_selection("Game Switcher")
+        Theme.set_skip_main_menu(original_value)
+        return return_value
+    
     def get_amount_of_recents_to_allow(self):
         return Device.get_system_config().game_switcher_game_count()
 
@@ -49,3 +53,9 @@ class RecentsMenuGS(RecentsMenu):
 
     def get_set_top_bar_text_to_game_selection(self):
         return Theme.get_set_top_bar_text_to_game_selection_for_game_switcher()
+
+    def get_image_resize_height_multiplier(self):
+        return 1.0
+    
+    def get_render_bottom_bar_text_enabled(self):
+        return False
