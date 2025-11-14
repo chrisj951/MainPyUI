@@ -86,13 +86,18 @@ class SettingsMenu(ABC):
             PyUiLogger.get_logger().info(f"Updating {entry_name} to {all_options[selected_index]}")
             update_value(category, entry_name, all_options[selected_index])
 
+    def replace_dynamic_text_in_description(self, description):
+        if(description):
+            description = description.format(ip_addr=Device.get_ip_addr_text())
+        return description
+
     def build_options_list_from_config_menu_options(self, category):
         option_list = []
         menu_options = CfwSystemConfig.get_menu_options(category=category)
 
         for name, option in menu_options.items():
             display_name = option.get('display')
-            description = option.get('description')
+            description = self.replace_dynamic_text_in_description(option.get('description'))
             devices = option.get('devices')
             supported_device = not devices or Device.get_device_name() in devices
             if(supported_device):
