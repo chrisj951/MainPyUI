@@ -37,12 +37,6 @@ class RecentsMenuGS(RecentsMenu):
         
     def get_view_type(self):
         return Theme.get_view_type_for_game_switcher()
-
-    def get_game_select_row_count(self):
-        return 1
-    
-    def get_game_select_col_count(self):
-        return 1
     
     def full_screen_grid_resize_type(self):
         return Theme.get_resize_type_for_game_switcher()
@@ -51,7 +45,7 @@ class RecentsMenuGS(RecentsMenu):
         return Theme.get_set_top_bar_text_to_game_selection_for_game_switcher()
 
     def get_image_resize_height_multiplier(self):
-        return 1.0
-    
-    def get_render_bottom_bar_text_enabled(self):
-        return False
+        if(Theme.true_full_screen_game_switcher()):
+            return 1.0
+        else:
+            return None  
