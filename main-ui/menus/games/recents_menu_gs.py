@@ -15,14 +15,6 @@ class RecentsMenuGS(RecentsMenu):
     def __init__(self):
         super().__init__()
 
-    def get_view_type(self):
-        return Theme.get_view_type_for_game_switcher()
-    
-    def full_screen_grid_resize_type(self):
-        return Theme.get_resize_type_for_game_switcher()
-
-    def get_set_top_bar_text_to_game_selection(self):
-        return Theme.get_set_top_bar_text_to_game_selection_for_game_switcher()
     
     def run_rom_selection(self) :
         return self._run_rom_selection("Game Switcher")
@@ -42,3 +34,18 @@ class RecentsMenuGS(RecentsMenu):
         else:
             return RecentsManager.get_recents()
         
+        
+    def get_view_type(self):
+        return Theme.get_view_type_for_game_switcher()
+
+    def get_game_select_row_count(self):
+        return 1
+    
+    def get_game_select_col_count(self):
+        return 1
+    
+    def full_screen_grid_resize_type(self):
+        return Theme.get_resize_type_for_game_switcher()
+
+    def get_set_top_bar_text_to_game_selection(self):
+        return Theme.get_set_top_bar_text_to_game_selection_for_game_switcher()
