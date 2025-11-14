@@ -87,8 +87,6 @@ class ListView(View):
                 self.selection_made()
                 return Selection(self.get_selected_option(),Controller.last_input(), self.selected)
 
-            self._render_common()
-
 
         return Selection(self.get_selected_option(), None, self.selected)
     
