@@ -1,7 +1,7 @@
 
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
-from display.resize_type import get_next_resize_type
+from display.resize_type import ResizeType, get_next_resize_type
 from menus.settings import settings_menu
 from themes.theme import Theme
 from utils.consts import GAME_SWITCHER
@@ -95,13 +95,14 @@ class GameSwitcherSettingsMenu(settings_menu.SettingsMenu):
                 )
             )
 
-            option_list.append(
-                self.build_enabled_disabled_entry(
-                    primary_text="True Full Screen",
-                    get_value_func=Theme.true_full_screen_game_switcher,
-                    set_value_func=Theme.set_true_full_screen_game_switcher,
+            if(ResizeType.ZOOM == Theme.get_resize_type_for_game_switcher()):
+                option_list.append(
+                    self.build_enabled_disabled_entry(
+                        primary_text="True Full Screen",
+                        get_value_func=Theme.true_full_screen_game_switcher,
+                        set_value_func=Theme.set_true_full_screen_game_switcher,
+                    )
                 )
-            )
 
             option_list.append(
                 self.build_enabled_disabled_entry(
