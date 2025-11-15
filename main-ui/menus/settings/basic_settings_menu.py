@@ -91,7 +91,7 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
             selected_index+=1
             if(selected_index == len(theme_folders)):
                 selected_index = 0
-        elif(ControllerInput.X == input):
+        elif(ControllerInput.X == input and not Device.get_system_config().simple_mode_enabled()):
             ThemeSettingsMenu().show_theme_options_menu()
         elif(ControllerInput.A == input):
             selected_index = ThemeSelectionMenu().get_selected_option_index(theme_folders, "Themes")
