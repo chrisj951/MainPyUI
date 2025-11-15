@@ -10,6 +10,7 @@ from menus.settings.extra_settings_menu import ExtraSettingsMenu
 from menus.settings.bluetooth_menu import BluetoothMenu
 from menus.settings.sound_settings import SoundSettings
 from menus.settings.list_of_options_selection_menu import ListOfOptionsSelectionMenu
+from menus.settings.theme.theme_selection_menu import ThemeSelectionMenu
 from menus.settings.theme.theme_settings_menu import ThemeSettingsMenu
 from menus.settings.wifi_menu import WifiMenu
 from themes.theme import Theme
@@ -93,7 +94,7 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
         elif(ControllerInput.X == input):
             ThemeSettingsMenu().show_theme_options_menu()
         elif(ControllerInput.A == input):
-            selected_index = ListOfOptionsSelectionMenu().get_selected_option_index(theme_folders, "Themes")
+            selected_index = ThemeSelectionMenu().get_selected_option_index(theme_folders, "Themes")
 
 
         if(selected_index is not None):
