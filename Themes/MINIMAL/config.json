@@ -1,5 +1,5 @@
 {
-    "showBottomBar": false,
+    "showBottomBar": true,
     "name": "Minimal",
     "author": "@chrisbastion",
     "description": "Minimal",
@@ -7,7 +7,9 @@
     "systemSelectViewType": "TEXT_ONLY",
     "appMenuViewType": "TEXT_ONLY",
     "gameSelectionViewType": "TEXT_ONLY",
-    "showIndexText": false,
+    "showIndexText": true,
+    "confirmText":"",
+    "backText":"",
     "batteryPercentage": {
         "color": "#FFFFFF",
         "font": "nunwen.ttf",
