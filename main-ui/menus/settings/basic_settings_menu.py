@@ -9,7 +9,7 @@ from menus.settings import settings_menu
 from menus.settings.extra_settings_menu import ExtraSettingsMenu
 from menus.settings.bluetooth_menu import BluetoothMenu
 from menus.settings.sound_settings import SoundSettings
-from menus.settings.theme.list_of_options_selection_menu import ListOfOptionsSelectionMenu
+from menus.settings.list_of_options_selection_menu import ListOfOptionsSelectionMenu
 from menus.settings.theme.theme_settings_menu import ThemeSettingsMenu
 from menus.settings.wifi_menu import WifiMenu
 from themes.theme import Theme
