@@ -31,6 +31,7 @@ from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
+from views.view_type import ViewType
 
 
 class TasksMenu(settings_menu.SettingsMenu):
@@ -100,4 +101,4 @@ class TasksMenu(settings_menu.SettingsMenu):
         return option_list
 
     def get_cfw_tasks(self):
-        return OptionSelectUI.get_top_level_options_from_json(PyUiConfig.cfw_tasks_json(), execute_immediately=True)
+        return OptionSelectUI.get_top_level_options_from_json(PyUiConfig.cfw_tasks_json(),ViewType.ICON_AND_DESC, execute_immediately=True)
