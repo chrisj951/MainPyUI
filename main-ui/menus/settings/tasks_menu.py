@@ -1,4 +1,9 @@
 
+from asyncio import subprocess
+from collections import defaultdict
+import json
+import os
+from zipfile import Path
 from controller.controller import Controller
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
@@ -18,12 +23,14 @@ from menus.settings.language_menu import LanguageMenu
 from menus.settings.game_system_select_settings_menu import GameSystemSelectSettingsMenu
 from menus.settings.modes_menu import ModesMenu
 from menus.settings.time_settings_menu import TimeSettingsMenu
+from option_select_ui import OptionSelectUI
 from themes.theme import Theme
 from utils.boxart.box_art_scraper import BoxArtScraper
 from utils.cfw_system_config import CfwSystemConfig
 from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 from views.grid_or_list_entry import GridOrListEntry
+from views.selection import Selection
 
 
 class TasksMenu(settings_menu.SettingsMenu):
@@ -73,8 +80,6 @@ class TasksMenu(settings_menu.SettingsMenu):
                 )
             )  
                     
-
-
         option_list.append(
             GridOrListEntry(
                 primary_text=Language.locked_down_modes(),
@@ -87,4 +92,12 @@ class TasksMenu(settings_menu.SettingsMenu):
                 )
             )
 
+        if(PyUiConfig.cfw_tasks_json() is not None):
+            option_list.extend(self.get_cfw_tasks())
+
+            
+
         return option_list
+
+    def get_cfw_tasks(self):
+        return OptionSelectUI.get_top_level_options_from_json(PyUiConfig.cfw_tasks_json(), execute_immediately=True)
