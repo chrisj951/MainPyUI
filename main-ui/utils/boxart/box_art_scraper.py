@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import subprocess
 import json
 import re
@@ -20,11 +21,10 @@ class BoxArtScraper:
 
     def __init__(self):
         self.base_dir = "/mnt/SDCARD"
-        self.sprig_dir = os.path.join(self.base_dir, "sprig")
-        self.emu_dir = os.path.join(self.base_dir, "Emu")
-        self.roms_dir = os.path.join(self.base_dir, "Roms")
-        self.db_dir = os.path.join(self.sprig_dir, "db")
-
+        self.roms_dir = Device.get_roms_dir()
+        script_dir = Path(__file__).resolve().parent
+        self.db_dir = os.path.join(script_dir,"db")
+        self.game_system_utils = Device.get_game_system_utils()
     # ==========================================================
     # Helper Methods
     # ==========================================================
@@ -130,23 +130,17 @@ class BoxArtScraper:
 
     def _get_supported_extensions(self, sys_name: str) -> list[str]:
         """Get extensions from Emu config.json."""
-        config_path = os.path.join(self.emu_dir, sys_name, "config.json")
-        if not os.path.exists(config_path):
+        game_system = self.game_system_utils.get_game_system_by_name(sys_name)
+        if(game_system is None):
             return []
-
-        try:
-            with open(config_path, "r") as f:
-                data = json.load(f)
-                extlist = data.get("extlist", "")
-                return [ext.strip() for ext in extlist.split("|") if ext.strip()]
-        except Exception as e:
-            self.log_message(f"BoxartScraper: Failed to read extensions for {sys_name}: {e}")
-            return []
+        else:
+            return game_system.game_system_config.get_extlist()
 
     def find_image_name(self, sys_name: str, rom_file_name: str) -> Optional[str]:
         """Match ROM to image name based on db/<system>_games.txt."""
         image_list_file = os.path.join(self.db_dir, f"{sys_name}_games.txt")
         if not os.path.exists(image_list_file):
+            PyUiLogger.get_logger().warning(f"BoxartScraper: Image list file not found for {sys_name}.")
             return None
 
         rom_without_ext = os.path.splitext(rom_file_name)[0]
@@ -205,8 +199,11 @@ class BoxArtScraper:
 
             first_game = True
             for root, _, files in os.walk(sys_path):
+                if "Imgs" in root:
+                    continue
                 for file in files:
-                    if not any(file.lower().endswith(f".{ext.lower()}") for ext in extensions):
+                    if not any(file.lower().endswith(f"{ext.lower()}") for ext in extensions):
+                        #self.log_message(f"BoxartScraper: {file} does not end with {extensions}.")
                         continue
 
                     if not os.path.exists(os.path.join(root, "Imgs")):
@@ -225,13 +222,11 @@ class BoxArtScraper:
 
                     if first_game:
                         self.log_and_display_message(f"BoxartScraper: Scraping box art for {sys_name}")
-
-                        for f in files[:5]:  # just print the first 5
-                            self.log_message(f"{f.get_name()}, {f.get_download_url()}")
                         first_game = False
 
                     remote_image_name = self.find_image_name(sys_name, file)
                     if not remote_image_name:
+                        self.log_message(f"BoxartScraper: No image found for {file} in {sys_name}.")
                         continue
 
                     boxart_url = f"http://thumbnails.libretro.com/{ra_name}/Named_Boxarts/{remote_image_name}".replace(" ", "%20")
