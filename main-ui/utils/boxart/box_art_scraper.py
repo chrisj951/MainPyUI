@@ -272,7 +272,7 @@ class BoxArtScraper:
     # ==========================================================
     
     # Function to process a single ROM file
-    def process_rom(self,sys_name, ra_name, root, file, first_game):
+    def process_rom(self,sys_name, ra_name, root, file):
                 
         if not os.path.exists(os.path.join(root, "Imgs")):
             os.makedirs(os.path.join(root, "Imgs"), exist_ok=True)
@@ -280,12 +280,17 @@ class BoxArtScraper:
         rom_name = os.path.splitext(file)[0]
         image_path = os.path.join(root, "Imgs", f"{rom_name}.png")
 
-        if first_game:
-            self.log_message(f"BoxartScraper: Scraping box art for {sys_name}")
+        self.download_boxart(sys_name, rom_name, image_path)
 
-        remote_image_name = self.find_image_name(sys_name, file)
+    def download_boxart(self, sys_name: str, rom_file_name: str, image_path: str) -> bool:
+        ra_name = self.get_ra_alias(sys_name)
+        if not ra_name:
+            self.log_message(f"BoxartScraper: Remote system name not found - skipping {sys_name}.")
+            return
+
+        remote_image_name = self.find_image_name(sys_name, rom_file_name)
         if not remote_image_name:
-            self.log_message(f"BoxartScraper: No image found for {file} in {sys_name}.")
+            self.log_message(f"BoxartScraper: No image found for {rom_file_name} in {sys_name}.")
             return
 
         boxart_url = f"http://thumbnails.libretro.com/{ra_name}/Named_Boxarts/{remote_image_name}".replace(" ", "%20")
@@ -298,6 +303,49 @@ class BoxArtScraper:
             if not self._download_file(fallback_url, image_path):
                 self.log_message(f"BoxartScraper: failed {fallback_url}.")
 
+
+    def download_boxart_batch(
+        self,
+        sys_name: str,
+        roms_and_paths: list[tuple[str, str]],
+        max_workers: int = 8,
+    ):
+        """
+        Run download_boxart() concurrently for a batch of ROM/image pairs.
+
+        roms_and_paths: list of (rom_file_name, image_path)
+        """
+        self.log_and_display_message("Scraping box art. Please be patient, especially with large libraries!")
+        if not roms_and_paths:
+            self.log_and_display_message(f"No roms are missing boxart for {sys_name}.")
+            time.sleep(2)
+            return
+
+        ra_name = self.get_ra_alias(sys_name)
+        if not ra_name:
+            self.log_and_display_message(f"Remote system name not found - unable to download box art for {sys_name}.")
+            time.sleep(2)
+            return
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [
+                executor.submit(self.download_boxart, sys_name, rom_file_name, image_path)
+                for rom_file_name, image_path in roms_and_paths
+            ]
+
+            count = 0
+
+            for future in as_completed(futures):
+                count = count +1
+                self.log_and_display_message(f"Scraping box art... ({count}/{len(roms_and_paths)})")
+                try:
+                    future.result()  # triggers exception if any occurred
+                except Exception as e:
+                    self.log_message(f"BoxartScraper: Error in batch download - {e}")
+
+        self.log_and_display_message("Scraping complete!")
+        time.sleep(2)
+        BoxArtResizer.patch_boxart()
 
     def run_scraper_tasks(self, max_workers, tasks):
 
@@ -336,8 +384,6 @@ class BoxArtScraper:
             self.log_message(f"BoxartScraper: No supported extensions found for {sys_name}.")
             return tasks
 
-        first_game = True
-
         for root, _, files in os.walk(sys_path):
             if "Imgs" in root:
                 continue
@@ -353,8 +399,7 @@ class BoxArtScraper:
                 if os.path.exists(image_dir) and any(f.startswith(rom_name + ".") for f in os.listdir(image_dir)):
                     continue
 
-                tasks.append((sys_name, ra_name, root, file, first_game))
-                first_game = False  # Only log first game once per system
+                tasks.append((sys_name, ra_name, root, file))
         return tasks
 
     def scrape_boxart(self, max_workers=8):
