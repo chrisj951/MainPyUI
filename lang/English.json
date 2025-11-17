@@ -118,5 +118,7 @@
     "topBarOptions": "Top Bar Options",
     "leftSideInitialXOffset": "Left Side Initial X Offset",
     "tasks" : "Tasks",
-    "selectBoxart" : "Select BoxArt Download"
+    "selectBoxart" : "Select BoxArt Download",
+    "deleteBoxart" : "Delete Box Art",
+    "deleteRom" : "Delete ROM"
 }
