@@ -5,15 +5,30 @@ import json
 import re
 import time
 import urllib.request
-from typing import Optional
+from typing import List, Optional
 
 from devices.device import Device
 from display.display import Display
 from games.utils.box_art_resizer import BoxArtResizer
 from utils.logger import PyUiLogger
-
+import re
+import difflib
+from typing import Optional
 
 class BoxArtScraper:
+    # optional abbreviation mapping
+    ABBREVIATIONS = {
+        "ff": "final fantasy",
+        "zelda": "legend of zelda",
+        "mario": "super mario",
+        # add more as needed
+    }
+
+    # numbers → roman numerals
+    NUM_TO_ROMAN = {
+        "2": "ii", "3": "iii", "4": "iv", "5": "v",
+        "6": "vi", "7": "vii", "8": "viii", "9": "ix", "10": "x"
+    }
     """
     Python version of the box art scraper script, converted into a class.
     Matches original shell behavior but without watchdog logic.
@@ -25,6 +40,7 @@ class BoxArtScraper:
         script_dir = Path(__file__).resolve().parent
         self.db_dir = os.path.join(script_dir,"db")
         self.game_system_utils = Device.get_game_system_utils()
+        self.preferred_region = Device.get_system_config().get_preferred_region()
     # ==========================================================
     # Helper Methods
     # ==========================================================
@@ -147,24 +163,79 @@ class BoxArtScraper:
         with open(image_list_file, "r", encoding="utf-8", errors="ignore") as f:
             image_list = f.read().splitlines()
 
-        # Try exact match
-        exact = f"{rom_without_ext}.png"
-        for name in image_list:
-            if name.lower() == exact.lower():
-                return name
+        return self.find_image_from_list(rom_without_ext, image_list)
 
-        # Fuzzy match: remove brackets and region info
-        search_term = re.sub(r"\[.*?\]|\(.*?\)", "", rom_without_ext).strip()
-        matches = [n for n in image_list if n.lower().startswith(search_term.lower())]
-        if matches:
-            usa_matches = [m for m in matches if "(USA)" in m]
-            return usa_matches[0] if usa_matches else matches[0]
-        return None
+
+    def preprocess_token(self, token: str) -> str:
+        token = token.lower()
+        if token in self.ABBREVIATIONS:
+            return self.ABBREVIATIONS[token]
+        if token in self.NUM_TO_ROMAN:
+            return self.NUM_TO_ROMAN[token]
+        return token
+
+    def tokenize(self, s: str) -> set[str]:
+        s = s.replace("_", " ").lower()
+        s = re.sub(r"[^\w\s]+", " ", s)  # remove punctuation
+        return {self.preprocess_token(token) for token in s.split()}
+
+    def strip_parentheses(self, s: str) -> str:
+        """Remove all (...) blocks and collapse extra whitespace."""
+        s = re.sub(r"\(.*?\)", "", s)
+        return re.sub(r"\s+", " ", s).strip()
+
+    def weighted_similarity(self, target: str, candidate: str) -> float:
+        # Strip parentheses from candidate if target has none
+        candidate_for_match = candidate
+        if "(" not in target:
+            candidate_for_match = self.strip_parentheses(candidate)
+
+        t_tokens = self.tokenize(target)
+        c_tokens = self.tokenize(candidate_for_match)
+
+        if not t_tokens or not c_tokens:
+            return 0.0
+
+        # Penalize missing target tokens heavily
+        missing_tokens = t_tokens - c_tokens
+        penalty = len(missing_tokens) * 0.3  # adjust penalty as needed
+
+        # token intersection over union
+        score = len(t_tokens & c_tokens) / len(t_tokens | c_tokens)
+        score -= penalty
+        return max(score, 0.0)
+
+    def find_image_from_list(self, rom_without_ext: str, image_list: List[str]) -> Optional[str]:
+        best_score = 0.0
+        best_candidates = []
+
+        for name in image_list:
+            candidate = name.lower().replace(".png", "")
+            score = self.weighted_similarity(rom_without_ext, candidate)
+
+            if score > best_score:
+                best_score = score
+                best_candidates = [name]
+            elif score == best_score:
+                best_candidates.append(name)
+
+        if not best_candidates or best_score < 0.3:
+            return None
+
+        # Tie-breaking based on preferred region
+        if self.preferred_region:
+            for candidate in best_candidates:
+                matches = re.findall(r"\(([^)]*?)\)", candidate, re.IGNORECASE)
+                for match in matches:
+                    if self.preferred_region in match.upper():
+                        return candidate
+
+        # Otherwise return first best candidate
+        return best_candidates[0]
 
     # ==========================================================
     # Main Scraper Logic
     # ==========================================================
-
     def scrape_boxart(self):
         self.log_and_display_message(
             "Scraping box art. Please be patient, especially with large libraries!"
