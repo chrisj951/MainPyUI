@@ -165,7 +165,7 @@ class BoxArtScraper:
 
         return self.find_image_from_list(rom_without_ext, image_list)
 
-
+    
     def preprocess_token(self, token: str) -> str:
         token = token.lower()
         if token in self.ABBREVIATIONS:
@@ -174,33 +174,48 @@ class BoxArtScraper:
             return self.NUM_TO_ROMAN[token]
         return token
 
-    def tokenize(self, s: str) -> set[str]:
-        s = s.replace("_", " ").lower()
-        s = re.sub(r"[^\w\s]+", " ", s)  # remove punctuation
-        return {self.preprocess_token(token) for token in s.split()}
-
     def strip_parentheses(self, s: str) -> str:
-        """Remove all (...) blocks and collapse extra whitespace."""
+        """Remove all (...) blocks and collapse whitespace."""
         s = re.sub(r"\(.*?\)", "", s)
         return re.sub(r"\s+", " ", s).strip()
 
+    def tokenize_with_compounds(self, s: str) -> set[str]:
+        """
+        Tokenizes string and adds compound word variants:
+        - Remove punctuation
+        - Add each token
+        - Add all 2-token concatenations
+        - Preprocess numbers/abbreviations
+        """
+        s = s.replace("_", " ").lower()
+        s = re.sub(r"[^\w\s]+", " ", s)
+        tokens = [self.preprocess_token(t) for t in s.split()]
+        token_set = set(tokens)
+        token_set |= {"".join(tokens[i:i+2]) for i in range(len(tokens)-1)}  # 2-token compounds
+        return token_set
+
     def weighted_similarity(self, target: str, candidate: str) -> float:
-        # Strip parentheses from candidate if target has none
         candidate_for_match = candidate
         if "(" not in target:
             candidate_for_match = self.strip_parentheses(candidate)
 
-        t_tokens = self.tokenize(target)
-        c_tokens = self.tokenize(candidate_for_match)
+        t_tokens = self.tokenize_with_compounds(target)
+        t_tokens |= {t.replace(" ", "") for t in t_tokens}
+
+        c_tokens = self.tokenize_with_compounds(candidate_for_match)
+        c_tokens |= {t.replace(" ", "") for t in c_tokens}
 
         if not t_tokens or not c_tokens:
             return 0.0
 
-        # Penalize missing target tokens heavily
+        # Penalize missing tokens, ignoring '1' or 'i'
         missing_tokens = t_tokens - c_tokens
-        penalty = len(missing_tokens) * 0.3  # adjust penalty as needed
+        penalty = 0
+        for tok in missing_tokens:
+            if tok not in {"1", "i"}:
+                penalty += 0.3
 
-        # token intersection over union
+        # Intersection over union
         score = len(t_tokens & c_tokens) / len(t_tokens | c_tokens)
         score -= penalty
         return max(score, 0.0)
@@ -222,7 +237,7 @@ class BoxArtScraper:
         if not best_candidates or best_score < 0.3:
             return None
 
-        # Tie-breaking based on preferred region
+        # Preferred region tie-breaker
         if self.preferred_region:
             for candidate in best_candidates:
                 matches = re.findall(r"\(([^)]*?)\)", candidate, re.IGNORECASE)
@@ -230,8 +245,8 @@ class BoxArtScraper:
                     if self.preferred_region in match.upper():
                         return candidate
 
-        # Otherwise return first best candidate
-        return best_candidates[0]
+        # Shortest filename tie-breaker
+        return min(best_candidates, key=len)
 
     # ==========================================================
     # Main Scraper Logic
