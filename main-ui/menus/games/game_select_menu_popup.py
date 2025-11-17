@@ -164,23 +164,24 @@ class GameSelectMenuPopup:
         ))
 
                
-        popup_options.append(GridOrListEntry(
-            primary_text=Language.download_boxart(),
-            image_path=None,
-            image_path_selected=None,
-            description=None,
-            icon=None,
-            value=lambda input_value, rom_info=rom_info: self.download_boxart(input_value, rom_info)
-        ))
-               
-        popup_options.append(GridOrListEntry(
-            primary_text=Language.select_boxart(),
-            image_path=None,
-            image_path_selected=None,
-            description=None,
-            icon=None,
-            value=lambda input_value, rom_info=rom_info: self.select_specific_boxart(input_value, rom_info)
-        ))
+        if(not Device.get_system_config().simple_mode_enabled()):
+            popup_options.append(GridOrListEntry(
+                primary_text=Language.download_boxart(),
+                image_path=None,
+                image_path_selected=None,
+                description=None,
+                icon=None,
+                value=lambda input_value, rom_info=rom_info: self.download_boxart(input_value, rom_info)
+            ))
+                
+            popup_options.append(GridOrListEntry(
+                primary_text=Language.select_boxart(),
+                image_path=None,
+                image_path_selected=None,
+                description=None,
+                icon=None,
+                value=lambda input_value, rom_info=rom_info: self.select_specific_boxart(input_value, rom_info)
+            ))
 
         popup_options.append(GridOrListEntry(
                 primary_text=Language.launch_random_game(),

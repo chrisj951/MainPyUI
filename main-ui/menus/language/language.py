@@ -346,7 +346,7 @@ class Language:
 
     @classmethod
     def select_boxart(cls):
-        return cls._data.get("selectBoxart","Select BoxArt")
+        return cls._data.get("selectBoxart","Select BoxArt Download")
 
     @classmethod
     def controller_settings(cls):
