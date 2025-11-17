@@ -117,5 +117,6 @@
     "gridViewThemeOptions": "Grid View Theme Options",
     "topBarOptions": "Top Bar Options",
     "leftSideInitialXOffset": "Left Side Initial X Offset",
-    "tasks" : "Tasks"
+    "tasks" : "Tasks",
+    "selectBoxart" : "Select BoxArt"
 }

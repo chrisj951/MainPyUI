@@ -171,6 +171,19 @@ class BoxArtScraper:
 
         return self.find_image_from_list(sys_name, rom_without_ext, image_list)
 
+    def get_image_list_for_system(self, sys_name: str) -> List[str]:
+        """Match ROM to image name based on db/<system>_games.txt."""
+        image_list_file = os.path.join(self.db_dir, f"{sys_name}_games.txt")
+        if not os.path.exists(image_list_file):
+            self.log_and_display_message(f"Image list file not found for {sys_name}.")
+            time.sleep(2)
+            return None
+
+        with open(image_list_file, "r", encoding="utf-8", errors="ignore") as f:
+            image_list = f.read().splitlines()
+
+        return image_list
+    
 
     def preprocess_token(self, token: str) -> str:
         token = token.lower()
@@ -292,6 +305,13 @@ class BoxArtScraper:
         if not remote_image_name:
             self.log_message(f"BoxartScraper: No image found for {rom_file_name} in {sys_name}.")
             return
+        self.download_remote_image(ra_name, remote_image_name, image_path)
+
+    def download_remote_image_for_system(self, sys_name: str, remote_image_name: str, image_path: str):
+        ra_name = self.get_ra_alias(sys_name)
+        self.download_remote_image(ra_name, remote_image_name, image_path)
+
+    def download_remote_image(self, ra_name, remote_image_name, image_path):
 
         boxart_url = f"http://thumbnails.libretro.com/{ra_name}/Named_Boxarts/{remote_image_name}".replace(" ", "%20")
         fallback_url = f"https://raw.githubusercontent.com/libretro-thumbnails/{ra_name.replace(' ', '_')}/master/Named_Boxarts/{remote_image_name}".replace(" ", "%20")
