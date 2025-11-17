@@ -8,8 +8,11 @@ from display.display import Display
 from display.on_screen_keyboard import OnScreenKeyboard
 from menus.games.collections.collections_management_menu import CollectionsManagementMenu
 from menus.games.utils.favorites_manager import FavoritesManager
+from menus.games.utils.rom_file_name_utils import RomFileNameUtils
 from menus.games.utils.rom_info import RomInfo
+from menus.games.utils.rom_select_options_builder import get_rom_select_options_builder
 from themes.theme import Theme
+from utils.boxart.box_art_scraper import BoxArtScraper
 from utils.logger import PyUiLogger
 from views.grid_or_list_entry import GridOrListEntry
 from views.view_creator import ViewCreator
@@ -61,6 +64,21 @@ class GameSelectMenuPopup:
             Theme.set_game_selection_view_type(ViewType.TEXT_AND_IMAGE)
 
 
+    def download_boxart(self, input, rom_info : RomInfo):
+        if (ControllerInput.A == input):
+            rom_select_options_builder = get_rom_select_options_builder()
+
+            rom_image_list = []
+            img_path = rom_select_options_builder.get_default_image_path(rom_info.game_system, rom_info.rom_file_path)
+            name_without_ext = RomFileNameUtils.get_rom_name_without_extensions(
+                rom_info.game_system,
+                rom_info.rom_file_path
+            )
+            rom_image_list.append((name_without_ext, img_path))
+            
+            BoxArtScraper().download_boxart_batch(rom_info.game_system.folder_name, rom_image_list)
+
+
     def get_game_options(self, rom_info : RomInfo, additional_popup_options = [], rom_list= [], use_full_text = True):
         popup_options = []
         popup_options.extend(additional_popup_options)
@@ -93,6 +111,16 @@ class GameSelectMenuPopup:
             description=None,
             icon=None,
             value=lambda input_value, rom_info=rom_info: self.collections_management_view(rom_info, input_value)
+        ))
+
+               
+        popup_options.append(GridOrListEntry(
+            primary_text=Language.download_boxart(),
+            image_path=None,
+            image_path_selected=None,
+            description=None,
+            icon=None,
+            value=lambda input_value, rom_info=rom_info: self.download_boxart(input_value, rom_info)
         ))
 
         popup_options.append(GridOrListEntry(

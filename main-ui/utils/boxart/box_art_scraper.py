@@ -343,8 +343,6 @@ class BoxArtScraper:
                 except Exception as e:
                     self.log_message(f"BoxartScraper: Error in batch download - {e}")
 
-        self.log_and_display_message("Scraping complete!")
-        time.sleep(2)
         BoxArtResizer.patch_boxart()
 
     def run_scraper_tasks(self, max_workers, tasks):
