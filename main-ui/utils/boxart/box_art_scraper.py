@@ -29,6 +29,8 @@ class BoxArtScraper:
         "2": "ii", "3": "iii", "4": "iv", "5": "v",
         "6": "vi", "7": "vii", "8": "viii", "9": "ix", "10": "x"
     }
+
+    STOPWORDS = {"and", "the", "of", "in", "is", "a", "an"}
     """
     Python version of the box art scraper script, converted into a class.
     Matches original shell behavior but without watchdog logic.
@@ -165,7 +167,6 @@ class BoxArtScraper:
 
         return self.find_image_from_list(rom_without_ext, image_list)
 
-    
     def preprocess_token(self, token: str) -> str:
         token = token.lower()
         if token in self.ABBREVIATIONS:
@@ -175,48 +176,39 @@ class BoxArtScraper:
         return token
 
     def strip_parentheses(self, s: str) -> str:
-        """Remove all (...) blocks and collapse whitespace."""
         s = re.sub(r"\(.*?\)", "", s)
-        return re.sub(r"\s+", " ", s).strip()
+        return re.sub(r"[\s\-_,]+", " ", s).strip()
 
-    def tokenize_with_compounds(self, s: str) -> set[str]:
-        """
-        Tokenizes string and adds compound word variants:
-        - Remove punctuation
-        - Add each token
-        - Add all 2-token concatenations
-        - Preprocess numbers/abbreviations
-        """
+    def tokenize(self, s: str) -> set[str]:
         s = s.replace("_", " ").lower()
-        s = re.sub(r"[^\w\s]+", " ", s)
-        tokens = [self.preprocess_token(t) for t in s.split()]
-        token_set = set(tokens)
-        token_set |= {"".join(tokens[i:i+2]) for i in range(len(tokens)-1)}  # 2-token compounds
-        return token_set
+        s = re.sub(r"[^\w\s]+", " ", s)  # remove punctuation
+        token_list = [self.preprocess_token(t) for t in s.split() if t not in self.STOPWORDS]
+
+        # Build 2-word compounds
+        compounds = {"".join(token_list[i:i+2]) for i in range(len(token_list)-1)}
+
+        return set(token_list) | compounds
 
     def weighted_similarity(self, target: str, candidate: str) -> float:
         candidate_for_match = candidate
         if "(" not in target:
             candidate_for_match = self.strip_parentheses(candidate)
 
-        t_tokens = self.tokenize_with_compounds(target)
-        t_tokens |= {t.replace(" ", "") for t in t_tokens}
-
-        c_tokens = self.tokenize_with_compounds(candidate_for_match)
-        c_tokens |= {t.replace(" ", "") for t in c_tokens}
+        t_tokens = list(self.tokenize(target))
+        c_tokens = list(self.tokenize(candidate_for_match))
 
         if not t_tokens or not c_tokens:
             return 0.0
 
         # Penalize missing tokens, ignoring '1' or 'i'
-        missing_tokens = t_tokens - c_tokens
+        missing_tokens = set(t_tokens) - set(c_tokens)
         penalty = 0
         for tok in missing_tokens:
             if tok not in {"1", "i"}:
                 penalty += 0.3
 
         # Intersection over union
-        score = len(t_tokens & c_tokens) / len(t_tokens | c_tokens)
+        score = len(set(t_tokens) & set(c_tokens)) / len(set(t_tokens) | set(c_tokens))
         score -= penalty
         return max(score, 0.0)
 
