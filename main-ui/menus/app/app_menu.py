@@ -1,6 +1,7 @@
 
 
 import os
+from apps.pyui_app import PyUiAppConfig
 from controller.controller import Controller
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
@@ -10,6 +11,7 @@ from menus.app.app_menu_popup import AppMenuPopup
 from menus.app.hidden_apps_manager import AppsManager
 from menus.language.language import Language
 from themes.theme import Theme
+from utils.boxart.box_art_scraper import BoxArtScraper
 from utils.logger import PyUiLogger
 from utils.py_ui_state import PyUiState
 from views.grid_or_list_entry import GridOrListEntry
@@ -39,40 +41,43 @@ class AppMenu:
         if(icon_path_from_config is not None):
             icon_priority.append(self._convert_to_theme_version_of_icon(icon_path_from_config))
             icon_priority.append(icon_path_from_config)
-            icon_priority.append(os.path.join(app_folder,icon_path_from_config))
-        icon_priority.append(os.path.join(app_folder,"icon.png"))
+            if(app_folder is not None):
+                icon_priority.append(os.path.join(app_folder,icon_path_from_config))
+        if(app_folder is not None):
+            icon_priority.append(os.path.join(app_folder,"icon.png"))
         return self.get_first_existing_path(icon_priority)
     
     def save_app_selection(self, selected):
         if(selected.get_selection() is not None):
-            filepath = selected.get_selection().get_extra_data().get_launch()
-            directory = selected.get_selection().get_extra_data().get_folder()
-            PyUiState.set_last_app_selection(directory,filepath)
+            PyUiState.set_last_app_selection(selected.get_selection().get_extra_data().get_label())
 
-    def handle_app_selection(self, app):
-        launch = app.get_launch()
-        folder = app.get_folder()
-        Display.deinit_display()
-        Device.run_app(folder,launch)
-        Controller.clear_input_queue()
-        Display.reinitialize()
-
+    def append_pyui_apps(self, app_list):
+        boxart_scraper_config = PyUiAppConfig("Boxart Scraper")
+        
+        app_list.append(
+                GridOrListEntry(
+                    primary_text=boxart_scraper_config.get_label() + "(Hidden)" if AppsManager.is_hidden(boxart_scraper_config) else boxart_scraper_config.get_label(),
+                    image_path=None,
+                    image_path_selected=None,
+                    description="Scrape game boxart",
+                    icon=self.get_icon(None,"scraper.png"),
+                    extra_data=boxart_scraper_config,
+                    value=BoxArtScraper().scrape_boxart
+                )
+        )
                 
-
-
     def run_app_selection(self) :
         running = True
     
         system_config = Device.get_system_config()
 
         while(running):
-            last_selected_dir, last_selected_file = PyUiState.get_last_app_selection()
+            last_selected_label = PyUiState.get_last_app_selection()
             selected = Selection(None,None,0)
             app_list = []
             view = None
             idx = 0
             device_apps = self.appFinder.get_apps()
-            device_apps.sort(key=lambda app: app.get_label() or "")
             for app in device_apps:
                 hidden = AppsManager.is_hidden(app) and not self.show_all_apps
                 devices = app.get_devices()
@@ -91,9 +96,13 @@ class AppMenu:
                             value=lambda app=app: self.handle_app_selection(app)
                         )
                     )
-                    if(app.get_folder() == last_selected_dir and app.get_launch() == last_selected_file):
+                    if(app.get_label() == last_selected_label):
                         selected = Selection(None,None,idx)
                     idx +=1
+
+
+            self.append_pyui_apps(app_list)
+            app_list.sort(key=lambda app: app.get_primary_text() or "")
             PyUiLogger.get_logger().info(f"Finish app list building")
 
             if(view is None):
