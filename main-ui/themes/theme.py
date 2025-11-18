@@ -66,7 +66,6 @@ class Theme():
         cls.scale_width = Device.screen_width() / 640
         cls.scale_height = Device.screen_height() / 480
         cls._default_multiplier = min(cls.scale_width, cls.scale_height)
-
 #        if not os.path.exists(bgm_wav):
 #            if os.path.exists(bgm_mp3):
 #                AudioPlayer.loop_wav(bgm_wav)
@@ -817,8 +816,11 @@ class Theme():
 
     @classmethod
     def get_game_system_select_col_count(cls):
-        #default_value = int(4*cls._default_multiplier)
-        return cls._data.get("gameSystemSelectColCount", 4) # why doesnt pure multiplier work?
+        cls.scale_width = Device.screen_width() / 640
+        cls.scale_height = Device.screen_height() / 480
+        multiplier = (cls.scale_width - cls.scale_height) + 1
+
+        return cls._data.get("gameSystemSelectColCount", int(4 * multiplier))
 
     @classmethod
     def get_game_system_select_row_count(cls):
@@ -940,7 +942,7 @@ class Theme():
 
     @classmethod
     def get_game_select_row_count(cls):
-        return cls._data.get("gameSelectRowCount", 2) #Why does multiplying this one by the scaling not work properly?
+        return cls._data.get("gameSelectRowCount", 2) 
 
     @classmethod
     def set_game_select_row_count(cls, value):
@@ -949,8 +951,12 @@ class Theme():
 
     @classmethod
     def get_game_select_col_count(cls):
-        #default_value = int(4*cls._default_multiplier)
-        return cls._data.get("gameSelectColCount", 4) 
+        #Why does this not work?
+        #cls.scale_width = Device.screen_width() / 640
+        #cls.scale_height = Device.screen_height() / 480
+        #multiplier = (cls.scale_width - cls.scale_height) + 1
+        multiplier = 1
+        return cls._data.get("gameSelectColCount", int(4*multiplier)) 
 
     @classmethod
     def set_game_select_col_count(cls, value):
