@@ -27,6 +27,7 @@ class Theme():
     _default_multiplier = 1.0
     _play_button_press_sounds = True
     _asset_cache = {}  # shared cache for asset + icon lookups
+    _grid_game_default_size = 140
 
     @classmethod
     def init(cls, path, width, height):
@@ -63,22 +64,17 @@ class Theme():
             cls._daijisho_theme_index = None
             #PyUiLogger.get_logger().info(f"Using Miyoo style theme")
 
-        cls.scale_width = Device.screen_width() / 640
-        cls.scale_height = Device.screen_height() / 480
-        cls._default_multiplier = min(cls.scale_width, cls.scale_height)
-#        if not os.path.exists(bgm_wav):
-#            if os.path.exists(bgm_mp3):
-#                AudioPlayer.loop_wav(bgm_wav)
-#                PyUiLogger.get_logger().info("Converting bgm.mp3 to bgm.wav")
-#                ProcessRunner.run([
-#                    "ffmpeg",
-#                    "-y",  # overwrite if exists
-#                    "-i", bgm_mp3,
-#                    "-ar", "44100",      # sample rate
-#                    "-ac", "2",          # stereo
-#                    "-acodec", "pcm_s16le",  # WAV PCM 16-bit
-#                    bgm_wav
-#                ],check=False, timeout=None, print=True)
+        scale_width = Device.screen_width() / 640
+        scale_height = Device.screen_height() / 480
+
+        if(scale_width > scale_height):
+            cls.width_multiplier = ((scale_width-scale_height) / scale_height) + 1
+            cls.height_multiplier = 1.0
+        else:
+            cls.height_multiplier = ((scale_height-scale_width) / scale_width) + 1
+            cls.width_multiplier = 1.0
+
+        cls._default_multiplier = min(scale_width, scale_height)
 
         cls.button_press_sounds_changed()
         cls.bgm_setting_changed()
@@ -816,16 +812,12 @@ class Theme():
 
     @classmethod
     def get_game_system_select_col_count(cls):
-        cls.scale_width = Device.screen_width() / 640
-        cls.scale_height = Device.screen_height() / 480
-        multiplier = (cls.scale_width - cls.scale_height) + 1
-
-        return cls._data.get("gameSystemSelectColCount", int(4 * multiplier))
+        return cls._data.get("gameSystemSelectColCount", int(4 * cls.width_multiplier))
 
     @classmethod
     def get_game_system_select_row_count(cls):
-        return cls._data.get("gameSystemSelectRowCount", 2) # Why does multiplying this one by the scaling not work properly?
-
+        return cls._data.get("gameSystemSelectRowCount", int(2 * cls.height_multiplier)) 
+    
     @classmethod
     def set_game_system_select_col_count(cls, count):
         cls._data["gameSystemSelectColCount"] = count
@@ -942,7 +934,7 @@ class Theme():
 
     @classmethod
     def get_game_select_row_count(cls):
-        return cls._data.get("gameSelectRowCount", 2) 
+        return cls._data.get("gameSelectRowCount", int(2 * cls.height_multiplier)) 
 
     @classmethod
     def set_game_select_row_count(cls, value):
@@ -951,12 +943,7 @@ class Theme():
 
     @classmethod
     def get_game_select_col_count(cls):
-        #Why does this not work?
-        #cls.scale_width = Device.screen_width() / 640
-        #cls.scale_height = Device.screen_height() / 480
-        #multiplier = (cls.scale_width - cls.scale_height) + 1
-        multiplier = 1
-        return cls._data.get("gameSelectColCount", int(4*multiplier)) 
+        return cls._data.get("gameSelectColCount", int(4*cls.width_multiplier)) 
 
     @classmethod
     def set_game_select_col_count(cls, value):
@@ -966,7 +953,7 @@ class Theme():
     @classmethod
     def get_game_select_img_width(cls):
         from devices.device import Device
-        return cls._data.get("gameSelectImgWidth", int(320 * cls.scale_width))
+        return cls._data.get("gameSelectImgWidth", int(320 * cls._default_multiplier))
     
     @classmethod
     def set_game_select_img_width(cls, value):
@@ -975,8 +962,7 @@ class Theme():
 
     @classmethod
     def get_grid_game_select_img_width(cls):
-        from devices.device import Device
-        return cls._data.get("gridGameSelectImgWidth", int(140 * cls.scale_width))
+        return cls._data.get("gridGameSelectImgWidth", int(cls._grid_game_default_size * cls._default_multiplier))
     
     @classmethod
     def set_grid_game_select_img_width(cls, value):
@@ -1031,8 +1017,7 @@ class Theme():
 
     @classmethod
     def get_grid_game_select_img_height(cls):
-        from devices.device import Device
-        return cls._data.get("gridGameSelectImgHeight", int(140 * cls._default_multiplier))
+        return cls._data.get("gridGameSelectImgHeight", int(cls._grid_game_default_size * cls._default_multiplier))
     
     @classmethod
     def set_grid_game_select_img_height(cls, value):
@@ -1068,7 +1053,7 @@ class Theme():
 
     @classmethod
     def get_grid_multi_row_sel_bg_resize_pad_width(cls):
-        return cls._data.get("gridMultiRowSelBgResizePadWidth", int(20*cls.scale_width))
+        return cls._data.get("gridMultiRowSelBgResizePadWidth", int(20*cls._default_multiplier))
     
     @classmethod
     def set_grid_multi_row_sel_bg_resize_pad_width(cls, value):
@@ -1077,7 +1062,7 @@ class Theme():
 
     @classmethod
     def get_grid_multi_row_sel_bg_resize_pad_height(cls):
-        return cls._data.get("gridMultiRowSelBgResizePadHeight", int(20*cls.scale_height))
+        return cls._data.get("gridMultiRowSelBgResizePadHeight", int(20*cls._default_multiplier))
     
     @classmethod
     def set_grid_multi_row_sel_bg_resize_pad_height(cls, value):
@@ -1086,7 +1071,7 @@ class Theme():
 
     @classmethod
     def get_top_bar_initial_x_offset(cls):
-        return cls._data.get("topBarInitialXOffset", int(20*cls.scale_width))
+        return cls._data.get("topBarInitialXOffset", int(20*cls._default_multiplier))
 
     @classmethod
     def set_top_bar_initial_x_offset(cls, value):
