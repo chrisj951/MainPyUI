@@ -120,5 +120,6 @@
     "tasks" : "Tasks",
     "selectBoxart" : "Select BoxArt Download",
     "deleteBoxart" : "Delete Box Art",
-    "deleteRom" : "Delete ROM"
+    "deleteRom" : "Delete ROM",
+    "aboutThisDevice": "About this Device"
 }
