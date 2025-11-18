@@ -76,7 +76,6 @@ class AppMenu:
             selected = Selection(None,None,0)
             app_list = []
             view = None
-            idx = 0
             device_apps = self.appFinder.get_apps()
             for app in device_apps:
                 hidden = AppsManager.is_hidden(app) and not self.show_all_apps
@@ -96,13 +95,18 @@ class AppMenu:
                             value=lambda app=app: self.handle_app_selection(app)
                         )
                     )
-                    if(app.get_label() == last_selected_label):
-                        selected = Selection(None,None,idx)
-                    idx +=1
 
 
             self.append_pyui_apps(app_list)
             app_list.sort(key=lambda app: app.get_primary_text() or "")
+
+            idx = 0
+            for app in app_list:
+                if(app.get_primary_text() == last_selected_label):
+                    selected = Selection(None,None,idx)
+                    break
+                idx += 1
+
             PyUiLogger.get_logger().info(f"Finish app list building")
 
             if(view is None):
