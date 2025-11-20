@@ -31,9 +31,9 @@ class TopBar:
 
         x_offset = Theme.get_top_bar_initial_x_offset()
 
-        games_color = Theme.text_color_selected(FontPurpose.GRID_ONE_ROW) if "Games" == self.selected_tab else Theme.text_color(FontPurpose.GRID_ONE_ROW)
-        apps_color = Theme.text_color_selected(FontPurpose.GRID_ONE_ROW) if "Apps" == self.selected_tab else Theme.text_color(FontPurpose.GRID_ONE_ROW)
-        settings_color = Theme.text_color_selected(FontPurpose.GRID_ONE_ROW) if "Settings" == self.selected_tab else Theme.text_color(FontPurpose.GRID_ONE_ROW)
+        games_color = Theme.text_color_selected(FontPurpose.GRID_ONE_ROW) if "Game" == self.selected_tab else Theme.text_color(FontPurpose.GRID_ONE_ROW)
+        apps_color = Theme.text_color_selected(FontPurpose.GRID_ONE_ROW) if "App" == self.selected_tab else Theme.text_color(FontPurpose.GRID_ONE_ROW)
+        settings_color = Theme.text_color_selected(FontPurpose.GRID_ONE_ROW) if "Setting" == self.selected_tab else Theme.text_color(FontPurpose.GRID_ONE_ROW)
         
         text_padding = 20 * Theme._default_multiplier
         w, h = Display.render_text(Language.games(),x_offset, center_of_bar,  games_color, FontPurpose.GRID_ONE_ROW, RenderMode.MIDDLE_LEFT_ALIGNED)
