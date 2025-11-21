@@ -13,7 +13,7 @@ from controller.key_watcher import KeyWatcher
 import os
 from controller.key_watcher_controller_miyoo_mini import InputResult, KeyEvent, KeyWatcherControllerMiyooMini
 from devices.charge.charge_status import ChargeStatus
-from devices.miyoo.mini_plus.miyoo_mini_plus_shared_memory_writer import MiyooMiniPlusSharedMemoryWriter
+from devices.miyoo.mini.miyoo_mini_shared_memory_writer import MiyooMiniSharedMemoryWriter
 from devices.miyoo.miyoo_device import MiyooDevice
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.miyoo.system_config import SystemConfig
@@ -66,7 +66,7 @@ class MiyooMiniPlus(MiyooDevice):
             source = script_dir / 'mini-plus-system.json'
             ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-plus-system.json", source)
             self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-plus-system.json")
-            self.miyoo_mini_plus_shared_memory_writer = MiyooMiniPlusSharedMemoryWriter()
+            self.miyoo_mini_shared_memory_writer = MiyooMiniSharedMemoryWriter()
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
             self._set_lumination_to_config()
             self._set_contrast_to_config()
@@ -225,24 +225,25 @@ class MiyooMiniPlus(MiyooDevice):
         else:
             return 1
     
+    
     def _set_lumination_to_config(self):
         # Miyoo internally has lumination but it does not work
-        #self.miyoo_mini_plus_shared_memory_writer.set_lumination(self.system_config.backlight)
-        self.miyoo_mini_plus_shared_memory_writer.set_brightness(self.system_config.backlight)
+        #self.miyoo_mini_shared_memory_writer.set_lumination(self.system_config.backlight)
+        self.miyoo_mini_shared_memory_writer.set_brightness(self.system_config.backlight)
 
     def _set_contrast_to_config(self):
         #Doesn't seem to work?
-        #self.miyoo_mini_plus_shared_memory_writer.set_contrast(self.system_config.contrast)
+        #self.miyoo_mini_shared_memory_writer.set_contrast(self.system_config.contrast)
         pass
     
     def _set_saturation_to_config(self):
         #Doesn't seem to work?
-        #self.miyoo_mini_plus_shared_memory_writer.set_saturation(self.system_config.saturation)
+        #self.miyoo_mini_shared_memory_writer.set_saturation(self.system_config.saturation)
         pass
 
     def _set_brightness_to_config(self):
         #Doesn't seem to work?
-        #self.miyoo_mini_plus_shared_memory_writer.set_brightness(self.system_config.brightness)
+        #self.miyoo_mini_shared_memory_writer.set_brightness(self.system_config.brightness)
         pass
 
     def _set_hue_to_config(self):
