@@ -1,6 +1,6 @@
 
 
-from devices.miyoo.mini_v4.miyoo_mini_v4 import MiyooMiniV4
+from devices.miyoo.mini.miyoo_mini_v4 import MiyooMiniV4
 from devices.utils.process_runner import ProcessRunner
 from devices.utils.file_watcher import FileWatcher
 from utils.logger import PyUiLogger

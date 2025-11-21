@@ -63,9 +63,9 @@ class MiyooMiniV4(MiyooDevice):
             os.environ["TZPATH"] = "/mnt/SDCARD/miyoo285/zoneinfo"
             reset_tzpath()  # reload TZPATH
             script_dir = Path(__file__).resolve().parent
-            source = script_dir / 'mini-v4-system.json'
-            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-v4-system.json", source)
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-v4-system.json")
+            source = script_dir / 'mini-system.json'
+            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-system.json", source)
+            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-system.json")
             self.miyoo_mini_shared_memory_writer = MiyooMiniSharedMemoryWriter()
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
             self._set_lumination_to_config()
@@ -80,7 +80,7 @@ class MiyooMiniV4(MiyooDevice):
             threading.Thread(target=self.startup_init, daemon=True).start()
     
         if(self.system_config is None):
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-v4-system.json")
+            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-system.json")
 
         
         if(PyUiConfig.enable_button_watchers()):

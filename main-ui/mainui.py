@@ -73,10 +73,10 @@ def initialize_device(device, main_ui_mode):
         from devices.miyoo.mini.sprig_miyoo_mini import SprigMiyooMini
         Device.init(SprigMiyooMini(device, main_ui_mode))
     elif device == "MIYOO_MINI_V4":
-        from devices.miyoo.mini_v4.miyoo_mini_v4 import MiyooMiniV4
+        from devices.miyoo.mini.miyoo_mini_v4 import MiyooMiniV4
         Device.init(MiyooMiniV4(device, main_ui_mode))
     elif device == "SPRIG_MIYOO_MINI_V4":
-        from devices.miyoo.mini_v4.sprig_miyoo_mini_v4 import SprigMiyooMiniV4
+        from devices.miyoo.mini.sprig_miyoo_mini_v4 import SprigMiyooMiniV4
         Device.init(SprigMiyooMiniV4(device, main_ui_mode))
     elif device == "MIYOO_MINI_PLUS":
         from devices.miyoo.mini_plus.miyoo_mini_plus import MiyooMiniPlus
