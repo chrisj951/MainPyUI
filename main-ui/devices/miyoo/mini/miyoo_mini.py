@@ -116,8 +116,6 @@ class MiyooMini(MiyooDevice):
     def startup_init(self, include_wifi=True):
         config_volume = self.system_config.get_volume()
         self._set_volume(config_volume)
-        if(self.is_wifi_enabled()):
-            self.start_wifi_services()
         self.on_mainui_config_change()
         self.apply_timezone(self.system_config.get_timezone())
 
@@ -495,7 +493,7 @@ class MiyooMini(MiyooDevice):
 
     def prompt_timezone_update(self):
         timezone_menu = TimezoneMenu()
-        tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/mnt/SDCARD/miyoo285/zoneinfo/', verify_via_datetime=False))
+        tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/mnt/SDCARD/miyoo/zoneinfo/', verify_via_datetime=False))
 
         if (tz is not None):
             self.system_config.set_timezone(tz)
