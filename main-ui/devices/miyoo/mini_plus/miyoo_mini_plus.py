@@ -38,7 +38,7 @@ MI_AO_SETVOLUME = 0x4008690b
 MI_AO_GETVOLUME = 0xc008690c
 MI_AO_SETMUTE   = 0x4008690d
 
-class MiyooMiniFlip(MiyooDevice):
+class MiyooMiniPlus(MiyooDevice):
     OUTPUT_MIXER = 2
     SOUND_DISABLED = 0
 
@@ -63,9 +63,9 @@ class MiyooMiniFlip(MiyooDevice):
             os.environ["TZPATH"] = "/mnt/SDCARD/miyoo285/zoneinfo"
             reset_tzpath()  # reload TZPATH
             script_dir = Path(__file__).resolve().parent
-            source = script_dir / 'mini-flip-system.json'
-            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-flip-system.json", source)
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-flip-system.json")
+            source = script_dir / 'mini-plus-system.json'
+            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-plus-system.json", source)
+            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-plus-system.json")
             self.miyoo_mini_shared_memory_writer = MiyooMiniSharedMemoryWriter()
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
             self._set_lumination_to_config()
@@ -80,7 +80,7 @@ class MiyooMiniFlip(MiyooDevice):
             threading.Thread(target=self.startup_init, daemon=True).start()
     
         if(self.system_config is None):
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-flip-system.json")
+            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-plus-system.json")
 
         
         if(PyUiConfig.enable_button_watchers()):
@@ -195,11 +195,11 @@ class MiyooMiniFlip(MiyooDevice):
 
     @property
     def screen_width(self):
-        return 750
+        return 640
 
     @property
     def screen_height(self):
-        return 560
+        return 480
         
     @property
     def screen_rotation(self):

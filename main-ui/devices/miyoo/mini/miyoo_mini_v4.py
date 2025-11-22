@@ -38,7 +38,7 @@ MI_AO_SETVOLUME = 0x4008690b
 MI_AO_GETVOLUME = 0xc008690c
 MI_AO_SETMUTE   = 0x4008690d
 
-class MiyooMiniFlip(MiyooDevice):
+class MiyooMiniV4(MiyooDevice):
     OUTPUT_MIXER = 2
     SOUND_DISABLED = 0
 
@@ -63,9 +63,9 @@ class MiyooMiniFlip(MiyooDevice):
             os.environ["TZPATH"] = "/mnt/SDCARD/miyoo285/zoneinfo"
             reset_tzpath()  # reload TZPATH
             script_dir = Path(__file__).resolve().parent
-            source = script_dir / 'mini-flip-system.json'
-            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-flip-system.json", source)
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-flip-system.json")
+            source = script_dir / 'mini-system.json'
+            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-system.json", source)
+            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-system.json")
             self.miyoo_mini_shared_memory_writer = MiyooMiniSharedMemoryWriter()
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
             self._set_lumination_to_config()
@@ -80,7 +80,7 @@ class MiyooMiniFlip(MiyooDevice):
             threading.Thread(target=self.startup_init, daemon=True).start()
     
         if(self.system_config is None):
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-flip-system.json")
+            self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-system.json")
 
         
         if(PyUiConfig.enable_button_watchers()):
@@ -116,8 +116,6 @@ class MiyooMiniFlip(MiyooDevice):
     def startup_init(self, include_wifi=True):
         config_volume = self.system_config.get_volume()
         self._set_volume(config_volume)
-        if(self.is_wifi_enabled()):
-            self.start_wifi_services()
         self.on_mainui_config_change()
         self.apply_timezone(self.system_config.get_timezone())
 
@@ -496,7 +494,7 @@ class MiyooMiniFlip(MiyooDevice):
 
     def prompt_timezone_update(self):
         timezone_menu = TimezoneMenu()
-        tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/mnt/SDCARD/miyoo285/zoneinfo/', verify_via_datetime=False))
+        tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/mnt/SDCARD/miyoo/zoneinfo/', verify_via_datetime=False))
 
         if (tz is not None):
             self.system_config.set_timezone(tz)
