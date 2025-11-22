@@ -13,7 +13,8 @@ from controller.key_watcher import KeyWatcher
 import os
 from controller.key_watcher_controller_miyoo_mini import InputResult, KeyEvent, KeyWatcherControllerMiyooMini
 from devices.charge.charge_status import ChargeStatus
-from devices.miyoo.mini.mini_flip.miyoo_mini_flip_shared_memory_writer import MiyooMiniFlipSharedMemoryWriter
+from devices.miyoo.mini.miyoo_mini_flip_shared_memory_writer import MiyooMiniFlipSharedMemoryWriter
+from devices.miyoo.mini.miyoo_mini_flip_specific_model_variables import MiyooMiniSpecificModelVariables
 from devices.miyoo.miyoo_device import MiyooDevice
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.miyoo.system_config import SystemConfig
@@ -38,13 +39,14 @@ MI_AO_SETVOLUME = 0x4008690b
 MI_AO_GETVOLUME = 0xc008690c
 MI_AO_SETMUTE   = 0x4008690d
 
-class MiyooMiniFlip(MiyooDevice):
+class MiyooMiniCommon(MiyooDevice):
     OUTPUT_MIXER = 2
     SOUND_DISABLED = 0
 
 
-    def __init__(self, device_name, main_ui_mode):
+    def __init__(self, device_name, main_ui_mode, miyoo_mini_specific_model_variables: MiyooMiniSpecificModelVariables):
         self.device_name = device_name
+        self.miyoo_mini_specific_model_variables = miyoo_mini_specific_model_variables
         self.controller_interface = self.build_controller_interface()
         self.unknown_axis_ranges = {}  # axis -> (min, max)
         self.unknown_axis_stats = {}   # axis -> (sum, count)
@@ -62,9 +64,7 @@ class MiyooMiniFlip(MiyooDevice):
         if(main_ui_mode):
             os.environ["TZPATH"] = "/mnt/SDCARD/miyoo285/zoneinfo"
             reset_tzpath()  # reload TZPATH
-            script_dir = Path(__file__).resolve().parent
-            source = script_dir / 'mini-flip-system.json'
-            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-flip-system.json", source)
+            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/mini-flip-system.json", Path(__file__).resolve().parent  / 'mini-flip-system.json')
             self.system_config = SystemConfig("/mnt/SDCARD/Saves/mini-flip-system.json")
             self.miyoo_mini_flip_shared_memory_writer = MiyooMiniFlipSharedMemoryWriter()
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
@@ -195,11 +195,11 @@ class MiyooMiniFlip(MiyooDevice):
 
     @property
     def screen_width(self):
-        return 750
+        return self.miyoo_mini_specific_model_variables.width
 
     @property
     def screen_height(self):
-        return 560
+        return self.miyoo_mini_specific_model_variables.height
         
     @property
     def screen_rotation(self):
@@ -253,31 +253,34 @@ class MiyooMiniFlip(MiyooDevice):
     
     @throttle.limit_refresh(15)
     def get_ip_addr_text(self):
-        if self.is_wifi_enabled():
-            try:
-                # Run the system command to get wlan0 info
-                result = subprocess.run(
-                    ["ip", "addr", "show", "wlan0"],
-                    capture_output=True,
-                    text=True
-                )
+        if self.miyoo_mini_specific_model_variables.supports_wifi:
+            if self.is_wifi_enabled():
+                try:
+                    # Run the system command to get wlan0 info
+                    result = subprocess.run(
+                        ["ip", "addr", "show", "wlan0"],
+                        capture_output=True,
+                        text=True
+                    )
 
-                if result.returncode != 0:
+                    if result.returncode != 0:
+                        return "Error"
+
+                    # Look for an IPv4 address in the command output
+                    for line in result.stdout.splitlines():
+                        line = line.strip()
+                        if line.startswith("inet "):  # Example: "inet 192.168.1.42/24 ..."
+                            ip = line.split()[1].split("/")[0]  # Take "192.168.1.42" part
+                            return ip
+
+                    return "Connecting"  # wlan0 exists but no IP yet
+
+                except Exception:
                     return "Error"
 
-                # Look for an IPv4 address in the command output
-                for line in result.stdout.splitlines():
-                    line = line.strip()
-                    if line.startswith("inet "):  # Example: "inet 192.168.1.42/24 ..."
-                        ip = line.split()[1].split("/")[0]  # Take "192.168.1.42" part
-                        return ip
-
-                return "Connecting"  # wlan0 exists but no IP yet
-
-            except Exception:
-                return "Error"
-
-        return "Off"
+            return "Off"
+        else:
+            return "Unsupported"
 
     @throttle.limit_refresh(5)
     def get_charge_status(self):
@@ -318,44 +321,46 @@ class MiyooMiniFlip(MiyooDevice):
     
 
     def start_wifi_services(self):
-        try:
-            # Check if system already has an IP address
-            result = subprocess.run(
-                ["ip", "route", "get", "1"],
-                capture_output=True,
-                text=True
-            )
+        if(self.miyoo_mini_specific_model_variables.supports_wifi):
+            try:
+                # Check if system already has an IP address
+                result = subprocess.run(
+                    ["ip", "route", "get", "1"],
+                    capture_output=True,
+                    text=True
+                )
 
-            # Extract the last field (the IP) like `awk '{print $NF;exit}'`
-            parts = result.stdout.strip().split()
-            ip = parts[-1] if parts else ""
+                # Extract the last field (the IP) like `awk '{print $NF;exit}'`
+                parts = result.stdout.strip().split()
+                ip = parts[-1] if parts else ""
 
-            if not ip:
-                PyUiLogger.get_logger().info("Wifi is disabled - trying to enable it...")
+                if not ip:
+                    PyUiLogger.get_logger().info("Wifi is disabled - trying to enable it...")
 
-                subprocess.run(["insmod", "/mnt/SDCARD/8188fu.ko"])
-                subprocess.run(["ifconfig", "lo", "up"])
-                subprocess.run(["/customer/app/axp_test", "wifion"])
-                time.sleep(2)
-                subprocess.run(["ifconfig", "wlan0", "up"])
-                subprocess.run([
-                    "wpa_supplicant",
-                    "-B",
-                    "-D", "nl80211",
-                    "-i", "wlan0",
-                    "-c", "/appconfigs/wpa_supplicant.conf"
-                ])
-                subprocess.run(["udhcpc", "-i", "wlan0", "-s", "/etc/init.d/udhcpc.script"])
-                time.sleep(3)
-                os.system("clear")
+                    subprocess.run(["insmod", "/mnt/SDCARD/8188fu.ko"])
+                    subprocess.run(["ifconfig", "lo", "up"])
+                    subprocess.run(["/customer/app/axp_test", "wifion"])
+                    time.sleep(2)
+                    subprocess.run(["ifconfig", "wlan0", "up"])
+                    subprocess.run([
+                        "wpa_supplicant",
+                        "-B",
+                        "-D", "nl80211",
+                        "-i", "wlan0",
+                        "-c", "/appconfigs/wpa_supplicant.conf"
+                    ])
+                    subprocess.run(["udhcpc", "-i", "wlan0", "-s", "/etc/init.d/udhcpc.script"])
+                    time.sleep(3)
+                    os.system("clear")
 
-        except Exception as e:
-            PyUiLogger.get_logger().error(f"Error enabling WiFi: {e}")
+            except Exception as e:
+                PyUiLogger.get_logger().error(f"Error enabling WiFi: {e}")
 
 
     def set_wifi_power(self, value):
-        if(0 == value):
-            ProcessRunner.run(["ifconfig", "wlan0", "down"])
+        if(self.miyoo_mini_specific_model_variables.supports_wifi):
+            if(0 == value):
+                ProcessRunner.run(["ifconfig", "wlan0", "down"])
 
     def get_bluetooth_scanner(self):
         return None
