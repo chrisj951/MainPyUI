@@ -1,6 +1,6 @@
 
 
-from devices.miyoo.mini_flip.miyoo_mini_flip import MiyooMiniFlip
+from devices.miyoo.mini.mini_flip.miyoo_mini_flip import MiyooMiniFlip
 from devices.utils.process_runner import ProcessRunner
 from devices.utils.file_watcher import FileWatcher
 from utils.logger import PyUiLogger

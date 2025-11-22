@@ -13,7 +13,7 @@ from controller.key_watcher import KeyWatcher
 import os
 from controller.key_watcher_controller_miyoo_mini import InputResult, KeyEvent, KeyWatcherControllerMiyooMini
 from devices.charge.charge_status import ChargeStatus
-from devices.miyoo.mini_flip.miyoo_mini_flip_shared_memory_writer import MiyooMiniFlipSharedMemoryWriter
+from devices.miyoo.mini.mini_flip.miyoo_mini_flip_shared_memory_writer import MiyooMiniFlipSharedMemoryWriter
 from devices.miyoo.miyoo_device import MiyooDevice
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.miyoo.system_config import SystemConfig

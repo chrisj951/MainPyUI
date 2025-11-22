@@ -61,10 +61,10 @@ def initialize_device(device, main_ui_mode):
         from devices.miyoo.flip.miyoo_flip import MiyooFlip
         Device.init(MiyooFlip(device, main_ui_mode))
     elif "MIYOO_MINI_FLIP" == device:
-        from devices.miyoo.mini_flip.miyoo_mini_flip import MiyooMiniFlip
+        from devices.miyoo.mini.mini_flip.miyoo_mini_flip import MiyooMiniFlip
         Device.init(MiyooMiniFlip(device,main_ui_mode))
     elif "SPRIG_MIYOO_MINI_FLIP" == device:
-        from devices.miyoo.mini_flip.sprig_miyoo_mini_flip import SprigMiyooMiniFlip
+        from devices.miyoo.mini.mini_flip.sprig_miyoo_mini_flip import SprigMiyooMiniFlip
         Device.init(SprigMiyooMiniFlip(device, main_ui_mode))
     elif "TRIMUI_BRICK" == device or "SPRUCE_TRIMUI_BRICK" == device:
         from devices.trimui.trim_ui_brick import TrimUIBrick
