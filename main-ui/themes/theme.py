@@ -1,13 +1,10 @@
 import json
-import logging
 import os
-import subprocess
 import sys
 import traceback
 
 from devices.charge.charge_status import ChargeStatus
 from devices.device import Device
-from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_status import WifiStatus
 from display.font_purpose import FontPurpose
 from display.resize_type import ResizeType
@@ -953,7 +950,6 @@ class Theme():
 
     @classmethod
     def get_game_select_img_width(cls):
-        from devices.device import Device
         return cls._data.get("gameSelectImgWidth", int(320 * cls._default_multiplier))
     
     @classmethod
@@ -1008,7 +1004,6 @@ class Theme():
 
     @classmethod
     def get_game_select_img_height(cls):
-        from devices.device import Device
         return cls._data.get("gameSelectImgHeight", int(300 * cls._default_multiplier))
     
     @classmethod

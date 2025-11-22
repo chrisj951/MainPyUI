@@ -1,12 +1,7 @@
 
 
-import json
-from pathlib import Path
-import subprocess
-
 from devices.charge.charge_status import ChargeStatus
 from devices.miyoo.mini.axp_test_methods import AxpTestMehthods
-from utils import throttle
 
 
 class MiyooMiniSpecificModelVariables():

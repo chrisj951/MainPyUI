@@ -12,7 +12,6 @@ from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
 import os
 from controller.key_watcher_controller_miyoo_mini import InputResult, KeyEvent, KeyWatcherControllerMiyooMini
-from devices.charge.charge_status import ChargeStatus
 from devices.miyoo.mini.miyoo_mini_flip_shared_memory_writer import MiyooMiniFlipSharedMemoryWriter
 from devices.miyoo.mini.miyoo_mini_flip_specific_model_variables import MiyooMiniSpecificModelVariables
 from devices.miyoo.miyoo_device import MiyooDevice
@@ -24,7 +23,6 @@ from devices.utils.process_runner import ProcessRunner
 from display.display import Display
 from menus.games.utils.rom_info import RomInfo
 from menus.settings.timezone_menu import TimezoneMenu
-import sdl2
 from utils import throttle
 from utils.config_copier import ConfigCopier
 from utils.ffmpeg_image_utils import FfmpegImageUtils
