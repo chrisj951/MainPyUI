@@ -49,8 +49,8 @@ MIYOO_MINI_PLUS = MiyooMiniSpecificModelVariables(
     supports_wifi=True,
     poweroff_cmd="reboot",
     reboot_cmd=None,
-    get_charge_status=lambda: ChargeStatus.DISCONNECTED, #TODO
-    get_battery_percent=lambda: 100 #TODO
+    get_charge_status=AxpTestMehthods.get_charge_status,
+    get_battery_percent=AxpTestMehthods.get_battery_percent
 )
 
 MIYOO_MINI_FLIP_VARIABLES = MiyooMiniSpecificModelVariables(
