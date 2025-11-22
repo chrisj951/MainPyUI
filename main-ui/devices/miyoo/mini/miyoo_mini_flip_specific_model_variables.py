@@ -42,8 +42,8 @@ MIYOO_MINI_PLUS = MiyooMiniSpecificModelVariables(
     width=640,
     height=480,
     supports_wifi=True,
-    poweroff_cmd="reboot",
-    reboot_cmd=None,
+    poweroff_cmd="poweroff",
+    reboot_cmd="reboot",
     get_charge_status=AxpTestMehthods.get_charge_status,
     get_battery_percent=AxpTestMehthods.get_battery_percent
 )
