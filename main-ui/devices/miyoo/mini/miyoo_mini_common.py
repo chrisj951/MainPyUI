@@ -161,6 +161,9 @@ class MiyooMiniCommon(MiyooDevice):
         
         return KeyWatcherControllerMiyooMini(event_path="/dev/input/event0", key_mappings=key_mappings)
 
+    @property
+    def power_off_cmd(self):
+        return self.miyoo_mini_specific_model_variables.poweroff_cmd
 
     def get_controller_interface(self):
         return self.controller_interface
@@ -367,7 +370,7 @@ class MiyooMiniCommon(MiyooDevice):
         
     @property
     def reboot_cmd(self):
-        return "reboot"
+        return self.miyoo_mini_specific_model_variables.reboot_cmd
 
     def get_wpa_supplicant_conf_path(self):
         return "/appconfigs/wpa_supplicant.conf"

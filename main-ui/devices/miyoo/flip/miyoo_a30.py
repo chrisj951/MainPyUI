@@ -80,6 +80,11 @@ class MiyooA30(MiyooDevice):
             self.system_config = SystemConfig("/mnt/SDCARD/Saves/a30-system.json")
 
 
+    @property
+    def power_off_cmd(self):
+        return "poweroff"
+
+
     def startup_init(self, include_wifi=True):
         self._set_lumination_to_config()
         self._set_screen_settings_to_config()
