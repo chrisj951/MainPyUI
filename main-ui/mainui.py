@@ -66,24 +66,6 @@ def initialize_device(device, main_ui_mode):
     elif "SPRIG_MIYOO_MINI_FLIP" == device:
         from devices.miyoo.mini_flip.sprig_miyoo_mini_flip import SprigMiyooMiniFlip
         Device.init(SprigMiyooMiniFlip(device, main_ui_mode))
-    elif device == "MIYOO_MINI":
-        from devices.miyoo.mini.miyoo_mini import MiyooMini
-        Device.init(MiyooMini(device, main_ui_mode))
-    elif device == "SPRIG_MIYOO_MINI":
-        from devices.miyoo.mini.sprig_miyoo_mini import SprigMiyooMini
-        Device.init(SprigMiyooMini(device, main_ui_mode))
-    elif device == "MIYOO_MINI_V4":
-        from devices.miyoo.mini.miyoo_mini_v4 import MiyooMiniV4
-        Device.init(MiyooMiniV4(device, main_ui_mode))
-    elif device == "SPRIG_MIYOO_MINI_V4":
-        from devices.miyoo.mini.sprig_miyoo_mini_v4 import SprigMiyooMiniV4
-        Device.init(SprigMiyooMiniV4(device, main_ui_mode))
-    elif device == "MIYOO_MINI_PLUS":
-        from devices.miyoo.mini_plus.miyoo_mini_plus import MiyooMiniPlus
-        Device.init(MiyooMiniPlus(device, main_ui_mode))
-    elif device == "SPRIG_MIYOO_MINI_PLUS":
-        from devices.miyoo.mini_plus.sprig_miyoo_mini_plus import SprigMiyooMiniPlus
-        Device.init(SprigMiyooMiniPlus(device, main_ui_mode))
     elif "TRIMUI_BRICK" == device or "SPRUCE_TRIMUI_BRICK" == device:
         from devices.trimui.trim_ui_brick import TrimUIBrick
         Device.init(TrimUIBrick(device,main_ui_mode))

@@ -4,7 +4,7 @@ from pathlib import Path
 from devices.utils.process_runner import ProcessRunner
 from utils.logger import PyUiLogger
 
-class MiyooMiniSharedMemoryWriter:
+class MiyooMiniFlipSharedMemoryWriter:
     MONITOR_VOLUME = 0
     MONITOR_BRIGHTNESS = 1
     MONITOR_KEYMAP = 2
