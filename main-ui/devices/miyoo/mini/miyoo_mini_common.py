@@ -285,42 +285,12 @@ class MiyooMiniCommon(MiyooDevice):
         else:
             return "Unsupported"
 
-    @throttle.limit_refresh(5)
     def get_charge_status(self):
-        try:
-            # Run axp_test and parse JSON
-            result = subprocess.run(
-                ["/customer/app/axp_test"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
-                text=True,
-                timeout=2
-            )
-            data = json.loads(result.stdout.strip())
-            charging = int(data.get("charging", 0))
-            
-            if charging == 0:
-                return ChargeStatus.DISCONNECTED
-            else:
-                return ChargeStatus.CHARGING
-        except Exception:
-            return ChargeStatus.DISCONNECTED
+        return self.miyoo_mini_specific_model_variables.get_charge_status()
 
     @throttle.limit_refresh(15)
     def get_battery_percent(self):
-        try:
-            # Run axp_test and capture its JSON output
-            result = subprocess.run(
-                ["/customer/app/axp_test"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
-                text=True,
-                timeout=2
-            )
-            data = json.loads(result.stdout.strip())
-            return data.get("battery", 0)
-        except Exception:
-            return 0
+        return self.miyoo_mini_specific_model_variables.get_battery_percent()
     
 
     def start_wifi_services(self):
