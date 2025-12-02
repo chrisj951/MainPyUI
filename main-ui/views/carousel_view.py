@@ -311,13 +311,12 @@ class CarouselView(View):
                 if rotate_left:
                     image_list.insert(0,new_visible_options[0])
                     x_offsets_for_animation.insert(0, - x_offsets_for_animation[0])
-                    widths_for_animation.insert(0, widths_for_animation[-1])
+                    widths_for_animation.insert(0, widths_for_animation[0])
                     image_list = list(reversed(image_list))
-                    PyUiLogger.get_logger().info(f"Rotating left - newly shown game is {new_visible_options[0]} at {x_offsets_for_animation[-1]}")
                 else:
-                    #new_visible_options.insert(0,new_visible_options[-1])
-                    #x_offsets_for_animation.insert(0,x_offsets_for_animation[-1])
-                    #widths_for_animation.insert(0,widths_for_animation[-1])
+                    image_list.append(new_visible_options[-1])
+                    x_offsets_for_animation.append(x_offsets_for_animation[-1] + x_offsets_for_animation[-1] - x_offsets_for_animation[-2])
+                    widths_for_animation.append(widths_for_animation[-1])
                     PyUiLogger.get_logger().info(f"Rotating right - newly shown game is {new_visible_options[len(new_visible_options)-1]}")
 
         
@@ -338,7 +337,6 @@ class CarouselView(View):
                                 end_width = widths_for_animation[i+1]
                             else:
                                 # Last item exits to the right
-                                x_pad = 10 #todo
                                 end_x_offset = (x_offsets_for_animation[-1] - x_offsets_for_animation[-2]) + x_offsets_for_animation[-1] 
                                 end_width = start_width
                         else:
@@ -356,12 +354,10 @@ class CarouselView(View):
                         frame_widths.append(new_width)
 
                     if rotate_left:
-                        #new_visible_options.append(new_visible_options[0])
-                        #x_offsets_for_animation.append(x_offsets_for_animation[0])
-                        #widths_for_animation.append(widths_for_animation[0])
-                        PyUiLogger.get_logger().info(f"frame_x_offset are {frame_x_offset}")
                         frame_x_offset = list(reversed(frame_x_offset))
                         frame_widths = list(reversed(frame_widths))
+
+                    PyUiLogger.get_logger().info(f"frame_x_offset are {frame_x_offset}")
 
                     for visible_index, imageTextPair in enumerate(image_list):
                         x_offset = frame_x_offset[visible_index]
