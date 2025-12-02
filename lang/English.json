@@ -121,5 +121,7 @@
     "selectBoxart" : "Select BoxArt Download",
     "deleteBoxart" : "Delete Box Art",
     "deleteRom" : "Delete ROM",
-    "aboutThisDevice": "About this Device"
+    "aboutThisDevice": "About this Device",
+    "removeGameSwitcherGame": "Remove from GameSwitcher",
+    "addGameSwitcherGame":"Add to GameSwitcher"
 }
