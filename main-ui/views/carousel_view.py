@@ -17,6 +17,7 @@ class CarouselView(View):
     def __init__(self,top_bar_text, options: List[GridOrListEntry], cols : int, 
                   selected_index=0, show_grid_text=False,  
                   set_top_bar_text_to_selection=False, 
+                  set_bottom_bar_text_to_selection=None, 
                   resize_type=None,
                   selected_entry_width_percent=None, 
                   shrink_further_away = None,
@@ -33,6 +34,10 @@ class CarouselView(View):
         self.selected_entry_width_percent = selected_entry_width_percent
         self.shrink_further_away = shrink_further_away
         self.sides_hang_off_edge = sides_hang_off_edge
+        if(set_bottom_bar_text_to_selection is None):
+            set_bottom_bar_text_to_selection = not self.set_top_bar_text_to_selection
+
+        self.set_bottom_bar_text_to_selection = set_bottom_bar_text_to_selection
 
         self.options_length = len(options)
         if(self.selected_entry_width_percent is None):
@@ -153,8 +158,10 @@ class CarouselView(View):
     def _clear(self):
         if(self.set_top_bar_text_to_selection) and len(self.options) > 0:
             Display.clear(self.options[self.selected].get_primary_text(), hide_top_bar_icons=True)
-        else:
+        elif(self.set_bottom_bar_text_to_selection):
             Display.clear(self.top_bar_text, bottom_bar_text=self.options[self.selected].get_primary_text())
+        else:
+            Display.clear("", bottom_bar_text="")
 
     def _render_image(self,
                       image_path: str, 
