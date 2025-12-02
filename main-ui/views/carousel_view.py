@@ -297,7 +297,7 @@ class CarouselView(View):
             if PyUiConfig.animations_enabled() and animation_frames > 1:
                 render_mode = RenderMode.MIDDLE_CENTER_ALIGNED
                 animation_frames = 10
-                frame_duration = 1 / 15.0  # 60 FPS
+                frame_duration = 1 / 60.0  # 60 FPS
                 last_frame_time = 0
 
                 diff = (self.selected - self.prev_selected) % (len(self.options) + 1)
@@ -307,17 +307,16 @@ class CarouselView(View):
                 image_list = list(self.prev_visible_options)
                 new_visible_options = self.get_visible_options()
         
-
-                if rotate_left:
-                    image_list.insert(0,new_visible_options[0])
-                    x_offsets_for_animation.insert(0, - x_offsets_for_animation[0])
-                    widths_for_animation.insert(0, widths_for_animation[0])
-                    image_list = list(reversed(image_list))
-                else:
-                    image_list.append(new_visible_options[-1])
-                    x_offsets_for_animation.append(x_offsets_for_animation[-1] + x_offsets_for_animation[-1] - x_offsets_for_animation[-2])
-                    widths_for_animation.append(widths_for_animation[-1])
-                    PyUiLogger.get_logger().info(f"Rotating right - newly shown game is {new_visible_options[len(new_visible_options)-1]}")
+                if(not self.sides_hang_off_edge):
+                    if rotate_left:
+                        image_list.insert(0,new_visible_options[0])
+                        x_offsets_for_animation.insert(0, - x_offsets_for_animation[0])
+                        widths_for_animation.insert(0, widths_for_animation[0])
+                        image_list = list(reversed(image_list))
+                    else:
+                        image_list.append(new_visible_options[-1])
+                        x_offsets_for_animation.append(x_offsets_for_animation[-1] + x_offsets_for_animation[-1] - x_offsets_for_animation[-2])
+                        widths_for_animation.append(widths_for_animation[-1])
 
         
                 for frame in range(animation_frames):
@@ -353,11 +352,10 @@ class CarouselView(View):
                         frame_x_offset.append(int(new_x_offset))         
                         frame_widths.append(new_width)
 
-                    if rotate_left:
-                        frame_x_offset = list(reversed(frame_x_offset))
-                        frame_widths = list(reversed(frame_widths))
-
-                    PyUiLogger.get_logger().info(f"frame_x_offset are {frame_x_offset}")
+                    if(not self.sides_hang_off_edge):
+                        if rotate_left:
+                            frame_x_offset = list(reversed(frame_x_offset))
+                            frame_widths = list(reversed(frame_widths))
 
                     for visible_index, imageTextPair in enumerate(image_list):
                         x_offset = frame_x_offset[visible_index]
