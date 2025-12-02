@@ -11,6 +11,7 @@ from utils.py_ui_config import PyUiConfig
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
 from views.view import View
+from utils.logger import PyUiLogger
 
 class CarouselView(View):
     def __init__(self,top_bar_text, options: List[GridOrListEntry], cols : int, 
@@ -296,12 +297,30 @@ class CarouselView(View):
             if PyUiConfig.animations_enabled() and animation_frames > 1:
                 render_mode = RenderMode.MIDDLE_CENTER_ALIGNED
                 animation_frames = 10
-                frame_duration = 1 / 60.0  # 60 FPS
+                frame_duration = 1 / 15.0  # 60 FPS
                 last_frame_time = 0
 
                 diff = (self.selected - self.prev_selected) % (len(self.options) + 1)
                 rotate_left = diff > (len(self.options) + 1) // 2
+                x_offsets_for_animation = list(self.prev_x_offsets)
+                widths_for_animation = list(self.prev_widths)
+                image_list = list(self.prev_visible_options)
+                new_visible_options = self.get_visible_options()
+        
 
+                if rotate_left:
+                    #new_visible_options.append(new_visible_options[0])
+                    #x_offsets_for_animation.append(x_offsets_for_animation[0])
+                    #widths_for_animation.append(widths_for_animation[0])
+                    image_list = list(reversed(image_list))
+                    PyUiLogger.get_logger().info(f"Rotating left - newly shown game is {new_visible_options[0]}")
+                else:
+                    #new_visible_options.insert(0,new_visible_options[-1])
+                    #x_offsets_for_animation.insert(0,x_offsets_for_animation[-1])
+                    #widths_for_animation.insert(0,widths_for_animation[-1])
+                    PyUiLogger.get_logger().info(f"Rotating right - newly shown game is {new_visible_options[len(new_visible_options)-1]}")
+
+        
                 for frame in range(animation_frames):
                     self._clear()
 
@@ -309,25 +328,25 @@ class CarouselView(View):
                     frame_widths = []
                     t = frame / (animation_frames - 1)
 
-                    for i in range(len(self.prev_x_offsets)):
-                        start_x_offset = self.prev_x_offsets[i]
-                        start_width = self.prev_widths[i]
+                    for i in range(len(x_offsets_for_animation)):
+                        start_x_offset = x_offsets_for_animation[i]
+                        start_width = widths_for_animation[i]
 
                         if rotate_left:
-                            if i < len(self.prev_x_offsets) - 1:
-                                end_x_offset = self.prev_x_offsets[i + 1]
-                                end_width = self.prev_widths[i+1]
+                            if i < len(x_offsets_for_animation) - 1:
+                                end_x_offset = x_offsets_for_animation[i + 1]
+                                end_width = widths_for_animation[i+1]
                             else:
                                 # Last item exits to the right
-                                end_x_offset = start_x_offset
+                                end_x_offset = start_x_offset + int((x_offsets_for_animation[0]*2)/animation_frames * frame)
                                 end_width = start_width
                         else:
                             if i > 0:
-                                end_x_offset = self.prev_x_offsets[i - 1]
-                                end_width = self.prev_widths[i - 1]
+                                end_x_offset = x_offsets_for_animation[i - 1]
+                                end_width = widths_for_animation[i - 1]
                             else:
                                 # First item exits to the left0+12
-                                end_x_offset = start_x_offset
+                                end_x_offset = start_x_offset  - int((start_x_offset*2)/animation_frames * frame)
                                 end_width = start_width
 
                         new_x_offset = start_x_offset + (end_x_offset - start_x_offset) * t
@@ -335,12 +354,14 @@ class CarouselView(View):
                         frame_x_offset.append(new_x_offset)         
                         frame_widths.append(new_width)
 
-
-                    image_iterable = list(enumerate(self.prev_visible_options))
                     if rotate_left:
-                        image_iterable = reversed(image_iterable)
+                        #new_visible_options.append(new_visible_options[0])
+                        #x_offsets_for_animation.append(x_offsets_for_animation[0])
+                        #widths_for_animation.append(widths_for_animation[0])
+                        frame_x_offset = list(reversed(frame_x_offset))
+                        frame_widths = list(reversed(frame_widths))
 
-                    for visible_index, imageTextPair in image_iterable:
+                    for visible_index, imageTextPair in enumerate(image_list):
                         x_offset = frame_x_offset[visible_index]
 
                         y_image_offset = Display.get_center_of_usable_screen_height()
