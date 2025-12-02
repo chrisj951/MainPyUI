@@ -214,7 +214,9 @@ class CarouselView(View):
             self.animated_count = 0
         
         render_mode = RenderMode.MIDDLE_CENTER_ALIGNED
-        for visible_index, imageTextPair in enumerate(visible_options):
+        iterable = list(enumerate(visible_options))
+
+        for visible_index, imageTextPair in iterable:
             x_offset = x_offsets[visible_index]
             #PyUiLogger.get_logger().info(f"Visible option {visible_index}: {imageTextPair.get_primary_text()} w/ x_offset {x_offset}")
 
@@ -333,11 +335,17 @@ class CarouselView(View):
                         frame_x_offset.append(new_x_offset)         
                         frame_widths.append(new_width)
 
-                    for visible_index, imageTextPair in enumerate(self.prev_visible_options):
+
+                    image_iterable = list(enumerate(self.prev_visible_options))
+                    if rotate_left:
+                        image_iterable = reversed(image_iterable)
+
+                    for visible_index, imageTextPair in image_iterable:
                         x_offset = frame_x_offset[visible_index]
 
                         y_image_offset = Display.get_center_of_usable_screen_height()
-                        
+
+
                         self._render_image(imageTextPair.get_image_path_ideal(frame_widths[visible_index],Display.get_usable_screen_height()), 
                                                 x_offset, 
                                                 y_image_offset,
