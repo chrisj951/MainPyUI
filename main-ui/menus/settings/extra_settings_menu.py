@@ -77,6 +77,12 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
             CfwSystemSettingsMenuForCategory(category).show_menu()
 
 
+    def is_excluded_setting(self,category):
+        excluded_settings = [
+            GameSwitcherSettingsMenu.SETTINGS_NAME
+        ]
+        return category in excluded_settings
+
 
     def build_options_list(self):
         option_list = []
@@ -205,7 +211,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                     contains_entry_for_device = True
                     break
 
-            if(contains_entry_for_device):
+            if(contains_entry_for_device and not self.is_excluded_setting(category)):
                 option_list.append(
                         GridOrListEntry(
                                 primary_text=category,
