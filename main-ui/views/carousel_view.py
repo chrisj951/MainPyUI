@@ -309,11 +309,11 @@ class CarouselView(View):
         
 
                 if rotate_left:
-                    #new_visible_options.append(new_visible_options[0])
-                    #x_offsets_for_animation.append(x_offsets_for_animation[0])
-                    #widths_for_animation.append(widths_for_animation[0])
+                    image_list.insert(0,new_visible_options[0])
+                    x_offsets_for_animation.insert(0, - x_offsets_for_animation[0])
+                    widths_for_animation.insert(0, widths_for_animation[-1])
                     image_list = list(reversed(image_list))
-                    PyUiLogger.get_logger().info(f"Rotating left - newly shown game is {new_visible_options[0]}")
+                    PyUiLogger.get_logger().info(f"Rotating left - newly shown game is {new_visible_options[0]} at {x_offsets_for_animation[-1]}")
                 else:
                     #new_visible_options.insert(0,new_visible_options[-1])
                     #x_offsets_for_animation.insert(0,x_offsets_for_animation[-1])
@@ -338,7 +338,8 @@ class CarouselView(View):
                                 end_width = widths_for_animation[i+1]
                             else:
                                 # Last item exits to the right
-                                end_x_offset = start_x_offset + int((x_offsets_for_animation[0]*2)/animation_frames * frame)
+                                x_pad = 10 #todo
+                                end_x_offset = (x_offsets_for_animation[-1] - x_offsets_for_animation[-2]) + x_offsets_for_animation[-1] 
                                 end_width = start_width
                         else:
                             if i > 0:
@@ -346,18 +347,19 @@ class CarouselView(View):
                                 end_width = widths_for_animation[i - 1]
                             else:
                                 # First item exits to the left0+12
-                                end_x_offset = start_x_offset  - int((start_x_offset*2)/animation_frames * frame)
+                                end_x_offset = x_offsets_for_animation[0] - (x_offsets_for_animation[1] - x_offsets_for_animation[0])
                                 end_width = start_width
 
                         new_x_offset = start_x_offset + (end_x_offset - start_x_offset) * t
                         new_width = start_width + (end_width - start_width) * t
-                        frame_x_offset.append(new_x_offset)         
+                        frame_x_offset.append(int(new_x_offset))         
                         frame_widths.append(new_width)
 
                     if rotate_left:
                         #new_visible_options.append(new_visible_options[0])
                         #x_offsets_for_animation.append(x_offsets_for_animation[0])
                         #widths_for_animation.append(widths_for_animation[0])
+                        PyUiLogger.get_logger().info(f"frame_x_offset are {frame_x_offset}")
                         frame_x_offset = list(reversed(frame_x_offset))
                         frame_widths = list(reversed(frame_widths))
 
