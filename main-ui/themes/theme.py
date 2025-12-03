@@ -317,10 +317,27 @@ class Theme():
     def get_list_large_selected_bg(cls): return cls._asset("bg-list-l.qoi")
    
     @classmethod
-    def menu_popup_bg_large(cls): return cls._asset("bg-pop-menu-4.qoi")
-    
+    def menu_popup_bg_large(cls): 
+        menu_selected_bg = cls._asset("bg-pop-menu-4.qoi", cache_missing=False)
+        if(menu_selected_bg is None):
+            cls.create_bg_pop_menu_4()
+        return cls._asset("bg-pop-menu-4.qoi")
+
     @classmethod
-    def keyboard_bg(cls): return cls._asset("bg-grid-s.qoi")
+    def create_bg_pop_menu_4(cls):  
+        #Background isn't the best but its the only one that often doesnt have transparency on the bottom
+        input_image = cls._resolve_png_path(cls._skin_folder,["background.png"])
+        output_image = cls._resolve_png_path(cls._skin_folder,["bg-pop-menu-4.png"])
+        PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")      
+        Device.get_image_utils().resize_image(input_image,
+                                              output_image,
+                                              320,
+                                              240,
+                                              preserve_aspect_ratio=False)
+ 
+    @classmethod
+    def keyboard_bg(cls): 
+        return cls._asset("bg-grid-s.qoi")
     
     @classmethod
     def keyboard_entry_bg(cls): return cls._asset("bg-list-l.qoi")
