@@ -1353,3 +1353,28 @@ class Theme():
         cls._data["mainMenuTitle"] = value
         cls.save_changes()
 
+
+    @classmethod
+    def check_and_create_asset(cls, output_image, input_image, target_width, target_height, target_alpha_channel):
+        if(not os.path.exists(output_image)):
+            PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")      
+            Device.get_image_utils().resize_image(input_image,
+                                                  output_image,
+                                                  target_width,
+                                                  target_height,
+                                                  preserve_aspect_ratio=False,
+                                                  target_alpha_channel=target_alpha_channel)
+
+    @classmethod
+    def check_and_create_ra_assets(cls):  
+        cls.check_and_create_asset( cls._resolve_png_path(cls._skin_folder,["menu-6line-bg.png"]),
+                                    cls._resolve_png_path(cls._skin_folder,["background.png"]),
+                                    320,
+                                    420,
+                                    0.75)
+
+        cls.check_and_create_asset( cls._resolve_png_path(cls._skin_folder,["list-item-select-bg-short.png"]),
+                                    cls._resolve_png_path(cls._skin_folder,["bg-list-s.png"]),
+                                    320,
+                                    60,
+                                    1.00)
