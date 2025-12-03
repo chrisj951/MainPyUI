@@ -112,7 +112,12 @@ class GameSystemSelectMenu:
             "zxs": "ZX Spectrum"
         }
     
-    def __init__(self):
+    def __init__(self, app_menu, favorites_menu, collections_menu, recents_menu, settings_menu):
+        self.app_menu = app_menu
+        self.favorites_menu = favorites_menu
+        self.collections_menu = collections_menu
+        self.recents_menu = recents_menu
+        self.settings_menu = settings_menu
         self.game_utils : GameSystemUtils = Device.get_game_system_utils()
         self.rom_select_menu : GameSelectMenu = GameSelectMenu()
         self.use_emu_cfg = False
@@ -206,6 +211,60 @@ class GameSystemSelectMenu:
             if(return_value is not None):
                 return return_value
 
+    def add_extras_to_systems_list(self, systems_list):
+        if(Theme.skip_main_menu() and Theme.show_extras_in_system_select_menu()):
+            if(Theme.get_apps_enabled()):
+                systems_list.append(GridOrListEntry(
+                        primary_text="Apps",
+                        primary_text_long="Applications",
+                        image_path=Theme.get_system_icon("apps"),
+                        image_path_selected=Theme.get_system_icon_selected("apps"),
+                        description = "Launch Applications",
+                        icon=None,
+                        value=lambda input_value: self.app_menu.run_app_selection() if ControllerInput.A == input_value else None
+                    ))        
+            if(Theme.get_favorites_enabled()):
+                systems_list.append(GridOrListEntry(
+                        primary_text="Favorites",
+                        primary_text_long="Favorites",
+                        image_path=Theme.get_system_icon("favorites"),
+                        image_path_selected=Theme.get_system_icon_selected("favorites"),
+                        description = "Launch Favorites",
+                        icon=None,
+                        value=lambda input_value: self.favorites_menu.run_rom_selection() if ControllerInput.A == input_value else None
+                    ) )         
+            if(Theme.get_recents_enabled()):
+                systems_list.append(GridOrListEntry(
+                        primary_text="Recents",
+                        primary_text_long="Recents",
+                        image_path=Theme.get_system_icon("recents"),
+                        image_path_selected=Theme.get_system_icon_selected("recents"),
+                        description = "Launch Recents",
+                        icon=None,
+                        value=lambda input_value: self.recents_menu.run_rom_selection() if ControllerInput.A == input_value else None
+                    )  )
+            if(Theme.get_collections_enabled()):
+                systems_list.append(GridOrListEntry(
+                        primary_text="Collections",
+                        primary_text_long="Collections",
+                        image_path=Theme.get_system_icon("collections"),
+                        image_path_selected=Theme.get_system_icon_selected("collections"),
+                        description = "Launch Collections",
+                        icon=None,
+                        value=lambda input_value: self.collections_menu.run_rom_selection() if ControllerInput.A == input_value else None
+                    )          )    
+            if(Theme.get_settings_enabled()):
+                systems_list.append(GridOrListEntry(
+                        primary_text="Settings",
+                        primary_text_long="Settings",
+                        image_path=Theme.get_system_icon("settings"),
+                        image_path_selected=Theme.get_system_icon_selected("settings"),
+                        description = "Launch Settings",
+                        icon=None,
+                        value=lambda input_value: self.settings_menu.show_menu() if ControllerInput.A == input_value else None
+                    )  )
+
+
     def build_system_list(self):
         systems_list = []
         active_systems = self.game_utils.get_active_systems()
@@ -229,7 +288,13 @@ class GameSystemSelectMenu:
             systems_list.append(option)
             if(game_system.display_name == PyUiState.get_last_system_selection()):
                 selected = Selection(option,None,index-1)
-        
+
+        self.add_extras_to_systems_list(systems_list)        
+
+        for entry in systems_list:
+            if(entry.get_primary_text() == PyUiState.get_last_system_selection()):
+                selected = Selection(entry,None,systems_list.index(entry))
+                break
         return systems_list, selected
 
     def run_system_selection(self) :

@@ -123,5 +123,6 @@
     "deleteRom" : "Delete ROM",
     "aboutThisDevice": "About this Device",
     "removeGameSwitcherGame": "Remove from GameSwitcher",
-    "addGameSwitcherGame":"Add to GameSwitcher"
+    "addGameSwitcherGame":"Add to GameSwitcher",
+    "showExtrasInSystemSelectMenu": "Show Apps/Settings/etc"
 }

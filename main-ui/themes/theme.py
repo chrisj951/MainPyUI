@@ -1145,10 +1145,19 @@ class Theme():
     @classmethod
     def skip_main_menu(cls):
         return cls._data.get("skipMainMenu", False)
-    
+
     @classmethod
     def set_skip_main_menu(cls, value):
         cls._data["skipMainMenu"] = value
+        cls.save_changes()
+
+    @classmethod
+    def show_extras_in_system_select_menu(cls):
+        return cls._data.get("showExtrasInSystemSelectMenu", False)
+
+    @classmethod
+    def set_show_extras_in_system_select_menu(cls, value):
+        cls._data["showExtrasInSystemSelectMenu"] = value
         cls.save_changes()
 
     @classmethod
