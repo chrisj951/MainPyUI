@@ -178,9 +178,20 @@ class Theme():
         PyUiLogger.get_logger().info(f"Wrote Theme : {cls._data.get('description', 'UNKNOWN')}")
         from display.display import Display
         Display.clear_cache()
+    
         
     @classmethod
-    def _resolve_file(cls, base_folder, parts):
+    def _resolve_png_path(cls, base_folder, parts):
+        path = os.path.join(cls._path, base_folder, *parts)
+
+        if path.endswith(".qoi"):
+            png_path = path[:-4] + ".png"
+            return png_path
+
+        return path
+        
+    @classmethod
+    def _resolve_file(cls, base_folder, parts, cache_missing=True):
         """
         Shared resolver:
         - Checks full path
@@ -211,12 +222,13 @@ class Theme():
                 return tga_path
 
         # Nothing found
-        cls._asset_cache[key] = None
+        if(cache_missing):
+            cls._asset_cache[key] = None
         return None
 
     @classmethod
-    def _asset(cls, *parts):
-        return cls._resolve_file(cls._skin_folder, parts)
+    def _asset(cls, *parts, cache_missing=True):
+        return cls._resolve_file(cls._skin_folder, parts, cache_missing)
 
     @classmethod
     def _icon(cls, *parts):
@@ -323,7 +335,22 @@ class Theme():
     def get_list_small_selected_bg(cls): return cls._asset("bg-list-s.qoi")
     
     @classmethod
-    def get_popup_menu_selected_bg(cls): return cls._asset("bg-list-s2.qoi")
+    def create_bg_list_s2(cls):  
+        input_image = cls._resolve_png_path(cls._skin_folder,["bg-list-s.png"])
+        output_image = cls._resolve_png_path(cls._skin_folder,["bg-list-s2.png"])
+        PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")      
+        Device.get_image_utils().resize_image(input_image,
+                                              output_image,
+                                              320,
+                                              60,
+                                              preserve_aspect_ratio=False)
+
+    @classmethod
+    def get_popup_menu_selected_bg(cls): 
+        menu_selected_bg = cls._asset("bg-list-s2.qoi", cache_missing=False)
+        if(menu_selected_bg is None):
+            cls.create_bg_list_s2()
+        return cls._asset("bg-list-s2.qoi")
     
     @classmethod
     def get_missing_image_path(cls): return cls._asset("missing_image.qoi")
