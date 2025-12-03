@@ -229,8 +229,12 @@ class CarouselView(View):
             #PyUiLogger.get_logger().info(f"Visible option {visible_index}: {imageTextPair.get_primary_text()} w/ x_offset {x_offset}")
 
             y_image_offset = Display.get_center_of_usable_screen_height()
-            
-            self._render_image(imageTextPair.get_image_path_ideal(widths[visible_index],Display.get_usable_screen_height()), 
+            if(imageTextPair == self.options[self.selected]):
+                image = imageTextPair.get_image_path_selected_ideal(widths[visible_index],Display.get_usable_screen_height())
+            else:
+                image = imageTextPair.get_image_path_ideal(widths[visible_index],Display.get_usable_screen_height())
+
+            self._render_image(image, 
                                     x_offset, 
                                     y_image_offset,
                                     render_mode,
@@ -370,7 +374,12 @@ class CarouselView(View):
                         y_image_offset = Display.get_center_of_usable_screen_height()
 
 
-                        self._render_image(imageTextPair.get_image_path_ideal(frame_widths[visible_index],Display.get_usable_screen_height()), 
+                        if(imageTextPair == self.options[self.selected]):
+                            image = imageTextPair.get_image_path_selected_ideal(frame_widths[visible_index],Display.get_usable_screen_height())
+                        else:
+                            image = imageTextPair.get_image_path_ideal(frame_widths[visible_index],Display.get_usable_screen_height())
+
+                        self._render_image(image, 
                                                 x_offset, 
                                                 y_image_offset,
                                                 render_mode,
