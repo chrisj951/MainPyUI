@@ -191,6 +191,20 @@ class GameSystemSelectMenu:
                return f"{len(roms)} games"  
         else:
             return f"{len(roms)} game"
+        
+    def game_system_selected(self, input_value, game_system : GameSystem):
+        if(ControllerInput.A == input_value):
+            PyUiState.set_last_system_selection(game_system.display_name)
+            return_value = self.rom_select_menu.run_rom_selection(game_system)
+            if(return_value is not None):
+                if(ControllerInput.B == return_value):
+                    PyUiState.set_in_game_selection_screen(None)
+                if(Theme.skip_main_menu()):
+                    return return_value
+        elif(ControllerInput.MENU == input_value):
+            return_value = self.game_system_select_menu_popup.run_popup_menu_selection(game_system)
+            if(return_value is not None):
+                return return_value
 
     def build_system_list(self):
         systems_list = []
@@ -210,7 +224,7 @@ class GameSystemSelectMenu:
                     image_path_selected=image_path_selected,
                     description = lambda idx=index, gs=game_system: f"{gs.display_name} - {self.get_rom_count_text(gs)} - System {idx} of {total_count}",
                     icon=icon,
-                    value=game_system
+                    value=lambda input_value, game_system=game_system: self.game_system_selected(input_value, game_system)
                 )          
             systems_list.append(option)
             if(game_system.display_name == PyUiState.get_last_system_selection()):
@@ -219,7 +233,6 @@ class GameSystemSelectMenu:
         return systems_list, selected
 
     def run_system_selection(self) :
-
         if(self.selected is not None):
             if(PyUiState.get_in_game_selection_screen()):
                 return_value = self.rom_select_menu.run_rom_selection(self.selected.get_selection().get_value())
@@ -271,16 +284,8 @@ class GameSystemSelectMenu:
 
         while(not exit):
             self.selected = view.get_selection(accepted_inputs)
-            if(ControllerInput.A == self.selected.get_input()):
-                PyUiState.set_last_system_selection(self.selected.get_selection().get_value().display_name)
-                return_value = self.rom_select_menu.run_rom_selection(self.selected.get_selection().get_value())
-                if(return_value is not None):
-                    if(ControllerInput.B == return_value):
-                        PyUiState.set_in_game_selection_screen(None)
-                    if(Theme.skip_main_menu()):
-                        return return_value
-            elif(ControllerInput.MENU == self.selected.get_input()):
-                return_value = self.game_system_select_menu_popup.run_popup_menu_selection(self.selected.get_selection().get_value())
+            if(ControllerInput.A == self.selected.get_input() or ControllerInput.MENU == self.selected.get_input()):
+                return_value = self.selected.get_selection().get_value()(self.selected.get_input())
                 if(return_value is not None):
                     return return_value
             elif(ControllerInput.B == self.selected.get_input() and not Theme.skip_main_menu()):
