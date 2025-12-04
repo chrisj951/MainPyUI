@@ -366,8 +366,8 @@ class CarouselView(View):
             animation_frames = 10 - self.animated_count
             if PyUiConfig.animations_enabled() and animation_frames > 1:
                 render_mode = RenderMode.MIDDLE_CENTER_ALIGNED
-                frame_duration = 1 / 60.0  # 60 FPS
-                last_frame_time = 0
+                #frame_duration = 1 / 60.0  # 60 FPS
+                #last_frame_time = 0
 
                 diff = (self.selected - self.prev_selected) % (len(self.options) + 1)
                 rotate_left = diff > (len(self.options) + 1) // 2
@@ -379,7 +379,7 @@ class CarouselView(View):
                 if(not self.sides_hang_off_edge):
                     if rotate_left:
                         image_list.insert(0,new_visible_options[0])
-                        x_offsets_for_animation.insert(0, - x_offsets_for_animation[0])
+                        x_offsets_for_animation.insert(0, x_offsets_for_animation[0] - (x_offsets_for_animation[1] - x_offsets_for_animation[0]))
                         widths_for_animation.insert(0, widths_for_animation[0])
                         image_list = list(reversed(image_list))
                     else:
