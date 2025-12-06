@@ -1396,7 +1396,7 @@ class Theme():
 
     @classmethod
     def display_volume_numbers(cls):
-        return cls._data.get("displayVolumeNumbers", True)
+        return cls._data.get("displayVolumeNumbers", False)
     
     @classmethod
     def set_display_volume_numbers(cls, value):
