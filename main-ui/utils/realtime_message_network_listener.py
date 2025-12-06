@@ -92,6 +92,21 @@ class RealtimeMessageNetworkListener:
         except queue.Empty:
             pass
 
+    def _progress_bar(self, percent):
+        """
+        Returns an ASCII progress bar rounded to nearest 5%.
+        Example: progress_bar(34) → "[███████···········] 35%"
+        """
+        # Round to nearest 5%
+        rounded = round(percent / 5) * 5
+
+        # Total bar resolution: 20 segments (20 × 5% = 100%)
+        total_segments = 20
+        filled = rounded // 5  # each block is 5%
+
+        bar = "█" * filled + "·" * (total_segments - filled)
+        return f"[{bar}] {rounded}%"
+
     def _handle_ui_message(self, raw_message: str):
         """
         Handle a JSON-formatted UI command.
@@ -142,7 +157,18 @@ class RealtimeMessageNetworkListener:
                 Display.clear("")
                 Display.render_image(image_path,Device.screen_width()//2,image_y,RenderMode.MIDDLE_CENTER_ALIGNED,
                                      Device.screen_width(), image_height)
-                Display.render_text(text, Device.screen_width()//2, text_y, RenderMode.MIDDLE_CENTER_ALIGNED)
+                Display.write_message_multiline(text, text_y)
+                Display.present()
+            else:
+                self.logger.error("RENDER_IMAGE missing args")
+        elif cmd == "TEXT_WITH_PERCENTAGE_BAR":
+            if args:
+                text = args[0]
+                percentage = args[1]
+                self.logger.info(f"Rendering text: {text} w/ perc(entage bar: {percentage}%")
+                Display.clear("")
+                Display.write_message_multiline(text, Device.screen_height()//3)
+                Display.write_message_multiline(self._progress_bar(percentage), (Device.screen_height()*2)//3)
                 Display.present()
             else:
                 self.logger.error("RENDER_IMAGE missing args")
