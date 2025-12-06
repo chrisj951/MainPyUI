@@ -29,7 +29,7 @@ class TrimUISmartProS(TrimUIDevice):
             ConfigCopier.ensure_config("/mnt/SDCARD/Saves/brick-system.json", source)
             self.system_config = SystemConfig("/mnt/SDCARD/Saves/brick-system.json")
             trim_stock_json_file = script_dir / 'stock/brick.json'
-            ConfigCopier.ensure_config(TrimUISmartPro.TRIMUI_STOCK_CONFIG_LOCATION, trim_stock_json_file)
+            ConfigCopier.ensure_config(TrimUISmartProS.TRIMUI_STOCK_CONFIG_LOCATION, trim_stock_json_file)
 
 
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
