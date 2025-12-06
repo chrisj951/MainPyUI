@@ -150,19 +150,80 @@ class RealtimeMessageNetworkListener:
             elif cmd == "TOP_IMAGE_BOTTOM_TEXT":
                 if args:
                     image_path = args[0]
-                    args[1] = int(args[1]) 
-                    image_height_percent = args[1] / 100
-                    padding = Display.get_top_bar_height()
-                    image_y = (Device.screen_height()*image_height_percent)//2 + padding 
-                    image_height = int(Device.screen_height()*image_height_percent)
+                    height_percent = int(args[1])  # convert safely
                     text = args[2]
-                    text_y = int(Device.screen_height() * (((100 - args[1]) / 2) + args[1]) / 100) + padding
+
+                    padding = Display.get_top_bar_height()
+
+                    # Use usable height (excluding top bar)
+                    usable_height = Display.get_usable_screen_height()
+
+                    # Image metrics
+                    image_height = int(usable_height * (height_percent / 100))
+                    image_y = padding + (image_height // 2)
+
+                    # Text placement: centered in remaining space
+                    remaining_height = usable_height - image_height
+                    text_y = padding + image_height + (remaining_height // 2)
 
                     self.logger.info(f"Rendering image from path: {image_path} with text: {text}")
+
                     Display.clear("")
-                    Display.render_image(image_path,Device.screen_width()//2,image_y,RenderMode.MIDDLE_CENTER_ALIGNED,
-                                        Device.screen_width(), image_height)
-                    Display.write_message_multiline(Display.split_message(text, FontPurpose.LIST,clip_to_device_width=True), text_y)
+
+                    Display.render_image(
+                        image_path,
+                        Device.screen_width() // 2,
+                        image_y,
+                        RenderMode.MIDDLE_CENTER_ALIGNED,
+                        Device.screen_width(),
+                        image_height
+                    )
+
+                    Display.write_message_multiline(
+                        Display.split_message(text, FontPurpose.LIST, clip_to_device_width=True),
+                        text_y
+                    )
+
+                    Display.present()
+                else:
+                    self.logger.error("TOP_IMAGE_BOTTOM_TEXT missing args")
+            elif cmd == "TOP_TEXT_BOTTOM_IMAGE":
+                if args:
+                    image_path = args[0]
+                    height_percent = int(args[1])  # convert safely
+                    text = args[2]
+
+                    padding = Display.get_top_bar_height()
+
+                    # Use usable height (excluding top bar)
+                    usable_height = Display.get_usable_screen_height()
+
+                    # Image metrics
+                    image_height = int(usable_height * (height_percent / 100))
+                    text_y = padding + (image_height // 2)
+
+                    # Text placement: centered in remaining space
+                    remaining_height = usable_height - image_height
+                    image_y = padding + image_height + (remaining_height // 2)
+
+                    self.logger.info(f"Rendering image from path: {image_path} with text: {text}")
+
+                    Display.clear("")
+
+                    Display.render_image(
+                        image_path,
+                        Device.screen_width() // 2,
+                        image_y,
+                        RenderMode.MIDDLE_CENTER_ALIGNED,
+                        Device.screen_width(),
+                        image_height
+                    )
+
+                    Display.write_message_multiline(
+                        Display.split_message(text, FontPurpose.LIST, clip_to_device_width=True),
+                        text_y
+                    )
+
                     Display.present()
                 else:
                     self.logger.error("TOP_IMAGE_BOTTOM_TEXT missing args")
