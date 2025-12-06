@@ -160,7 +160,7 @@ class RealtimeMessageNetworkListener:
                 Display.write_message_multiline(text, text_y)
                 Display.present()
             else:
-                self.logger.error("RENDER_IMAGE missing args")
+                self.logger.error("TOP_IMAGE_BOTTOM_TEXT missing args")
         elif cmd == "TEXT_WITH_PERCENTAGE_BAR":
             if args:
                 text = args[0]
@@ -171,7 +171,7 @@ class RealtimeMessageNetworkListener:
                 Display.write_message_multiline(self._progress_bar(percentage), (Device.screen_height()*2)//3)
                 Display.present()
             else:
-                self.logger.error("RENDER_IMAGE missing args")
+                self.logger.error("TEXT_WITH_PERCENTAGE_BAR missing args")
 
         elif cmd == "OPTION_LIST":
             if args:
