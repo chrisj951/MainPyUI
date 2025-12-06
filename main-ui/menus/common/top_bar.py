@@ -69,8 +69,9 @@ class TopBar:
  
         #Volume
         if(time.time() - self.volume_changed_time < 3 and Device.supports_volume()):
-            w, h = Display.render_text(str(self.volume),x_offset, center_of_bar,  Theme.text_color(FontPurpose.BATTERY_PERCENT), FontPurpose.BATTERY_PERCENT, RenderMode.MIDDLE_RIGHT_ALIGNED)
-            x_offset = x_offset - w  #Don't padd the number from the icon
+            if(Theme.display_volume_numbers()):
+                w, h = Display.render_text(str(self.volume),x_offset, center_of_bar,  Theme.text_color(FontPurpose.BATTERY_PERCENT), FontPurpose.BATTERY_PERCENT, RenderMode.MIDDLE_RIGHT_ALIGNED)
+                x_offset = x_offset - w  #Don't padd the number from the icon
             w, h = Display.render_image(Theme.get_volume_indicator(self.volume),x_offset,center_of_bar, RenderMode.MIDDLE_RIGHT_ALIGNED)
             x_offset = x_offset - w - img_padding
 
@@ -124,8 +125,9 @@ class TopBar:
                 x_offset = x_offset - w - padding
                 #Volume
             if(time.time() - self.volume_changed_time < 3):
-                w, h = Display.render_text(str(self.volume),x_offset, center_of_bar,  Theme.text_color(FontPurpose.BATTERY_PERCENT), FontPurpose.BATTERY_PERCENT, RenderMode.MIDDLE_RIGHT_ALIGNED)
-                x_offset = x_offset - w - padding
+                if(Theme.display_volume_numbers()):
+                    w, h = Display.render_text(str(self.volume),x_offset, center_of_bar,  Theme.text_color(FontPurpose.BATTERY_PERCENT), FontPurpose.BATTERY_PERCENT, RenderMode.MIDDLE_RIGHT_ALIGNED)
+                    x_offset = x_offset - w - padding
                 w,h = Display.render_image(Theme.get_volume_indicator(self.volume),x_offset,center_of_bar, RenderMode.MIDDLE_RIGHT_ALIGNED)
                 x_offset = x_offset - w - padding
 
