@@ -163,3 +163,7 @@ class TrimUISmartProS(TrimUIDevice):
     
     def get_core_name_overrides(self, core_name):
         return [core_name, core_name+"-64"]
+
+    def _set_brightness_to_config(self):
+        with open("/sys/class/backlight/backlight0/brightness", "w") as f:
+            f.write(str((self.system_config.brightness * 255) // 20))
