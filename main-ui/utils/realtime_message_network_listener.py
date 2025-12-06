@@ -3,7 +3,9 @@ import threading
 import sys
 import queue
 import json
+from devices.device import Device
 from display.display import Display
+from display.render_mode import RenderMode
 from option_select_ui import OptionSelectUI
 from utils.logger import PyUiLogger
 
@@ -124,6 +126,24 @@ class RealtimeMessageNetworkListener:
                 image_path = args[0]
                 self.logger.info(f"Rendering image from path: {image_path}")
                 Display.display_image(image_path)
+            else:
+                self.logger.error("RENDER_IMAGE missing args")
+
+        elif cmd == "TOP_IMAGE_BOTTOM_TEXT":
+            if args:
+                image_path = args[0]
+                image_height_percent = args[1] / 100
+                image_y = (Device.screen_height()*image_height_percent)//2
+                image_height = int(Device.screen_height()*image_height_percent)
+                text = args[2]
+                text_y = int(Device.screen_height() * (((100 - args[1]) / 2) + args[1]) / 100)
+
+                self.logger.info(f"Rendering image from path: {image_path} with text: {text}")
+                Display.clear("")
+                Display.render_image(image_path,Device.screen_width()//2,image_y,RenderMode.MIDDLE_CENTER_ALIGNED,
+                                     Device.screen_width(), image_height)
+                Display.render_text(text, Device.screen_width()//2, text_y, RenderMode.MIDDLE_CENTER_ALIGNED)
+                Display.present()
             else:
                 self.logger.error("RENDER_IMAGE missing args")
 
