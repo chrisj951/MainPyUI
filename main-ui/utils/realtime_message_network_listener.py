@@ -5,7 +5,9 @@ import queue
 import json
 from devices.device import Device
 from display.display import Display
+from display.font_purpose import FontPurpose
 from display.render_mode import RenderMode
+from menus.common.top_bar import TopBar
 from option_select_ui import OptionSelectUI
 from utils.logger import PyUiLogger
 
@@ -128,71 +130,77 @@ class RealtimeMessageNetworkListener:
             Display.display_message(raw_message)
             return
 
-        # ---------------------------
-        # Handle Commands
-        # ---------------------------
-        if cmd == "EXIT_APP":
-            self.logger.info("Received EXIT_APP command, shutting down...")
-            self.stop_event.set()
-            return
+        try:
+            # ---------------------------
+            # Handle Commands
+            # ---------------------------
+            if cmd == "EXIT_APP":
+                self.logger.info("Received EXIT_APP command, shutting down...")
+                self.stop_event.set()
+                return
 
-        elif cmd == "RENDER_IMAGE":
-            if args:
-                image_path = args[0]
-                self.logger.info(f"Rendering image from path: {image_path}")
-                Display.display_image(image_path)
-            else:
-                self.logger.error("RENDER_IMAGE missing args")
+            elif cmd == "RENDER_IMAGE":
+                if args:
+                    image_path = args[0]
+                    self.logger.info(f"Rendering image from path: {image_path}")
+                    Display.display_image(image_path)
+                else:
+                    self.logger.error("RENDER_IMAGE missing args")
 
-        elif cmd == "TOP_IMAGE_BOTTOM_TEXT":
-            if args:
-                image_path = args[0]
-                image_height_percent = args[1] / 100
-                image_y = (Device.screen_height()*image_height_percent)//2
-                image_height = int(Device.screen_height()*image_height_percent)
-                text = args[2]
-                text_y = int(Device.screen_height() * (((100 - args[1]) / 2) + args[1]) / 100)
+            elif cmd == "TOP_IMAGE_BOTTOM_TEXT":
+                if args:
+                    image_path = args[0]
+                    args[1] = int(args[1]) 
+                    image_height_percent = args[1] / 100
+                    padding = Display.get_top_bar_height()
+                    image_y = (Device.screen_height()*image_height_percent)//2 + padding 
+                    image_height = int(Device.screen_height()*image_height_percent)
+                    text = args[2]
+                    text_y = int(Device.screen_height() * (((100 - args[1]) / 2) + args[1]) / 100) + padding
 
-                self.logger.info(f"Rendering image from path: {image_path} with text: {text}")
-                Display.clear("")
-                Display.render_image(image_path,Device.screen_width()//2,image_y,RenderMode.MIDDLE_CENTER_ALIGNED,
-                                     Device.screen_width(), image_height)
-                Display.write_message_multiline(text, text_y)
-                Display.present()
-            else:
-                self.logger.error("TOP_IMAGE_BOTTOM_TEXT missing args")
-        elif cmd == "TEXT_WITH_PERCENTAGE_BAR":
-            if args:
-                text = args[0]
-                percentage = args[1]
-                self.logger.info(f"Rendering text: {text} w/ perc(entage bar: {percentage}%")
-                Display.clear("")
-                Display.write_message_multiline(text, Device.screen_height()//3)
-                Display.write_message_multiline(self._progress_bar(percentage), (Device.screen_height()*2)//3)
-                Display.present()
-            else:
-                self.logger.error("TEXT_WITH_PERCENTAGE_BAR missing args")
+                    self.logger.info(f"Rendering image from path: {image_path} with text: {text}")
+                    Display.clear("")
+                    Display.render_image(image_path,Device.screen_width()//2,image_y,RenderMode.MIDDLE_CENTER_ALIGNED,
+                                        Device.screen_width(), image_height)
+                    Display.write_message_multiline(Display.split_message(text, FontPurpose.LIST,clip_to_device_width=True), text_y)
+                    Display.present()
+                else:
+                    self.logger.error("TOP_IMAGE_BOTTOM_TEXT missing args")
+            elif cmd == "TEXT_WITH_PERCENTAGE_BAR":
+                if args:
+                    text = args[0]
+                    args[1] = int(args[1]) 
+                    percentage = args[1]
+                    self.logger.info(f"Rendering text: {text} w/ perc(entage bar: {percentage}%")
+                    Display.clear("")
+                    Display.write_message_multiline(Display.split_message(text, FontPurpose.LIST,clip_to_device_width=True), Device.screen_height()//3)
+                    Display.write_message_multiline([self._progress_bar(percentage)], (Device.screen_height()*2)//3)
+                    Display.present()
+                else:
+                    self.logger.error("TEXT_WITH_PERCENTAGE_BAR missing args")
 
-        elif cmd == "OPTION_LIST":
-            if args:
-                file_path = args[0]
-                self.logger.info(f"Option list file: {file_path}")
-                OptionSelectUI.display_option_list("", file_path, False)
+            elif cmd == "OPTION_LIST":
+                if args:
+                    file_path = args[0]
+                    self.logger.info(f"Option list file: {file_path}")
+                    OptionSelectUI.display_option_list("", file_path, False)
+                else:
+                    self.logger.error("OPTION_LIST missing args")
+            elif cmd == "MESSAGE":
+                if args:
+                    msg = " ".join(str(a) for a in args)
+                    self.logger.info(f"Displaying message: {msg}")
+                    Display.display_message(msg)
+                else:
+                    self.logger.error("MESSAGE missing args")
+
             else:
-                self.logger.error("OPTION_LIST missing args")
-        elif cmd == "MESSAGE":
-            if args:
-                msg = " ".join(str(a) for a in args)
+                # Default handler for unknown commands
+                msg = " ".join(str(a) for a in args) if args else cmd
                 self.logger.info(f"Displaying message: {msg}")
                 Display.display_message(msg)
-            else:
-                self.logger.error("MESSAGE missing args")
-
-        else:
-            # Default handler for unknown commands
-            msg = " ".join(str(a) for a in args) if args else cmd
-            self.logger.info(f"Displaying message: {msg}")
-            Display.display_message(msg)
+        except Exception:
+            self.logger.error(f"Error processing command: {cmd} with args: {args}", exc_info=True)
 
     def stop(self):
         """Gracefully stop the server and all threads."""
