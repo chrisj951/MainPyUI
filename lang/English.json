@@ -124,6 +124,6 @@
     "aboutThisDevice": "About this Device",
     "removeGameSwitcherGame": "Remove from GameSwitcher",
     "addGameSwitcherGame":"Add to GameSwitcher",
-    "showExtrasInSystemSelectMenu": "Show Apps/Settings/etc",
+    "showExtrasInSystemSelectMenu": "Show Apps/Recents/Favs/Collections",
     "mergeMainMenuAndGameMenu": "Merge Main Menu And Game Menu"
 }
