@@ -115,7 +115,7 @@
     "gameSelectMenuThemeOptions": "Game Select Menu Theme Options",
     "Fonts": "Fonts",
     "gridViewThemeOptions": "Grid View Theme Options",
-    "topBarOptions": "Top Bar Options",
+    "topAndBottomBarOptions": "Top and Bottom Bar Options",
     "leftSideInitialXOffset": "Left Side Initial X Offset",
     "tasks" : "Tasks",
     "selectBoxart" : "Select BoxArt Download",
@@ -125,5 +125,8 @@
     "removeGameSwitcherGame": "Remove from GameSwitcher",
     "addGameSwitcherGame":"Add to GameSwitcher",
     "showExtrasInSystemSelectMenu": "Show Apps/Recents/Favs/Collections",
-    "mergeMainMenuAndGameMenu": "Merge Main Menu And Game Menu"
+    "mergeMainMenuAndGameMenu": "Merge Main Menu And Game Menu",
+    "setSingleRowGridTextYOffset": "1 Row Grid Text Y Offset",
+    "setMultiRowGridTextYOffset": ">1 Row Grid Text Y Offset",
+    "setGridMultiRowImageYOffset": "Grid >1 Row Image Y Offset"
 }
