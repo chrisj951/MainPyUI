@@ -11,7 +11,10 @@ class ThemePatcher():
     # Add properties you want to scale (case-sensitive)
     SCALABLE_KEYS = {"grid1x4","grid3x4","FontSize","gameSelectImgWidth","gameSelectImgHeight","gridGameSelectImgWidth",
                      "gridGameSelectImgHeight","listGameSelectImgWidth","listGameSelectImgHeight","gridMultiRowSelBgResizePadWidth",
-                     "gridMultiRowSelBgResizePadHeight","gridMultiRowExtraYPad", "topBarInitialXOffset"}
+                     "gridMultiRowSelBgResizePadHeight","gridMultiRowExtraYPad", "topBarInitialXOffset","gridMultiRowImageYOffset",
+                     "singleRowGridTextYOffset","multiRowGridTextYOffset","carouselSystemExternalXPad","carouselSystemXPad",
+                     "gridSystemImageYOffset","gridSystemSelectImgWidth","listSystemSelectImgWidth","carouselSystemSelectPrimaryImgWidth",
+                     "gridSystemSelectImgHeight","listSystemSelectImgHeight"}
 
     @classmethod
     def convert_to_qoi(cls, path):
