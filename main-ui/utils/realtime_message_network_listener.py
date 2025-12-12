@@ -107,7 +107,7 @@ class RealtimeMessageNetworkListener:
         filled = rounded // 5  # each block is 5%
 
         bar = "█" * filled + "·" * (total_segments - filled)
-        return f"[{bar}] {rounded}%"
+        return f"[{bar}] {percent}%"
 
     def _handle_ui_message(self, raw_message: str):
         """
