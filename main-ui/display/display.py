@@ -98,7 +98,7 @@ class Display:
         cls.init_fonts()
         cls.render_canvas = sdl2.SDL_CreateTexture(
             cls.renderer.renderer,
-            sdl2.SDL_PIXELFORMAT_ARGB8888,
+            sdl2.SDL_PIXELFORMAT_ARGB1555,
             sdl2.SDL_TEXTUREACCESS_TARGET,
             Device.screen_width(),
             Device.screen_height()
@@ -296,7 +296,7 @@ class Display:
         cls.bg_canvas = cls.render_canvas
         cls.render_canvas = sdl2.SDL_CreateTexture(
             cls.renderer.renderer,
-            sdl2.SDL_PIXELFORMAT_ARGB8888,
+            sdl2.SDL_PIXELFORMAT_ARGB1555,
             sdl2.SDL_TEXTUREACCESS_TARGET,
             Device.screen_width(),
             Device.screen_height()
@@ -630,7 +630,7 @@ class Display:
 
         scaled_texture = sdl2.SDL_CreateTexture(
             cls.renderer.sdlrenderer,
-            sdl2.SDL_PIXELFORMAT_ARGB8888,
+            sdl2.SDL_PIXELFORMAT_ARGB1555,
             sdl2.SDL_TEXTUREACCESS_TARGET,
             target_width,
             target_height
@@ -668,7 +668,7 @@ class Display:
         # Create an intermediate render target texture
         render_target = sdl2.SDL_CreateTexture(
             renderer,
-            sdl2.SDL_PIXELFORMAT_RGBA8888,
+            sdl2.SDL_PIXELFORMAT_ARGB1555,
             sdl2.SDL_TEXTUREACCESS_TARGET,
             width.value, height.value
         )
@@ -742,7 +742,7 @@ class Display:
 
             cls.render_canvas = sdl2.SDL_CreateTexture(
                 cls.renderer.sdlrenderer,
-                sdl2.SDL_PIXELFORMAT_RGBA8888,
+                sdl2.SDL_PIXELFORMAT_ARGB1555,
                 sdl2.SDL_TEXTUREACCESS_TARGET,
                 width,
                 height
@@ -763,7 +763,7 @@ class Display:
         # Create a new target texture
         rotated_texture = sdl2.SDL_CreateTexture(
             cls.renderer.sdlrenderer,
-            sdl2.SDL_PIXELFORMAT_RGBA8888,
+            sdl2.SDL_PIXELFORMAT_ARGB1555,
             sdl2.SDL_TEXTUREACCESS_TARGET,
             new_w,
             new_h
