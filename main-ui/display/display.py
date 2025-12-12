@@ -115,6 +115,10 @@ class Display:
             Display.deinit_display()
             Display.reinitialize()
 
+        if(False):
+            Display.log_sdl_render_drivers()
+            Display.log_current_renderer()
+
         #Debug prints
         if(False):
             scale_x = ctypes.c_float()
@@ -133,6 +137,43 @@ class Display:
             PyUiLogger.get_logger().info(
                 f"Window size: {window_w.value}x{window_h.value}, Drawable size: {drawable_w.value}x{drawable_h.value}"
             )
+
+    @classmethod
+    def log_sdl_render_drivers(cls):
+        # Number of render drivers available
+        num_drivers = sdl2.SDL_GetNumRenderDrivers()
+        PyUiLogger.get_logger().info(f"SDL found {num_drivers} render drivers:")
+
+        info = sdl2.SDL_RendererInfo()
+
+        for i in range(num_drivers):
+            sdl2.SDL_GetRenderDriverInfo(i, ctypes.byref(info))
+
+            PyUiLogger.get_logger().info(f"Driver #{i}: {info.name.decode()}")
+            PyUiLogger.get_logger().info(f"  Max texture size: {info.max_texture_width}x{info.max_texture_height}")
+
+            # Log supported flags
+            print("  Flags:", end=" ")
+            flags = []
+            if info.flags & sdl2.SDL_RENDERER_SOFTWARE: flags.append("SOFTWARE")
+            if info.flags & sdl2.SDL_RENDERER_ACCELERATED: flags.append("ACCELERATED")
+            if info.flags & sdl2.SDL_RENDERER_PRESENTVSYNC: flags.append("VSYNC")
+            if info.flags & sdl2.SDL_RENDERER_TARGETTEXTURE: flags.append("TARGETTEXTURE")
+            PyUiLogger.get_logger().info(", ".join(flags) if flags else "None")
+
+            # Log supported texture formats
+            PyUiLogger.get_logger().info("  Supported texture formats:")
+            for j in range(info.num_texture_formats):
+                fmt = info.texture_formats[j]
+                name = sdl2.SDL_GetPixelFormatName(fmt).decode()
+                PyUiLogger.get_logger().info(f"    - {name}")
+
+
+    @classmethod
+    def log_current_renderer(cls):
+        info = sdl2.SDL_RendererInfo()
+        sdl2.SDL_GetRendererInfo(cls.renderer.renderer, ctypes.byref(info))
+        PyUiLogger.get_logger().info(f"SDL selected renderer: {info.name.decode()}")
 
     @classmethod
     def log_sdl_error_if_any(cls):

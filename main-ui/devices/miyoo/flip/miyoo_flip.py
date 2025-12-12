@@ -68,6 +68,10 @@ class MiyooFlip(MiyooDevice):
         
         os.environ["SDL_VIDEODRIVER"] = "KMSDRM"
         os.environ["SDL_RENDER_DRIVER"] = "kmsdrm"
+        os.environ["KMSDRM_DEVICE"] = "/dev/dri/card0"
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_DRIVER, b"opengles2")
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_OPENGL_SHADERS, b"1")
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_FRAMEBUFFER_ACCELERATION, b"1")
         
         self.system_config = None
         if(main_ui_mode):
