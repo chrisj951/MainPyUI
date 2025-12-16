@@ -64,13 +64,16 @@ class AppMenu:
             boxart_scraper_config = PyUiAppConfig("Boxart Scraper")
             hidden = AppsManager.is_hidden(boxart_scraper_config) and not self.show_all_apps
             if(not hidden):
+                icon = self.get_icon(None,"scraper.png")
+                if(icon is None):
+                    icon = Theme.get_cfw_default_icon("scraper.png")
                 app_list.append(
                         GridOrListEntry(
                             primary_text=boxart_scraper_config.get_label() + "(Hidden)" if AppsManager.is_hidden(boxart_scraper_config) else boxart_scraper_config.get_label(),
                             image_path=None,
                             image_path_selected=None,
                             description="Scrape game boxart",
-                            icon=self.get_icon(None,"scraper.png"),
+                            icon=icon,
                             extra_data=boxart_scraper_config,
                             value=BoxArtScraper().scrape_boxart
                         )
