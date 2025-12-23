@@ -92,7 +92,8 @@ class Display:
     _problematic_image_keywords = [
         "No such file or directory",
         "Text has zero width",
-        "Texture dimensions are limited"
+        "Texture dimensions are limited",
+        "Corrupt PNG"
     ]
 
     @classmethod
