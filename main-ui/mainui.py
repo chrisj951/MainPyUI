@@ -204,7 +204,6 @@ def main():
 
     #log_renderer_info()
 
-    PyUiLogger.get_logger().info(f"{args}")
     with log_timing("Entire Startup initialization", PyUiLogger.get_logger()):    
 
         with log_timing("Config initialization", PyUiLogger.get_logger()):    
