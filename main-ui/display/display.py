@@ -232,18 +232,15 @@ class Display:
         cls._text_texture_cache.clear_cache()
         cls._image_texture_cache.clear_cache()
         sdl2.SDL_QuitSubSystem(sdl2.SDL_INIT_VIDEO)
-        PyUiLogger.get_logger().debug("Display deinitialized")    
 
     @classmethod
     def clear_text_cache(cls):
-        PyUiLogger.get_logger().debug("Clearing text cache")    
         cls._text_texture_cache.clear_cache()
         cls.deinit_fonts()
         cls.init_fonts()
 
     @classmethod
     def clear_image_cache(cls):
-        PyUiLogger.get_logger().debug("Clearing image cache")    
         cls._image_texture_cache.clear_cache()
 
     @classmethod
@@ -259,7 +256,6 @@ class Display:
 
     @classmethod
     def reinitialize(cls, bg=None):
-        PyUiLogger.get_logger().info("reinitialize display")
         cls.deinit_display()
         cls._unload_bg_texture()
         cls._init_display()
@@ -274,7 +270,6 @@ class Display:
         if cls.background_texture:
             sdl2.SDL_DestroyTexture(cls.background_texture)
             cls.background_texture = None
-            PyUiLogger.get_logger().debug("Destroying bg texture")
 
     @classmethod
     def restore_bg(cls, bg=None):

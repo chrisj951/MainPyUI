@@ -111,7 +111,8 @@ class Theme():
 
         resolution_converted = False
         if os.path.exists(config_path):
-            PyUiLogger.get_logger().info(f"Resolution specific config found, using {resolution_specific_config}")
+            #PyUiLogger.get_logger().info(f"Resolution specific config found, using {resolution_specific_config}")
+            pass #don't need to log
         elif ThemePatcher.patch_theme(path,width, height) and os.path.exists(config_path):
             resolution_converted = True
 
