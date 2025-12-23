@@ -378,8 +378,7 @@ class BoxArtScraper:
 
             for future in as_completed(futures):
                 count = count +1
-                if(count % 10 == 0):
-                    self.log_and_display_message(f"Scraping box art... ({count}/{len(tasks)})")
+                self.log_and_display_message(f"Scraping box art... ({count}/{len(tasks)})")
                 try:
                     result = future.result()
                     if result: 
