@@ -142,7 +142,7 @@ class BoxArtResizer():
 
     @classmethod
     def patch_boxart_list(cls, image_list):
-        cls.scan_count = 0
+        cls.scan_count = len(image_list)
         cls.patched_count = 0
         threading.Thread(target=cls.monitor_for_input, daemon=True).start()
 
