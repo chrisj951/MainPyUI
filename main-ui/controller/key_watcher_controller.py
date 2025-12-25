@@ -113,7 +113,8 @@ class KeyWatcherController(ControllerInterface):
                             if mapped_event.key_state == KeyState.PRESS:
                                 with self.lock:
                                     self.held_controller_inputs[mapped_event.controller_input] = now
-                                    self.input_queue.append(mapped_event.controller_input)
+                                    if mapped_event.controller_input not in self.input_queue:
+                                        self.input_queue.append(mapped_event.controller_input)
                                 self.key_change(mapped_event.controller_input,"PRESS")
                             elif mapped_event.key_state == KeyState.RELEASE:
                                 with self.lock:
