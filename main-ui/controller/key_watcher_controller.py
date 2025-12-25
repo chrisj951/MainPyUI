@@ -142,7 +142,7 @@ class KeyWatcherController(ControllerInterface):
             if keys_snapshot:
                 last_held = keys_snapshot[0]  # just pick the first key
                 break
-            time.sleep(0.05)  # wait a bit and retry
+            time.sleep(0.01)  # wait a bit and retry
 
         self.last_held_input = last_held
         return last_held
