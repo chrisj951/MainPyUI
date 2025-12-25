@@ -1,5 +1,6 @@
 
 
+from collections import deque
 import os
 import struct
 import threading
@@ -28,7 +29,8 @@ class KeyWatcherController(ControllerInterface):
         self.event_path = event_path
         self.key_mappings = key_mappings
         self.held_controller_inputs = OrderedDict()
-
+        self.input_queue = deque()
+        
         try:
             self.fd = os.open(self.event_path, os.O_RDONLY)
         except OSError as e:
@@ -111,6 +113,7 @@ class KeyWatcherController(ControllerInterface):
                             if mapped_event.key_state == KeyState.PRESS:
                                 with self.lock:
                                     self.held_controller_inputs[mapped_event.controller_input] = now
+                                    self.input_queue.append(mapped_event.controller_input)
                                 self.key_change(mapped_event.controller_input,"PRESS")
                             elif mapped_event.key_state == KeyState.RELEASE:
                                 with self.lock:
@@ -133,19 +136,25 @@ class KeyWatcherController(ControllerInterface):
         start_time = time.time()
         timeout = timeoutInMilliseconds / 1000.0
 
-        # Loop until we get input or timeout
-        last_held = None
         while (time.time() - start_time) < timeout:
-            # Create a snapshot of keys safely
             with self.lock:
-                keys_snapshot = list(self.held_controller_inputs.keys())
-            if keys_snapshot:
-                last_held = keys_snapshot[0]  # just pick the first key
-                break
-            time.sleep(0.01)  # wait a bit and retry
+                # First, check the event queue
+                if self.input_queue:
+                    value = self.input_queue.popleft()
+                    self.last_held_input = value
+                    return value
+                
+                # Fallback: return the first currently held key
+                if self.held_controller_inputs:
+                    value = next(iter(self.held_controller_inputs))
+                    self.last_held_input = value
+                    return value
 
-        self.last_held_input = last_held
-        return last_held
+            time.sleep(0.005)
+
+        self.last_held_input = None
+        return None
+
     
     def clear_input_queue(self):
         pass
