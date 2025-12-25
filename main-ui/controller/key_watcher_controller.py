@@ -1,6 +1,5 @@
 
 
-from dataclasses import dataclass
 import os
 import struct
 import select
@@ -8,9 +7,9 @@ import threading
 import time
 from typing import OrderedDict
 
-from controller.controller_inputs import ControllerInput
 from controller.controller_interface import ControllerInterface
 from controller.key_state import KeyState
+from controller.key_watcher_controller_dataclasses import KeyEvent
 from utils.logger import PyUiLogger
 
 # Constants for Linux input
@@ -20,17 +19,6 @@ KEY_PRESS = 1
 KEY_RELEASE = 0
 KEY_REPEAT = 2
 
-
-@dataclass
-class InputResult:
-    controller_input: ControllerInput
-    key_state: KeyState
-
-@dataclass(frozen=True)
-class KeyEvent:
-    event_type: int
-    code: int
-    value: int
 
     
 class KeyWatcherController(ControllerInterface):

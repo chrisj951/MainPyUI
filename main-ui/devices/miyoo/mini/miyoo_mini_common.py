@@ -9,7 +9,8 @@ from utils.logger import PyUiLogger
 from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
-from controller.key_watcher_controller_miyoo_mini import InputResult, KeyEvent, KeyWatcherControllerMiyooMini
+from controller.key_watcher_controller_miyoo_mini import KeyWatcherControllerMiyooMini
+from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.miyoo.mini.miyoo_mini_flip_shared_memory_writer import MiyooMiniFlipSharedMemoryWriter
 from devices.miyoo.mini.miyoo_mini_flip_specific_model_variables import MiyooMiniSpecificModelVariables
 from devices.miyoo.miyoo_device import MiyooDevice
