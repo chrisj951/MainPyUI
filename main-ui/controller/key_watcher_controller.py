@@ -91,7 +91,10 @@ class KeyWatcherController(ControllerInterface):
 
     def poll_keyboard(self):
         logger = PyUiLogger.get_logger()
-
+        if self.fd is None:
+            logger.error("File descriptor is None, cannot poll keyboard.")
+            return
+            
         while True:
             now = time.time()
             try:
