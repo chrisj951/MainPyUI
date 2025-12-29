@@ -1,4 +1,4 @@
-from asyncio import subprocess
+import subprocess
 import math
 from pathlib import Path
 import threading
