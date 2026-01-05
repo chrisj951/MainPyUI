@@ -1,0 +1,95 @@
+find . -type f -iname '*.jpg' -exec magick mogrify -format png {} +
+find . -type f -iname '*.svg' -exec magick mogrify -format png {} +
+
+SRC="/c/gitrepos/canvas-es-de - Copy/_inc/carousel-icons-capsule"
+
+cp "$SRC/atari2600.png" atari.png
+cp "$SRC/atari5200.png" 5200.png
+cp "$SRC/atari7800.png" 7800.png
+cp "$SRC/atari800.png" atari800.png
+cp "$SRC/atarist.png" atarist.png
+cp "$SRC/atarilynx.png" lynx.png
+
+cp "$SRC/megadrive.png" md.png
+cp "$SRC/megadrivejp.png" md.png
+cp "$SRC/genesis.png" md.png
+cp md.png msumd.png
+cp "$SRC/segacd.png" segacd.png
+cp "$SRC/satellaview.png" satella.png
+cp "$SRC/saturn.png" saturn.png
+cp "$SRC/gamegear.png" gg.png
+cp "$SRC/sg-1000.png" segasgone.png
+cp "$SRC/sega32x.png" 32X.png
+cp "$SRC/dreamcast.png" dc.png
+cp dc.png sufami.png
+cp "$SRC/naomi.png" sufami.png
+
+cp "$SRC/famicom.png" fc.png
+cp "$SRC/nes.png" fc.png
+cp fc fds.png
+cp "$SRC/sfc.png" sfc.png
+cp "$SRC/snes.png" sfc.png
+cp sfc.png msu1.png
+cp "$SRC/snes_msu1.png" msu1.png
+cp sfc.png sgb.png
+cp "$SRC/n64.png" n64.png
+cp "$SRC/nds.png" nds.png
+cp "$SRC/gb.png" gb.png
+cp "$SRC/gbc.png" gbc.png
+cp "$SRC/gba.png" gba.png
+cp "$SRC/gameandwatch.png" gw.png
+cp "$SRC/virtualboy.png" vb.png
+cp "$SRC/supergrafx.png" sgfx.png
+cp "$SRC/pcengine.png" pce.png
+cp "$SRC/pcenginecd.png" pcecd.png
+
+cp "$SRC/psx.png" ps.png
+cp "$SRC/psp.png" psp.png
+
+cp "$SRC/arcade.png" arcade.png
+cp "$SRC/mame.png" mame.png
+cp "$SRC/cps1.png" cps1.png
+cp "$SRC/cps2.png" cps2.png
+cp "$SRC/cps3.png" cps3.png
+cp "$SRC/neogeo.png" neogeo.png
+cp "$SRC/neogeocd.png" neocd.png
+
+cp "$SRC/c64.png" c64.png
+cp "$SRC/amiga.png" amiga.png
+cp "$SRC/msx.png" msx.png
+cp "$SRC/zxspectrum.png" zxs.png
+cp "$SRC/x68000.png" x68000.png
+cp "$SRC/dos.png" dos.png
+
+cp "$SRC/scummvm.png" scummvm.png
+cp "$SRC/openbor.png" openbor.png
+cp "$SRC/easyrpg.png" easyrpg.png
+cp "$SRC/doom.png" doom.png
+cp "$SRC/quake.png" quake.png
+cp "$SRC/ports.png" ports.png
+
+cp "$SRC/wonderswan.png" ws.png
+cp "$SRC/wonderswancolor.png" wsc.png
+cp "$SRC/ngp.png" ngp.png
+cp "$SRC/ngpc.png" ngpc.png
+cp "$SRC/vectrex.png" vectrex.png
+cp "$SRC/supervision.png" supervision.png
+
+
+cp "$SRC/arduboy.png" arduboy.png
+cp "$SRC/pcengine.png" pce.png
+cp "$SRC/pcenginecd.png" pcecd.png
+cp "$SRC/odyssey2.png" ody.png
+cp "$SRC/supergrafx.png" sgfx.png
+cp "$SRC/chailove.png" chai.png
+cp "$SRC/colecovision.png" col.png
+cp "$SRC/amstradcpc.png" cpc.png
+cp "$SRC/mastersystem.png" ms.png
+
+cp "$SRC/favorites.png" favorites.png
+cp "$SRC/android.png" apps.png
+
+
+magick mogrify -resize 200x200 *.png
+
+

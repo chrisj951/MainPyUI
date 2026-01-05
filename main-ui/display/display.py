@@ -288,10 +288,10 @@ class Display:
 
     @classmethod
     def set_new_bg(cls, bg_path):
-        cls._unload_bg_texture()
-        cls.bg_path = bg_path
-        #PyUiLogger.get_logger().info(f"Using {bg_path} as the background")
-        if(bg_path is not None):
+        if(bg_path is not None and bg_path != cls.bg_path):
+            PyUiLogger.get_logger().info(f"Using {bg_path} as the background")
+            cls._unload_bg_texture()
+            cls.bg_path = bg_path
             surface = Display.image_load(cls.bg_path)
             if not surface:
                 PyUiLogger.get_logger().error(f"Failed to load image: {cls.bg_path}")
