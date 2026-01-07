@@ -133,6 +133,9 @@ class Display:
 
         with log_timing("restore_bg", PyUiLogger.get_logger()):    
             cls.restore_bg()
+
+        with log_timing("clear", PyUiLogger.get_logger()):    
+            cls.clear("")    
         if(Device.double_init_sdl_display()):
             Display.deinit_display()
             Display.reinitialize()
