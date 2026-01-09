@@ -1,4 +1,5 @@
 find . -type f -iname '*.jpg' -exec magick mogrify -format png {} +
+find . -type f -iname '*.webp' -exec magick mogrify -format png {} +
 
 find . -type f -iname '*.svg' -exec sh -c '
   for f do
@@ -186,6 +187,9 @@ cp "$SRC/amstradcpc.png" cpc.png
 cp "$SRC/mastersystem.png" ms.png
 cp "$SRC/pico.png" pico.png
 cp "$SRC/gametank.png" gametank.png
+cp "$SRC/pokemini.png" poke.png
+
+
 
 cp "$SRC/favorites.png" favorites.png
 cp "$SRC/android.png" apps.png
