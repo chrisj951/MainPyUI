@@ -26,8 +26,8 @@ cp "$SRC/gamegear.png" gg.png
 cp "$SRC/sg-1000.png" segasgone.png
 cp "$SRC/sega32x.png" 32X.png
 cp "$SRC/dreamcast.png" dc.png
-cp dc.png sufami.png
-cp "$SRC/naomi.png" sufami.png
+cp dc.png naomi.png
+cp "$SRC/naomi.png" naomi.png
 
 cp "$SRC/famicom.png" fc.png
 cp "$SRC/nes.png" fc.png
@@ -116,8 +116,8 @@ cp "$SRC/gamegear.png" gg.png
 cp "$SRC/sg-1000.png" segasgone.png
 cp "$SRC/sega32x.png" 32X.png
 cp "$SRC/dreamcast.png" dc.png
-cp dc.png sufami.png
-cp "$SRC/naomi.png" sufami.png
+cp dc.png naomi.png
+cp "$SRC/naomi.png" naomi.png
 
 # Nintendo
 cp "$SRC/famicom.png" fc.png
@@ -127,6 +127,7 @@ cp "$SRC/sfc.png" sfc.png
 cp "$SRC/snes.png" sfc.png
 cp sfc.png msu1.png
 cp "$SRC/snes-msu1.png" msu1.png
+cp "$SRC/sfc.png" sufami.png
 cp "$SRC/sgb.png" sgb.png
 cp "$SRC/n64.png" n64.png
 cp "$SRC/nds.png" nds.png
@@ -188,10 +189,12 @@ cp "$SRC/gametank.png" gametank.png
 
 cp "$SRC/favorites.png" favorites.png
 cp "$SRC/android.png" apps.png
+cp "$SRC/love.png" chai.png
+cp "$SRC/videosystem.png" ffplay.png
+cp "$SRC/setup.png" settings.png
 
 
-
-magick mogrify -resize 200x200 *.png
+magick mogrify -resize 300x300 *.png
 
 
 magick mogrify -resize x150 *.png
