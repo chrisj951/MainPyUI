@@ -385,7 +385,7 @@ class Display:
               render_bottom_bar_icons_and_images = True):
         cls.top_bar_text = top_bar_text
         
-        if cls.is_custom_theme_background is not None:
+        if cls.is_custom_theme_background:
             #cls.render_image(cls.bg_path, Device.get_device().screen_width()//2, Device.get_device().screen_height()//2, RenderMode.MIDDLE_CENTER_ALIGNED, Device.get_device().screen_width(), Device.get_device().screen_height(), ResizeType.ZOOM)
             cls.render_image(cls.bg_path, 0, 0, RenderMode.TOP_LEFT_ALIGNED, Device.get_device().screen_width(), Device.get_device().screen_height(), ResizeType.ZOOM)
         elif cls.bg_canvas is not None:
