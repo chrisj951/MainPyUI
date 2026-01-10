@@ -125,6 +125,10 @@ class Display:
             sdl2.SDL_SetRenderDrawBlendMode(cls.renderer.renderer, sdl2.SDL_BLENDMODE_BLEND)
             cls.log_sdl_error_if_any()
 
+        if(Device.get_device().double_init_sdl_display()):
+            Display.deinit_display()
+            Display.reinitialize()
+
         if(Device.get_device().might_require_surface_format_conversion()):
             info = sdl2.SDL_RendererInfo()
             sdl2.SDL_GetRendererInfo(cls.renderer.renderer, info)
@@ -136,9 +140,6 @@ class Display:
 
         with log_timing("clear", PyUiLogger.get_logger()):    
             cls.clear("")    
-        if(Device.get_device().double_init_sdl_display()):
-            Display.deinit_display()
-            Display.reinitialize()
 
         if(False):
             Display.log_sdl_render_drivers()
@@ -294,6 +295,7 @@ class Display:
         if cls.background_texture:
             sdl2.SDL_DestroyTexture(cls.background_texture)
             cls.background_texture = None
+            PyUiLogger.get_logger().info("Unloaded background texture")
 
     @classmethod
     def restore_bg(cls, bg=None):
@@ -305,7 +307,6 @@ class Display:
     @classmethod
     def set_new_bg(cls, bg_path, is_custom_theme_background):
         if(bg_path is not None and bg_path != cls.bg_path):
-            #PyUiLogger.get_logger().info(f"Using {bg_path} as the background")
             cls._unload_bg_texture()
             cls.is_custom_theme_background = is_custom_theme_background
             cls.bg_path = bg_path
@@ -319,6 +320,10 @@ class Display:
 
             if not cls.background_texture:
                 PyUiLogger.get_logger().error("Failed to create texture from surface")
+            else:
+                PyUiLogger.get_logger().info(f"{bg_path} loaded as background texture")
+        elif(bg_path is None):
+            PyUiLogger.get_logger().error(f"Background path none")
 
     @classmethod
     def set_page_bg(cls, page_bg):
