@@ -113,8 +113,8 @@ class Display:
                 cls.renderer.renderer,
                 sdl2.SDL_PIXELFORMAT_ARGB1555,
                 sdl2.SDL_TEXTUREACCESS_TARGET,
-                Device.screen_width(),
-                Device.screen_height()
+                Device.get_device().screen_width(),
+                Device.get_device().screen_height()
             )
             cls.log_sdl_error_if_any()
 
@@ -125,7 +125,7 @@ class Display:
             sdl2.SDL_SetRenderDrawBlendMode(cls.renderer.renderer, sdl2.SDL_BLENDMODE_BLEND)
             cls.log_sdl_error_if_any()
 
-        if(Device.might_require_surface_format_conversion()):
+        if(Device.get_device().might_require_surface_format_conversion()):
             info = sdl2.SDL_RendererInfo()
             sdl2.SDL_GetRendererInfo(cls.renderer.renderer, info)
             cls.supported_formats = set(info.texture_formats[:info.num_texture_formats])
@@ -136,7 +136,7 @@ class Display:
 
         with log_timing("clear", PyUiLogger.get_logger()):    
             cls.clear("")    
-        if(Device.double_init_sdl_display()):
+        if(Device.get_device().double_init_sdl_display()):
             Display.deinit_display()
             Display.reinitialize()
 
@@ -223,7 +223,7 @@ class Display:
             display_mode = sdl2.SDL_DisplayMode()
             if sdl2.SDL_GetCurrentDisplayMode(0, display_mode) != 0:
                 PyUiLogger.get_logger().error("Failed to get display mode, using fallback 640x480")
-                width, height = Device.screen_width(), Device.screen_height()
+                width, height = Device.get_device().screen_width(), Device.get_device().screen_height()
             else:
                 width, height = display_mode.w, display_mode.h
                 #PyUiLogger.get_logger().info(f"Display size: {width}x{height}")
@@ -364,8 +364,8 @@ class Display:
             cls.renderer.renderer,
             sdl2.SDL_PIXELFORMAT_ARGB1555,
             sdl2.SDL_TEXTUREACCESS_TARGET,
-            Device.screen_width(),
-            Device.screen_height()
+            Device.get_device().screen_width(),
+            Device.get_device().screen_height()
         )
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, cls.render_canvas)
         sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.bg_canvas, None, None)
@@ -386,8 +386,8 @@ class Display:
         cls.top_bar_text = top_bar_text
         
         if cls.is_custom_theme_background is not None:
-            #cls.render_image(cls.bg_path, Device.screen_width()//2, Device.screen_height()//2, RenderMode.MIDDLE_CENTER_ALIGNED, Device.screen_width(), Device.screen_height(), ResizeType.ZOOM)
-            cls.render_image(cls.bg_path, 0, 0, RenderMode.TOP_LEFT_ALIGNED, Device.screen_width(), Device.screen_height(), ResizeType.ZOOM)
+            #cls.render_image(cls.bg_path, Device.get_device().screen_width()//2, Device.get_device().screen_height()//2, RenderMode.MIDDLE_CENTER_ALIGNED, Device.get_device().screen_width(), Device.get_device().screen_height(), ResizeType.ZOOM)
+            cls.render_image(cls.bg_path, 0, 0, RenderMode.TOP_LEFT_ALIGNED, Device.get_device().screen_width(), Device.get_device().screen_height(), ResizeType.ZOOM)
         elif cls.bg_canvas is not None:
             sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, cls.bg_canvas, None, None)
         elif cls.background_texture is not None:
@@ -633,7 +633,7 @@ class Display:
     
     @classmethod
     def convert_surface_to_safe_format(cls, surface):
-        if(Device.might_require_surface_format_conversion() and surface):
+        if(Device.get_device().might_require_surface_format_conversion() and surface):
             surface_format = surface.contents.format.contents.format
             if surface_format not in cls.supported_formats:
                 # Convert to safe format
@@ -674,10 +674,10 @@ class Display:
             surface_width = surface.contents.w
             surface_height = surface.contents.h
 
-            if(surface_width > Device.max_texture_width() or surface_height > Device.max_texture_height()):
+            if(surface_width > Device.get_device().max_texture_width() or surface_height > Device.get_device().max_texture_height()):
                 sdl2.SDL_FreeSurface(surface)
                 PyUiLogger.get_logger().warning(
-                    f"Image is too large to render ({surface_width} x {surface_height} with max of {Device.max_texture_width()} x {Device.max_texture_height()}). Skipping {image_path}\n"
+                    f"Image is too large to render ({surface_width} x {surface_height} with max of {Device.get_device().max_texture_width()} x {Device.get_device().max_texture_height()}). Skipping {image_path}\n"
                 ) 
                 cls._problematic_images.add(image_path)
                 return 0, 0
@@ -859,7 +859,7 @@ class Display:
                 cls.render_canvas = None
 
             # Decide default size (fallback to current display size)
-            width, height = Device.screen_width(), Device.screen_height()
+            width, height = Device.get_device().screen_width(), Device.get_device().screen_height()
 
             cls.render_canvas = sdl2.SDL_CreateTexture(
                 cls.renderer.sdlrenderer,
@@ -875,7 +875,7 @@ class Display:
         src_w, src_h = w.value, h.value
 
         # Determine new target size after rotation
-        angle_mod = Device.screen_rotation() % 360
+        angle_mod = Device.get_device().screen_rotation() % 360
         if angle_mod in (90, 270):
             new_w, new_h = src_h, src_w
         else:
@@ -918,7 +918,7 @@ class Display:
             cls.render_canvas,
             None,
             dst_rect,
-            Device.screen_rotation(),
+            Device.get_device().screen_rotation(),
             center,
             sdl2.SDL_FLIP_NONE
         )
@@ -936,11 +936,11 @@ class Display:
 
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, None)
 
-        if Device.should_scale_screen():
-            scaled_canvas = cls.scale_texture_to_fit(cls.render_canvas, Device.output_screen_width(), Device.output_screen_height())
+        if Device.get_device().should_scale_screen():
+            scaled_canvas = cls.scale_texture_to_fit(cls.render_canvas, Device.get_device().output_screen_width(), Device.get_device().output_screen_height())
             sdl2.SDL_RenderCopy(cls.renderer.sdlrenderer, scaled_canvas, None, None)
             sdl2.SDL_DestroyTexture(scaled_canvas)
-        elif(0 == Device.screen_rotation()):
+        elif(0 == Device.get_device().screen_rotation()):
             if(fade):
                 cls.fade_transition(cls.bg_canvas, cls.render_canvas)
             else:
@@ -965,11 +965,11 @@ class Display:
 
     @classmethod
     def get_usable_screen_height(cls, force_include_top_bar = False):
-        return Device.screen_height() if Theme.ignore_top_and_bottom_bar_for_layout() and not force_include_top_bar else Device.screen_height() - cls.get_bottom_bar_height() - cls.get_top_bar_height()
+        return Device.get_device().screen_height() if Theme.ignore_top_and_bottom_bar_for_layout() and not force_include_top_bar else Device.get_device().screen_height() - cls.get_bottom_bar_height() - cls.get_top_bar_height()
 
     @classmethod
     def get_center_of_usable_screen_height(cls, force_include_top_bar = False):
-        return ((Device.screen_height() - cls.get_bottom_bar_height() - cls.get_top_bar_height(force_include_top_bar)) // 2) + cls.get_top_bar_height(force_include_top_bar)
+        return ((Device.get_device().screen_height() - cls.get_bottom_bar_height() - cls.get_top_bar_height(force_include_top_bar)) // 2) + cls.get_top_bar_height(force_include_top_bar)
 
     @classmethod
     def get_image_dimensions(cls, img):
@@ -1000,16 +1000,16 @@ class Display:
         w = sdl2.Sint32()
         h = sdl2.Sint32()
         sdl2.sdlttf.TTF_SizeUTF8(cls.fonts[purpose].font, text.encode('utf-8'), w, h)
-        return int(w.value * Device.get_text_width_measurement_multiplier()), h.value
+        return int(w.value * Device.get_device().get_text_width_measurement_multiplier()), h.value
     
     @classmethod
     def add_index_text(cls, index, total, force_include_index = False, letter = None):
         if(force_include_index or Theme.show_index_text()):
             y_padding = max(5, cls.get_bottom_bar_height() // 4)
-            y_value = Device.screen_height() - y_padding
+            y_value = Device.get_device().screen_height() - y_padding
             x_padding = 10
 
-            x_offset = Device.screen_width() - x_padding
+            x_offset = Device.get_device().screen_width() - x_padding
             total_text_w, _ = cls.render_text(
                 str(total),
                 x_offset,
@@ -1052,13 +1052,13 @@ class Display:
     @classmethod
     def is_text_too_long(cls, line: str, font_purpose, clip_to_device_width) -> bool:
         try:
-            if(Device.get_guaranteed_safe_max_text_char_count() >= len(line)):
+            if(Device.get_device().get_guaranteed_safe_max_text_char_count() >= len(line)):
                 return False
             text_w, text_h = Display.get_text_dimensions(font_purpose, line)
-            max_width = Device.max_texture_width()
+            max_width = Device.get_device().max_texture_width()
             if(clip_to_device_width):
-                max_width = min(max_width, Device.screen_width())
-            max_width = max_width - int(10 * Device.screen_height()/480)
+                max_width = min(max_width, Device.get_device().screen_width())
+            max_width = max_width - int(10 * Device.get_device().screen_height()/480)
             return text_w > max_width
         except Exception as e:
             PyUiLogger.get_logger().warning(f"Error checking text length: {e}")
@@ -1108,7 +1108,7 @@ class Display:
     @classmethod
     def display_message_multiline(cls,split_message, duration_ms=0):
         Display.clear("")        
-        cls.write_message_multiline(split_message, Device.screen_height()//2)
+        cls.write_message_multiline(split_message, Device.get_device().screen_height()//2)
         Display.present()
         # Sleep for the specified duration in milliseconds
         time.sleep(duration_ms / 1000)
@@ -1117,11 +1117,11 @@ class Display:
     def write_message_multiline(cls,split_message, middle_height):
         text_w,text_h = Display.get_text_dimensions(FontPurpose.LIST, "W")
 
-        height_per_line = text_h + int(5 * Device.screen_height()/480)
+        height_per_line = text_h + int(5 * Device.get_device().screen_height()/480)
         starting_height = middle_height - (len(split_message) * height_per_line)//2
 
         for i, line in enumerate(split_message):
-            Display.render_text_centered(f"{line}",Device.screen_width()//2, starting_height + i * height_per_line,
+            Display.render_text_centered(f"{line}",Device.get_device().screen_width()//2, starting_height + i * height_per_line,
                                          Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
 
 
@@ -1129,10 +1129,10 @@ class Display:
     def write_message_multiline_starting_height_specified(cls,split_message, starting_height):
         text_w,text_h = Display.get_text_dimensions(FontPurpose.LIST, "W")
 
-        height_per_line = text_h + int(5 * Device.screen_height()/480)
+        height_per_line = text_h + int(5 * Device.get_device().screen_height()/480)
 
         for i, line in enumerate(split_message):
-            Display.render_text_centered(f"{line}",Device.screen_width()//2, starting_height + i * height_per_line,
+            Display.render_text_centered(f"{line}",Device.get_device().screen_width()//2, starting_height + i * height_per_line,
                                          Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
 
 
@@ -1144,7 +1144,7 @@ class Display:
     @classmethod
     def display_image(cls,image_path, duration_ms=0):
         Display.clear("")
-        Display.render_image(image_path,Device.screen_width()//2,Device.screen_height()//2,RenderMode.MIDDLE_CENTER_ALIGNED)
+        Display.render_image(image_path,Device.get_device().screen_width()//2,Device.get_device().screen_height()//2,RenderMode.MIDDLE_CENTER_ALIGNED)
         Display.present()
         # Sleep for the specified duration in milliseconds
         time.sleep(duration_ms / 1000)

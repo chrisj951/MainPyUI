@@ -49,11 +49,11 @@ class DeviceCommon(AbstractDevice):
     def reboot(self):
         self.run_cmd([self.reboot_cmd])
 
-    @property
+
     def input_timeout_default(self):
         return 1/12 # 12 fps
     
-    @property
+
     def screen_rotation(self):
         return 0
 
@@ -151,23 +151,23 @@ class DeviceCommon(AbstractDevice):
             self.system_config.save_config()
             self._set_hue_to_config()
 
-    @property
+
     def hue(self):
         return self.system_config.get_hue()
     
-    @property
+
     def lumination(self):
         return self.system_config.backlight
     
-    @property
+
     def contrast(self):
         return self.system_config.get_contrast()
 
-    @property
+
     def brightness(self):
         return self.system_config.get_brightness()
     
-    @property
+
     def saturation(self):
         return self.system_config.get_saturation()
 
