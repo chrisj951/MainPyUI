@@ -188,14 +188,14 @@ class MiyooMiniCommon(MiyooDevice):
         if(self.should_scale_screen()):
             return 1920
         else:
-            return self.screen_height
+            return self.screen_height()
         
     @property
     def output_screen_height(self):
         if(self.should_scale_screen()):
             return 1080
         else:
-            return self.screen_width
+            return self.screen_width()
 
     def get_scale_factor(self):
         if(self.is_hdmi_connected()):

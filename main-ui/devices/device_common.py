@@ -29,11 +29,11 @@ class DeviceCommon(AbstractDevice):
         while(True):
             PyUiLogger.get_logger().info("Prompting for shutdown")
             Display.clear("Power")
-            Display.render_text_centered(f"Would you like to power down?",self.screen_width//2, self.screen_height//2,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
+            Display.render_text_centered(f"Would you like to power down?",self.screen_width()//2, self.screen_height()//2,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
             if(self.reboot_cmd is not None):
-                Display.render_text_centered(f"A = Power Down, X = Reboot, B = Cancel",self.screen_width //2, self.screen_height//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
+                Display.render_text_centered(f"A = Power Down, X = Reboot, B = Cancel",self.screen_width() //2, self.screen_height()//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
             else:
-                Display.render_text_centered(f"A = Power Down, B = Cancel",self.screen_width //2, self.screen_height//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
+                Display.render_text_centered(f"A = Power Down, B = Cancel",self.screen_width() //2, self.screen_height()//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
             Display.present()
             if(Controller.get_input()):
                 if(Controller.last_input() == ControllerInput.A):
@@ -44,10 +44,10 @@ class DeviceCommon(AbstractDevice):
                     return
 
     def power_off(self):
-        self.run_cmd([self.power_off_cmd])
+        self.run_cmd([self.power_off_cmd()])
 
     def reboot(self):
-        self.run_cmd([self.reboot_cmd])
+        self.run_cmd([self.reboot_cmd()])
 
 
     def input_timeout_default(self):

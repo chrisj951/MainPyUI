@@ -136,7 +136,7 @@ class MiyooA30(MiyooDevice):
         if(self.should_scale_screen()):
             return 1920
         else:
-            return self.screen_height
+            return self.screen_height()
         
 
     def output_screen_height(self):
