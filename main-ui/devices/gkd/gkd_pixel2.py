@@ -23,9 +23,6 @@ from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 
 class GKDPixel2(GKDDevice):
-    
-    GKD_STOCK_CONFIG_LOCATION = "/mnt/SDCARD/system.json"
-
     def __init__(self, device_name, main_ui_mode):
         self.device_name = device_name
         self.audio_player = AudioPlayerDelegateSdl2()
@@ -34,9 +31,6 @@ class GKDPixel2(GKDDevice):
         self._load_system_config("/mnt/SDCARD/Saves/gkd-pixel2-system.json", source)
 
         if(main_ui_mode):
-            gkd_stock_json_file = script_dir / 'stock/pixel2.json'
-            ConfigCopier.ensure_config(GKDPixel2.GKD_STOCK_CONFIG_LOCATION, gkd_stock_json_file)
-
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
             self.ensure_wpa_supplicant_conf()
             threading.Thread(target=self.monitor_wifi, daemon=True).start()
@@ -153,14 +147,14 @@ class GKDPixel2(GKDDevice):
     def get_device_name(self):
         return self.device_name
         
-    def set_theme(self, theme_path: str):
-        MiyooTrimCommon.set_theme(GKDPixel2.GKD_STOCK_CONFIG_LOCATION, theme_path)
-
     def get_audio_system(self):
         return self.audio_player
     
     def get_core_name_overrides(self, core_name):
         return [core_name, core_name+"-64"]
+    
+    def supports_timezone_setting(self):
+        return False
             
     def _set_volume(self, user_volume):
         from display.display import Display
