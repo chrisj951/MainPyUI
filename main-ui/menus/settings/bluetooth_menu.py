@@ -51,8 +51,8 @@ class BluetoothMenu:
                 for bt_device in devices:
                     option_list.append(
                         GridOrListEntry(
-                                primary_text=bt_Device.get_device().name,
-                                value_text=bt_Device.get_device().address,
+                                primary_text=bt_device.get_device().name,
+                                value_text=bt_device.get_device().address,
                                 image_path=None,
                                 image_path_selected=None,
                                 description=None,
