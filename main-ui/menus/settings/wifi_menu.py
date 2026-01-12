@@ -228,4 +228,5 @@ class WifiMenu:
                 time.sleep(0.05)
 
         finally:
+            Display.display_message("Stopping WiFi scanner...")
             self.wifi_scanner.stop()

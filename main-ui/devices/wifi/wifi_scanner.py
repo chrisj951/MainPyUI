@@ -138,7 +138,6 @@ class WiFiScanner:
         """
         log = PyUiLogger.get_logger()
         log.info("Stopping WiFi scan thread")
-        Display.display_message("Stopping WiFi scanner...")
         self._stop_event.set()
 
         if self._thread and self._thread.is_alive():
