@@ -28,6 +28,33 @@ class BluetoothMenu:
         self.connect_device(device)
         Controller.new_bt_device_paired()
 
+
+    def connect_device(self, device) -> bool:
+        log = PyUiLogger.get_logger()
+        log.info(f"connecting to ({device.address})")
+
+        steps = [
+            ("pair",    ["bluetoothctl", "pair", device.address],    "Pairing successful"),
+            ("trust",   ["bluetoothctl", "trust", device.address],   "trust succeeded"),
+            ("connect", ["bluetoothctl", "connect", device.address], "Connection successful"),
+        ]
+
+        for name, cmd, success_token in steps:
+            log.info(f"Bluetooth connect step: {name}")
+
+            output = ProcessRunner.run_cmd("BluetoothMenu", cmd)
+            log.info(f"{name} output: {output}")
+
+            if not output or success_token.lower() not in output.lower():
+                log.info(f"{name} FAILED for {device.address}")
+                Display.display_message(f"Bluetooth device {device.name} failed to connect at step: {name}. {output}", duration_ms=5000)
+                return False
+
+        Display.display_message(f"Bluetooth device {device.name} connected successfully", duration_ms=5000)
+        self.bluetooth_scanner.refresh_devices()
+        return True
+
+
     def show_bluetooth_menu(self):
         try:
             selected = Selection(None, None, 0)
@@ -58,7 +85,7 @@ class BluetoothMenu:
                     for bt_device in devices:
                         option_list.append(
                             GridOrListEntry(
-                                    primary_text=bt_device.name,
+                                    primary_text="✓ " + bt_device.name if bt_device.paired else bt_device.name,
                                     value_text=bt_device.address,
                                     image_path=None,
                                     image_path_selected=None,
@@ -90,27 +117,3 @@ class BluetoothMenu:
         finally:
             Display.display_message("Stopping Bluetooth scanner...")
             self.bluetooth_scanner.stop()
-
-    def connect_device(self, device) -> bool:
-        log = PyUiLogger.get_logger()
-        log.info(f"connecting to ({device.address})")
-
-        steps = [
-            ("pair",    ["bluetoothctl", "pair", device.address],    "Pairing successful"),
-            ("trust",   ["bluetoothctl", "trust", device.address],   "trust succeeded"),
-            ("connect", ["bluetoothctl", "connect", device.address], "Connection successful"),
-        ]
-
-        for name, cmd, success_token in steps:
-            log.info(f"Bluetooth connect step: {name}")
-
-            output = ProcessRunner.run_cmd("BluetoothMenu", cmd)
-            log.info(f"{name} output: {output}")
-
-            if not output or success_token.lower() not in output.lower():
-                log.info(f"{name} FAILED for {device.address}")
-                Display.display_message(f"Bluetooth device {device.name} failed to connect at step: {name}. {output}", duration_ms=5000)
-                return False
-
-        Display.display_message(f"Bluetooth device {device.name} connected successfully", duration_ms=5000)
-        return True

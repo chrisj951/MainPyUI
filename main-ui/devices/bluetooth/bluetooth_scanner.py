@@ -12,11 +12,12 @@ from utils.logger import PyUiLogger
 class BluetoothDevice:
     address: str
     name: str
+    paired: bool = False 
 
-    def __init__(self, address: str, name: str):
+    def __init__(self, address: str, name: str, paired: bool):
         self.address = address
         self.name = name
-
+        self.paired = paired
 
 class BluetoothScanner:
     SCAN_INTERVAL = 2.0
@@ -142,9 +143,9 @@ class BluetoothScanner:
 
     def _poll_devices(self):
         """Runs `bluetoothctl devices` and parses output."""
-        self.log.info("BluetoothScanner: polling devices")
+        #self.log.info("BluetoothScanner: polling devices")
 
-        output = self._run_cmd(["bluetoothctl", "devices"])
+        output = self._run_cmd(["bluetoothctl", "devices"], log_stdout=False)
         if not output:
             return
 
@@ -163,8 +164,21 @@ class BluetoothScanner:
 
             with self._lock:
                 if mac not in self._devices:
+                    paired = self._check_paired(mac)
                     self.log.info(f"BluetoothScanner: discovered {mac} ({name})")
-                    self._devices[mac] = BluetoothDevice(mac, name)
+                    self._devices[mac] = BluetoothDevice(mac, name, paired)
 
-    def _run_cmd(self, cmd):
-        return ProcessRunner.run_cmd("BluetoothScanner", cmd)
+    def _check_paired(self, mac: str) -> bool:
+        """Checks if a device is paired using `bluetoothctl info`."""
+        output = self._run_cmd(["bluetoothctl", "info", mac])
+        if not output:
+            return False
+        return "Paired: yes" in output
+    
+    def refresh_devices(self):
+        """Clears the device list to force re-scan."""
+        with self._lock:
+            self._devices.clear()
+    
+    def _run_cmd(self, cmd, log_stdout=True):
+        return ProcessRunner.run_cmd("BluetoothScanner", cmd, log_stdout=log_stdout)
