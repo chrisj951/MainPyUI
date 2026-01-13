@@ -293,9 +293,9 @@ class FullScreenGridView(View):
                 return Selection(self.get_selected_option(), Controller.last_input(), self.selected)
             elif Controller.last_input() == ControllerInput.B:
                 return Selection(self.get_selected_option(), Controller.last_input(), self.selected)
-            elif Controller.last_input() == ControllerInput.DPAD_LEFT:
+            elif Controller.last_input() == ControllerInput.DPAD_LEFT or Controller.last_input() == ControllerInput.DPAD_UP:
                 self.adjust_selected(-1, skip_by_letter=False)
-            elif Controller.last_input() == ControllerInput.DPAD_RIGHT:
+            elif Controller.last_input() == ControllerInput.DPAD_RIGHT or Controller.last_input() == ControllerInput.DPAD_DOWN:
                 self.adjust_selected(+1, skip_by_letter=False)
             elif Controller.last_input() == ControllerInput.L1:
                 self.adjust_selected(-5, skip_by_letter=False)
