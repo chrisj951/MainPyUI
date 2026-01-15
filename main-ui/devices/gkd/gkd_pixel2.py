@@ -1,6 +1,5 @@
-import math
 from pathlib import Path
-import subprocess
+import os
 import threading
 from audio.audio_player_delegate_sdl2 import AudioPlayerDelegateSdl2
 from controller.controller_inputs import ControllerInput
@@ -9,12 +8,10 @@ from controller.key_watcher import KeyWatcher
 from controller.key_watcher_controller import KeyWatcherController
 from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
-from devices.miyoo.system_config import SystemConfig
-from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.gkd.gkd_device import GKDDevice
 from devices.utils.file_watcher import FileWatcher
 from devices.utils.process_runner import ProcessRunner
-from display.display import Display
+from menus.settings.timezone_menu import TimezoneMenu
 from utils import throttle
 
 from utils.config_copier import ConfigCopier
@@ -154,8 +151,25 @@ class GKDPixel2(GKDDevice):
         return [core_name, core_name+"-64"]
     
     def supports_timezone_setting(self):
-        return False
-            
+        return True
+
+    def prompt_timezone_update(self):
+        timezone_menu = TimezoneMenu()
+        tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/usr/share/zoneinfo', verify_via_datetime=True))
+
+        if (tz is not None):
+            self.system_config.set_timezone(tz)
+            self.apply_timezone(tz)
+
+    def apply_timezone(self, timezone):
+        with open("/storage/.cache/system_timezone", "w") as f:
+            f.write(f"{timezone}\n")
+
+        with open("/storage/.cache/timezone", "w") as f:
+            f.write(f"TIMEZONE={timezone}\n")
+
+        os.system("systemctl restart tz-data.service")
+
     def _set_volume(self, user_volume):
         from display.display import Display
         if(user_volume < 0):
