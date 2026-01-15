@@ -7,7 +7,7 @@ find . -type f -iname '*.svg' -exec sh -c '
   done
 ' sh {} +
 
-SRC="/c/gitrepos/Themes/Alekfull-NX/assets/logos"
+SRC="/c/gitrepos/Themes/art-book-next-es-master/_inc/systems/artwork-noir"
 
 cp "$SRC/atari2600.png" atari.png
 cp "$SRC/atari5200.png" 5200.png
@@ -196,9 +196,19 @@ cp "$SRC/android.png" apps.png
 cp "$SRC/love.png" chai.png
 cp "$SRC/videosystem.png" ffplay.png
 cp "$SRC/setup.png" settings.png
-
+cp "$SRC/daphne.png" daphne.png
+cp "$SRC/intellivision.png" intellivision.png
+cp "$SRC/pc98.png" pc98.png
+cp "$SRC/channelf.png" fairchild.png
+cp "$SRC/megaduck.png" megaduck.png
+cp "$SRC/pico8.png" pico.png
+cp "$SRC/videopac.png" videopac.png
+cp "$SRC/mugen.png" mugen.png
+cp "$SRC/pokemini.png" pokemini.png
+cp "$SRC/tic80.png" tic80.png
 
 magick mogrify -resize 300x300 *.png
+magick mogrify -resize 242x480 *.png
 
 
 magick mogrify -resize x150 *.png
