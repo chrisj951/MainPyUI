@@ -180,7 +180,7 @@ class GKDPixel2(GKDDevice):
         
         try:
             ProcessRunner.run(
-                ["volume", str(int(volume))],
+                ["pactl", "--", "set-sink-volume", "@DEFAULT_SINK@", f"{volume}%"],
                 check=True
             )
 
