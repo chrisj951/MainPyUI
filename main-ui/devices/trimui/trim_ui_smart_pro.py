@@ -6,7 +6,7 @@ from audio.audio_player_delegate_sdl2 import AudioPlayerDelegateSdl2
 from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
-from controller.key_watcher_controller import KeyWatcherController
+from controller.key_watcher_controller import DictKeyMappingProvider, KeyWatcherController
 from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.miyoo.system_config import SystemConfig
@@ -153,7 +153,7 @@ class TrimUISmartPro(TrimUIDevice):
         key_mappings[KeyEvent(1, 314, 0)] = [InputResult(ControllerInput.SELECT, KeyState.RELEASE)]   
         key_mappings[KeyEvent(1, 314, 1)] = [InputResult(ControllerInput.SELECT, KeyState.PRESS)]   
 
-        return KeyWatcherController(event_path="/dev/input/event3", key_mappings=key_mappings)
+        return KeyWatcherController(event_path="/dev/input/event3", mapping_provider=DictKeyMappingProvider(key_mappings))
     
     def get_device_name(self):
         return self.device_name

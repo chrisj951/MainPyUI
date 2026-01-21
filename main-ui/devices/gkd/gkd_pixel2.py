@@ -5,7 +5,7 @@ from audio.audio_player_delegate_sdl2 import AudioPlayerDelegateSdl2
 from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
-from controller.key_watcher_controller import KeyWatcherController
+from controller.key_watcher_controller import DictKeyMappingProvider, KeyWatcherController
 from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.gkd.gkd_device import GKDDevice
@@ -139,7 +139,7 @@ class GKDPixel2(GKDDevice):
         key_mappings[KeyEvent(1, 704, 1)] = [InputResult(ControllerInput.MENU, KeyState.PRESS)]
         key_mappings[KeyEvent(1, 704, 0)] = [InputResult(ControllerInput.MENU, KeyState.RELEASE)]  
 
-        return KeyWatcherController(event_path="/dev/input/event2", key_mappings=key_mappings)
+        return KeyWatcherController(event_path="/dev/input/event2", mapping_provider=DictKeyMappingProvider(key_mappings))
     
     def get_device_name(self):
         return self.device_name

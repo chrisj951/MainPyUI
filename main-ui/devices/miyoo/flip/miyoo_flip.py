@@ -8,7 +8,7 @@ from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
 import os
-from controller.key_watcher_controller import KeyWatcherController
+from controller.key_watcher_controller import DictKeyMappingProvider, KeyWatcherController
 from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 from devices.charge.charge_status import ChargeStatus
@@ -143,7 +143,7 @@ class MiyooFlip(MiyooDevice):
         key_mappings[KeyEvent(1, 314, 0)] = [InputResult(ControllerInput.SELECT, KeyState.RELEASE)]   
         key_mappings[KeyEvent(1, 314, 1)] = [InputResult(ControllerInput.SELECT, KeyState.PRESS)]   
 
-        return KeyWatcherController(event_path="/dev/input/event5", key_mappings=key_mappings)
+        return KeyWatcherController(event_path="/dev/input/event5", mapping_provider=DictKeyMappingProvider(key_mappings))
         
     def on_system_config_changed(self):
         old_volume = self.system_config.get_volume()
