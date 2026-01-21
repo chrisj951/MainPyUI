@@ -428,3 +428,6 @@ class AbstractDevice(ABC):
     def animation_divisor(self):
         pass
 
+    @abstractmethod
+    def get_new_wifi_scanner(self):
+        pass

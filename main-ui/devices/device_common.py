@@ -12,6 +12,7 @@ from controller.controller_inputs import ControllerInput
 from devices.abstract_device import AbstractDevice
 from devices.miyoo.system_config import SystemConfig
 from devices.utils.process_runner import ProcessRunner
+from devices.wifi.wifi_scanner import WiFiScanner
 from devices.wifi.wifi_status import WifiStatus
 from display.display import Display
 from display.font_purpose import FontPurpose
@@ -507,3 +508,6 @@ class DeviceCommon(AbstractDevice):
 
     def animation_divisor(self):
         return self.get_system_config().animation_speed(1)
+    
+    def get_new_wifi_scanner(self):
+        return WiFiScanner()
