@@ -2,8 +2,8 @@ from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 
-
-class TrimUiSmartProSKeyMappingProvider:
+DEADZONE=16000
+class MiyooTrimKeyMappingProvider:
     def __init__(self):
         self.key_mappings = {}  
         self.key_mappings[KeyEvent(1, 304, 0)] = [InputResult(ControllerInput.B, KeyState.RELEASE)]
@@ -39,7 +39,39 @@ class TrimUiSmartProSKeyMappingProvider:
         self.key_mappings[KeyEvent(1, 315, 1)] = [InputResult(ControllerInput.START, KeyState.PRESS)]  
         self.key_mappings[KeyEvent(1, 314, 0)] = [InputResult(ControllerInput.SELECT, KeyState.RELEASE)]   
         self.key_mappings[KeyEvent(1, 314, 1)] = [InputResult(ControllerInput.SELECT, KeyState.PRESS)]   
-
-
+        
     def get_mapped_events(self, key_event):
-        return self.key_mappings.get(key_event)
+        mappings = self.key_mappings.get(key_event)
+        if mappings is None and key_event.event_type == 3:
+            # LEFT STICK Y
+            if key_event.code == 1:
+                if key_event.value < -DEADZONE:
+                    return [
+                        InputResult(ControllerInput.LEFT_STICK_UP, KeyState.PRESS)
+                    ]
+                elif key_event.value > DEADZONE:
+                    return [
+                        InputResult(ControllerInput.LEFT_STICK_DOWN, KeyState.PRESS)
+                    ]
+                else:
+                    return [
+                        InputResult(ControllerInput.LEFT_STICK_UP, KeyState.RELEASE),
+                        InputResult(ControllerInput.LEFT_STICK_DOWN, KeyState.RELEASE),
+                    ]
+            # LEFT STICK X 
+            if key_event.code == 0:
+                if key_event.value < -DEADZONE:
+                    return [
+                        InputResult(ControllerInput.LEFT_STICK_LEFT, KeyState.PRESS)
+                    ]
+                elif key_event.value > DEADZONE:
+                    return [
+                        InputResult(ControllerInput.LEFT_STICK_RIGHT, KeyState.PRESS)
+                    ]
+                else:
+                    return [
+                        InputResult(ControllerInput.LEFT_STICK_LEFT, KeyState.RELEASE),
+                        InputResult(ControllerInput.LEFT_STICK_RIGHT, KeyState.RELEASE),
+                    ]
+
+        return mappings

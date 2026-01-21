@@ -154,7 +154,8 @@ class KeyWatcherController(ControllerInterface):
                                 self.key_change(mapped_event.controller_input,"RELEASE")
                             self.held_controller_inputs.pop(mapped_event.controller_input, None)
                 else:
-                    logger.error("No mapping for event: %s", key_event)
+                    #logger.error("No mapping for event: %s", key_event)
+                    pass
 
             except Exception as e:
                 logger.exception("Error processing input: %s", e)

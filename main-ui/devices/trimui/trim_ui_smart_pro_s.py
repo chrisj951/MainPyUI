@@ -14,7 +14,7 @@ from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.miyoo.system_config import SystemConfig
 from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.trimui.trim_ui_device import TrimUIDevice
-from devices.trimui.trim_ui_smart_pro_s_key_mapping_provider import TrimUiSmartProSKeyMappingProvider
+from devices.miyoo_trim_mapping_provider import MiyooTrimKeyMappingProvider
 from devices.utils.file_watcher import FileWatcher
 from display.display import Display
 from utils import throttle
@@ -124,7 +124,7 @@ class TrimUISmartProS(TrimUIDevice):
         return FfmpegImageUtils()
 
     def get_controller_interface(self):
-        return KeyWatcherController(event_path="/dev/input/event4", mapping_provider=TrimUiSmartProSKeyMappingProvider(), event_format='llHHi')
+        return KeyWatcherController(event_path="/dev/input/event4", mapping_provider=MiyooTrimKeyMappingProvider(), event_format='llHHi')
     
     def get_device_name(self):
         return self.device_name
