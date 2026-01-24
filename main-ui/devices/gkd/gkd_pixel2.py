@@ -9,8 +9,8 @@ from controller.key_watcher_controller import DictKeyMappingProvider, KeyWatcher
 from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.gkd.gkd_device import GKDDevice
-from devices.gkd.wifi_scanner import WiFiScanner
-from devices.gkd.wifi_menu import WifiMenu
+from devices.gkd.wifi_scanner import ConnmanWiFiScanner
+from devices.gkd.wifi_menu import ConnmanWifiMenu
 from devices.utils.file_watcher import FileWatcher
 from devices.utils.process_runner import ProcessRunner
 from menus.settings.timezone_menu import TimezoneMenu
@@ -193,12 +193,11 @@ class GKDPixel2(GKDDevice):
         Display.volume_changed(user_volume)
         return user_volume
     
-    
     def might_require_surface_format_conversion(self):
         return True # RA save state images don't seem to load w/o conversion?
 
     def get_wifi_menu(self):
-        return WifiMenu()
+        return ConnmanWifiMenu()
 
     def get_new_wifi_scanner(self):
-        return WiFiScanner()
+        return ConnmanWiFiScanner()

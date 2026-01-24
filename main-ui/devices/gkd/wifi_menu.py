@@ -16,7 +16,7 @@ from views.view_type import ViewType
 
 from menus.language.language import Language
 
-class WifiMenu:
+class ConnmanWifiMenu:
     def __init__(self):
         self.on_screen_keyboard = OnScreenKeyboard()
 

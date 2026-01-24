@@ -19,7 +19,7 @@ class WiFiNetwork:
     def requires_password(self) -> bool:
         return "psk" in self.security or "wep" in self.security
 
-class WiFiScanner:
+class ConnmanWiFiScanner:
     def __init__(self, interface="wlan0", delay=2):
         self.interface = interface
         self.delay = delay
