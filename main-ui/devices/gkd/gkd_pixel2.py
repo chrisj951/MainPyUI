@@ -9,8 +9,8 @@ from controller.key_watcher_controller import DictKeyMappingProvider, KeyWatcher
 from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.gkd.gkd_device import GKDDevice
-from devices.gkd.wifi_scanner import ConnmanWiFiScanner
-from devices.gkd.wifi_menu import ConnmanWifiMenu
+from devices.gkd.connman_wifi_scanner import ConnmanWiFiScanner
+from devices.gkd.connman_wifi_menu import ConnmanWifiMenu
 from devices.utils.file_watcher import FileWatcher
 from devices.utils.process_runner import ProcessRunner
 from menus.settings.timezone_menu import TimezoneMenu

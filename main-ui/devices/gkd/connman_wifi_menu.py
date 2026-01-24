@@ -4,7 +4,7 @@ import configparser
 import time
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
-from devices.gkd.wifi_scanner import WiFiNetwork
+from devices.gkd.connman_wifi_scanner import WiFiNetwork
 from devices.utils.process_runner import ProcessRunner
 from display.display import Display
 from display.on_screen_keyboard import OnScreenKeyboard
