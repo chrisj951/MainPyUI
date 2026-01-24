@@ -140,7 +140,7 @@ class WifiMenu:
 
         return option_list
 
-    def _adapter_is_connected(self):
+    def adapter_is_connected(self):
         interfaces = Path("/sys/class/net/")
 
         for i in interfaces.iterdir():
@@ -150,10 +150,13 @@ class WifiMenu:
         return False
 
     def show_wifi_menu(self):
-        if self._adapter_is_connected():
+        if self.adapter_is_connected():
             self._show_menu()
         else:
-            Display.display_message("USB adapter not connected.\nConnect a compatible adapter to use Wi-Fi.", 3000)
+            message = "USB adapter not connected.\n" \
+                    "Connect a compatible adapter to use WiFi.\n" \
+                    "The device must be restarted to use WiFi after using sleep."
+            Display.display_message(message, 3000)
 
     def _show_menu(self):
         selected = Selection(None, None, 0)

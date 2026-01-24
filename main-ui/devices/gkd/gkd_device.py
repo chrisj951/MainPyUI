@@ -1,4 +1,5 @@
 import re
+import socket
 import subprocess
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from controller.controller_inputs import ControllerInput
@@ -176,6 +177,27 @@ class GKDDevice(DeviceCommon):
     def is_wifi_enabled(self):
         return self.system_config.is_wifi_enabled()
 
+    @throttle.limit_refresh(10)
+    def get_ip_addr_text(self):
+        import psutil
+        if self.is_wifi_enabled():
+            if not self.get_wifi_menu().adapter_is_connected():
+                return "No USB adapter"
+
+            try:
+                addrs = psutil.net_if_addrs().get("wlan0")
+                if addrs:
+                    for addr in addrs:
+                        if addr.family == socket.AF_INET:
+                            return addr.address
+                    return "Connecting"
+                else:
+                    return "Connecting"
+            except Exception:
+                return "Error"
+
+        return "Off"
+
     def disable_wifi(self):
         self.system_config.reload_config()
         self.system_config.set_wifi(0)
@@ -188,6 +210,7 @@ class GKDDevice(DeviceCommon):
         self.system_config.reload_config()
         self.system_config.set_wifi(1)
         self.system_config.save_config()
+        ProcessRunner.run(["systemctl", "restart", "connman"])
         ProcessRunner.run(["connmanctl", "enable", "wifi"])
         self.get_wifi_status.force_refresh()
         self.get_ip_addr_text.force_refresh()
