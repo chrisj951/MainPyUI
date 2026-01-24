@@ -156,7 +156,7 @@ class WifiMenu:
             message = "USB adapter not connected.\n" \
                     "Connect a compatible adapter to use WiFi.\n" \
                     "The device must be restarted to use WiFi after using sleep."
-            Display.display_message(message, 3000)
+            Display.display_message(message, 5000)
 
     def _show_menu(self):
         selected = Selection(None, None, 0)
