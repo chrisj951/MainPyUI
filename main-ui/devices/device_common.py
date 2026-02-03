@@ -515,3 +515,7 @@ class DeviceCommon(AbstractDevice):
 
     def get_new_wifi_scanner(self):
         return WiFiScanner()
+
+    def post_present_operations(self):
+        # Uneeded for most devices
+        pass
