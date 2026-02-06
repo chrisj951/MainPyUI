@@ -1,6 +1,6 @@
 import math
 import time
-from typing import List
+from typing import List, Optional
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from display.font_purpose import FontPurpose
@@ -16,11 +16,11 @@ from views.view import View
 
 
 class GridView(View):
-    def __init__(self, top_bar_text, options: List[GridOrListEntry], cols: int, rows: int, selected_bg: str = None,
-                 selected_index=0, show_grid_text=True, resized_width=None, resized_height=None,
-                 set_top_bar_text_to_selection=False, set_bottom_bar_text_to_selection=False, resize_type=None, 
-                 unselected_bg = None, grid_img_y_offset=None, missing_image_path=None,
-                 wrap_around_single_row=None):
+    def __init__(self, top_bar_text: str, options: List[GridOrListEntry], cols: int, rows: int, selected_bg: Optional[str] = None,
+                 selected_index: int = 0, show_grid_text: bool = True, resized_width: Optional[int] = None, resized_height: Optional[int] = None,
+                 set_top_bar_text_to_selection: bool = False, set_bottom_bar_text_to_selection: bool = False, resize_type=None, 
+                 unselected_bg: Optional[str] = None, grid_img_y_offset: Optional[int] = None, missing_image_path: Optional[str] = None,
+                 wrap_around_single_row: Optional[bool] = None):
         super().__init__()
         self.resized_width = resized_width
         self.resized_height = resized_height
@@ -65,10 +65,33 @@ class GridView(View):
         self.usable_width = Device.get_device().screen_width() - (2 * self.x_pad)
         self.icon_width = self.usable_width / self.cols  # Initial icon width
         self.set_bg_offset_to_image_offset = Theme.grid_bg_offset_to_image_offset()
+        self.include_index_text = True
+        self.prev_selected = self.selected
+        self.prev_x_offsets = []
+        self.prev_widths = []
+        self.prev_visible_options = []
+        self.options_length = len(options)
+        self.animated_count = 0
 
     def set_options(self, options):
         self.options = options
         self.options_are_sorted = self.is_alphabetized(options)
+        self.options_length = len(options)
+
+    def _clear(self):
+        Display.clear(self.top_bar_text)
+
+    def _render_image(self, image_path: str, x: float, y: float, render_mode,
+                      target_width=None, target_height=None, resize_type=None):
+        return Display.render_image(
+            image_path=image_path,
+            x=int(x),
+            y=int(y),
+            render_mode=render_mode,
+            target_width=target_width,
+            target_height=target_height,
+            resize_type=resize_type,
+        )
 
     def single_row_in_window(self):
         """Return True if index i is inside the circular window."""
@@ -129,7 +152,11 @@ class GridView(View):
                               target_width=None, 
                               target_height=None, 
                               resize_type=None):
-        
+        if image_path is None:
+            image_path = self.missing_image_path
+        if image_path is None:
+            return 0, 0
+
         w,h = Display.render_image(image_path=image_path,
                                    x=x,
                                    y=y,
@@ -153,7 +180,7 @@ class GridView(View):
         image_path = imageTextPair.get_image_path_selected_ideal(self.resized_width, self.resized_height) if actual_index == self.selected else imageTextPair.get_image_path_ideal(self.resized_width, self.resized_height)
 
         x_index = visible_index % self.cols
-        x_offset = int(self.x_pad + (x_index) * (self.icon_width)) + self.icon_width//2
+        x_offset = int(self.x_pad + (x_index) * self.icon_width + (self.icon_width / 2))
 
         y_index = int(visible_index / self.cols)
         row_spacing = Display.get_usable_screen_height() / self.rows
@@ -168,8 +195,8 @@ class GridView(View):
             offset_divisor = 1
         
 
-        bg_width = self.resized_width
-        bg_height = self.resized_height
+        bg_width = int(self.resized_width) if self.resized_width is not None else int(self.icon_width)
+        bg_height = int(self.resized_height) if self.resized_height is not None else int(row_spacing)
         if(self.show_grid_text):
             text_height = Display.get_line_height(self.font_purpose)
         else:
@@ -196,22 +223,22 @@ class GridView(View):
         if (actual_index == self.selected):
             if (self.selected_bg is not None):
                 Display.render_image(self.selected_bg,
-                         x_offset,
-                         cell_y + bg_offset // offset_divisor,
+                         int(x_offset),
+                         int(cell_y + bg_offset // offset_divisor),
                          render_mode,
-                         target_width=int(bg_width*1.05),
-                         target_height=int(bg_height*1.05))
+                         target_width=int(bg_width * 1.05),
+                         target_height=int(bg_height * 1.05))
         elif(self.unselected_bg is not None):
             Display.render_image(self.unselected_bg,
-                         x_offset,
-                         cell_y + bg_offset // offset_divisor,
+                         int(x_offset),
+                         int(cell_y + bg_offset // offset_divisor),
                          render_mode,
-                         target_width=int(bg_width*1.05),
-                         target_height=int(bg_height*1.05))
+                         target_width=int(bg_width * 1.05),
+                         target_height=int(bg_height * 1.05))
 
         self._render_primary_image(image_path,
-                         x_offset,
-                         cell_y + img_offset // offset_divisor,
+                         int(x_offset),
+                         int(cell_y + img_offset // offset_divisor),
                          render_mode,
                          target_width=self.resized_width,
                          target_height=self.resized_height,
@@ -323,7 +350,8 @@ class GridView(View):
 
 
     def animate_transition(self):
-        animation_frames = math.floor(10 // Device.get_device().animation_divisor()) - self.animated_count*2
+        divisor = Device.get_device().animation_divisor() or 1
+        animation_frames = math.floor(10 // divisor) - self.animated_count * 2
 
         if Device.get_device().get_system_config().animations_enabled() and animation_frames > 1:
             render_mode = RenderMode.MIDDLE_CENTER_ALIGNED
@@ -368,15 +396,16 @@ class GridView(View):
                     frame_widths.append(new_width)
 
                 for visible_index, imageTextPair in enumerate(self.prev_visible_options):
-                    x_offset = frame_x_offset[visible_index]
+                    x_offset = int(frame_x_offset[visible_index])
 
                     y_image_offset = Display.get_center_of_usable_screen_height()
                     
-                    self._render_image(imageTextPair.get_image_path_ideal(frame_widths[visible_index], Display.get_usable_screen_height()), 
+                    target_width = int(frame_widths[visible_index])
+                    self._render_image(imageTextPair.get_image_path_ideal(target_width, Display.get_usable_screen_height()), 
                                             x_offset, 
                                             y_image_offset,
                                             render_mode,
-                                            target_width=frame_widths[visible_index],
+                                            target_width=target_width,
                                             target_height=None,
                                             resize_type=self.resize_type)
 
@@ -388,8 +417,11 @@ class GridView(View):
                     if(self.options_are_sorted):
                         letter = self.options[self.selected].get_primary_text()[0]
 
-                    Display.add_index_text(self.selected%self.options_length +1, self.options_length,
-                                           letter)
+                    Display.add_index_text(
+                        self.selected % self.options_length + 1,
+                        self.options_length,
+                        letter=letter,
+                    )
                 Display.present()
                 last_frame_time = time.time()
         

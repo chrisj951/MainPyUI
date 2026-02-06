@@ -13,6 +13,7 @@ from menus.games.utils.rom_info import RomInfo
 from menus.settings.button_remapper import ButtonRemapper
 import sdl2
 from utils.logger import PyUiLogger
+from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 
 from devices.device_common import DeviceCommon
 
@@ -20,6 +21,11 @@ from devices.device_common import DeviceCommon
 class MiyooDevice(DeviceCommon):
     OUTPUT_MIXER = 2
     SOUND_DISABLED = 0
+    sdl_button_to_input: dict[int, ControllerInput]
+    unknown_axis_ranges: dict[int, tuple[int, int]]
+    unknown_axis_stats: dict[int, tuple[int, int]]
+    sdl_axis_names: dict[int, str]
+    miyoo_games_file_parser: MiyooGamesFileParser
 
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)

@@ -147,7 +147,7 @@ class ConnmanWiFiScanner:
     # Other helpers (unchanged)
     # ----------------------------
 
-    def get_connected_ssid(self):
+    def get_connected_ssid(self) -> str | None:
         ssid = None
 
         jdata = self._get_connman_services()

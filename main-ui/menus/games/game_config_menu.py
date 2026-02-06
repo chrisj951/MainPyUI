@@ -2,6 +2,7 @@
 import os
 import shutil
 import sys
+from utils.type_guards import has_menu_options, has_menu_overrides, has_reload_config
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from display.display import Display
@@ -100,17 +101,20 @@ class GameConfigMenu:
     def toggle_overridable_entries(self,input_value, rom_file_path, overridable_entries):
         if(ControllerInput.A == input_value):
             all_overriden = True
+            cfg = self.game_system.game_system_config
+            if not has_menu_overrides(cfg):
+                return
             for entry_name in overridable_entries:
-                if not self.game_system.game_system_config.contains_menu_override(entry_name,rom_file_path):
+                if not cfg.contains_menu_override(entry_name,rom_file_path):
                     all_overriden = False
                     break
 
             for entry_name in overridable_entries:
                 if(all_overriden):
-                    self.game_system.game_system_config.delete_menu_override(entry_name, rom_file_path)
+                    cfg.delete_menu_override(entry_name, rom_file_path)
                 else:
-                    current_value = self.game_system.game_system_config.get_effective_menu_selection(entry_name,rom_file_path)
-                    self.game_system.game_system_config.set_menu_override(entry_name,rom_file_path, current_value)
+                    current_value = cfg.get_effective_menu_selection(entry_name,rom_file_path)
+                    cfg.set_menu_override(entry_name,rom_file_path, current_value)
 
     def run_launch_option(self, input_value, launch_option):
         if(ControllerInput.A == input_value):
@@ -133,7 +137,8 @@ class GameConfigMenu:
             # TODO Once we remove the display_kill and popups from launch.sh we can remove this
             # For a good speedup
             Display.reinitialize()
-            self.game_system.game_system_config.reload_config()
+            if hasattr(self.game_system.game_system_config, "reload_config"):
+                self.game_system.game_system_config.reload_config()
 
     def delete_rom(self, input_value):
         if(ControllerInput.A == input_value):
@@ -166,7 +171,9 @@ class GameConfigMenu:
                 Display.display_message(f"Boxart for {self.game.display_name} deleted.",2000)
 
     def show_config(self, rom_file_path) :
-        self.game_system.game_system_config.reload_config()
+        cfg = self.game_system.game_system_config
+        if has_reload_config(cfg):
+            cfg.reload_config()
         selected = Selection(None, None, 0)
         view = None
         #Loop is weird here due to how these options are handled.
@@ -175,6 +182,7 @@ class GameConfigMenu:
         while(selected is not None):
 
             config_list = []
+            launch_options = []
             if(not Device.get_device().get_system_config().simple_mode_enabled()):
                 for config_option in self.game_system.game_system_config.get_launchlist():
                     config_list.append(
@@ -190,8 +198,14 @@ class GameConfigMenu:
                             
                         )
                     )
+                    launch_options.append(config_option)
 
-            menu_options = self.game_system.game_system_config.get_menu_options()
+            cfg = self.game_system.game_system_config
+            menu_options = cfg.get_menu_options() if has_menu_options(cfg) else {}
+            if not isinstance(menu_options, dict):
+                menu_options = {}
+            if not menu_options and not launch_options:
+                return
 
             if(not Device.get_device().get_system_config().simple_mode_enabled()):
 
@@ -200,9 +214,9 @@ class GameConfigMenu:
                     devices = option.get("devices")
                     supported_device = not devices or Device.get_device().get_device_name() in devices
                     if(supported_device):
-                        effective_value = self.game_system.game_system_config.get_effective_menu_selection(name,rom_file_path)
+                        effective_value = cfg.get_effective_menu_selection(name,rom_file_path) if has_menu_overrides(cfg) else None
                         display_name = option.get('display')
-                        contains_override = self.game_system.game_system_config.contains_menu_override(name,rom_file_path)
+                        contains_override = cfg.contains_menu_override(name,rom_file_path) if has_menu_overrides(cfg) else False
                         if(contains_override):
                             display_name = display_name + "*"
                         
@@ -210,15 +224,16 @@ class GameConfigMenu:
                         config_list.append(
                                         GridOrListEntry(
                                         primary_text=display_name,
-                                        value_text="<    " + effective_value + "    >",
+                                        value_text="<    " + str(effective_value or "") + "    >",
                                         image_path=None,
                                         image_path_selected=None,
                                         description=None,
                                         icon=None,
                                         value=lambda input_value, entry_name=name, rom_file_path=rom_file_path, contains_override=contains_override, 
                                         all_options=option.get('options', []), current_value=effective_value,
-                                            update_value=self.game_system.game_system_config.set_menu_option, update_override=self.game_system.game_system_config.set_menu_override,
-                                            remove_override=self.game_system.game_system_config.delete_menu_override
+                                            update_value=(cfg.set_menu_option if has_menu_overrides(cfg) else (lambda *_args, **_kwargs: None)),
+                                            update_override=(cfg.set_menu_override if has_menu_overrides(cfg) else (lambda *_args, **_kwargs: None)),
+                                            remove_override=(cfg.delete_menu_override if has_menu_overrides(cfg) else (lambda *_args, **_kwargs: None))
                                             : self.change_indexed_array_option(entry_name, input_value, rom_file_path, contains_override, all_options, current_value, update_value, update_override, remove_override)
                                 )
                         )

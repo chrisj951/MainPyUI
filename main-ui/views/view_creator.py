@@ -3,6 +3,7 @@ from typing import List
 from devices.device import Device
 from display.display import Display
 from display.render_mode import RenderMode
+from display.resize_type import ResizeType
 from themes.theme import Theme
 from views.carousel_view import CarouselView
 from views.descriptive_list_view import DescriptiveListView
@@ -15,6 +16,7 @@ from views.popup_text_list_view import PopupTextListView
 from views.text_list_view import TextListView
 from views.text_to_image_relationship import TextToImageRelationship
 from views.view_type import ViewType
+from views.view import View
 from utils.logger import PyUiLogger
 
 class ViewCreator:
@@ -27,10 +29,10 @@ class ViewCreator:
     def create_view(view_type: ViewType,
                     options: List[GridOrListEntry],
                     top_bar_text,
-                    selected_index: int = None,
-                    carousel_cols=None,
-                    cols=None,
-                    rows=None,
+                    selected_index: int | None = None,
+                    carousel_cols: int | None = None,
+                    cols: int | None = None,
+                    rows: int | None = None,
                     use_mutli_row_grid_select_as_backup_for_single_row_grid_select=False,
                     hide_grid_bg=False,
                     show_grid_text=True,
@@ -47,7 +49,7 @@ class ViewCreator:
                     carousel_sides_hang_off_edge=None,
                     missing_image_path=None,
                     allow_scrolling_text=False,
-                    full_screen_grid_resize_type=None,
+                    full_screen_grid_resize_type: ResizeType | None = None,
                     full_screen_grid_render_text_overlay=None,
                     image_resize_height_multiplier=None,
                     carousel_x_pad = None,
@@ -58,7 +60,18 @@ class ViewCreator:
                     carousel_selected_offset = None,
                     carousel_use_selected_image_in_animation=None,
                     carousel_resize_type=None,
-                    grid_view_wrap_around_single_row=None) -> object:
+                    grid_view_wrap_around_single_row=None) -> View:
+        if selected_index is None:
+            selected_index = 0
+
+        if cols is None:
+            cols = 4
+        if rows is None:
+            rows = 2
+        if carousel_cols is None:
+            carousel_cols = cols
+        if full_screen_grid_resize_type is None:
+            full_screen_grid_resize_type = ResizeType.ZOOM
         
         if(len(options) == 0):
             return EmptyView()

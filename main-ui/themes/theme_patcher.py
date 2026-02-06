@@ -177,8 +177,15 @@ class ThemePatcher():
             PyUiLogger().get_logger().info(f"Scaled version of {output_file} already exists, skipping scaling.")
         else:
             image_utils = Device.get_device().get_image_utils()
+            if image_utils is None:
+                shutil.copyfile(input_file, output_file)
+                return
             try:
-                img_width ,img_height = image_utils.get_image_dimensions(input_file)
+                dimensions = image_utils.get_image_dimensions(input_file)
+                if dimensions is None:
+                    shutil.copyfile(input_file, output_file)
+                    return
+                img_width, img_height = dimensions
                 new_width = int(img_width * scale)
                 new_height = int(img_height * scale)
                 preserve_aspect_ratio = True

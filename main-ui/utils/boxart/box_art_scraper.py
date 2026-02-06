@@ -177,6 +177,8 @@ class BoxArtScraper:
 
     def _get_supported_extensions(self, sys_name: str) -> list[str]:
         """Get extensions from Emu config.json."""
+        if self.game_system_utils is None:
+            return []
         game_system = self.game_system_utils.get_game_system_by_name(sys_name)
         if(game_system is None):
             return []
@@ -301,7 +303,7 @@ class BoxArtScraper:
         if not image_list_file:
             self.log_and_display_message(f"Image list file not found for {sys_name}.")
             time.sleep(2)
-            return None
+            return []
 
         with open(image_list_file, "r", encoding="utf-8", errors="ignore") as f:
             image_list = f.read().splitlines()

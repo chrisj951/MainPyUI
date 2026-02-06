@@ -18,6 +18,8 @@ class JustGamesMenu(RomsMenuCommon):
     def _get_rom_list(self) -> list[GridOrListEntry]:
         roms = []
         game_utils = Device.get_device().get_game_system_utils()
+        if game_utils is None:
+            return roms
 
         def _collect_roms_recursively(game_system, directory=None):
 
@@ -45,7 +47,8 @@ class JustGamesMenu(RomsMenuCommon):
             return all_roms
 
         # Iterate all game systems
-        for game_system in game_utils.get_active_systems():
+        active_systems = game_utils.get_active_systems() or []
+        for game_system in active_systems:
             roms_for_system = _collect_roms_recursively(game_system)
             roms.extend(roms_for_system)
 

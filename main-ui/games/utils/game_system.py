@@ -1,11 +1,18 @@
 import os
-from menus.games.file_based_game_system_config import FileBasedGameSystemConfig
+from typing import TYPE_CHECKING, Union
+from utils.type_guards import has_brand, has_release_year, has_sort_order, has_type
+
+if TYPE_CHECKING:
+    from menus.games.file_based_game_system_config import FileBasedGameSystemConfig
+    from menus.games.muos_game_system_config import MuosGameSystemConfig
+
+GameSystemConfig = Union["FileBasedGameSystemConfig", "MuosGameSystemConfig"]
 
 class GameSystem:
-    def __init__(self, folder_paths, display_name, game_system_config : FileBasedGameSystemConfig):
+    def __init__(self, folder_paths, display_name, game_system_config: GameSystemConfig):
         self._folder_paths = tuple(folder_paths)
         self._display_name = display_name
-        self._game_system_config : FileBasedGameSystemConfig = game_system_config
+        self._game_system_config: GameSystemConfig = game_system_config
 
     @property
     def folder_name(self):
@@ -21,22 +28,34 @@ class GameSystem:
     
     @property
     def sort_order(self):
-        return self._game_system_config.get_sort_order()
+        cfg = self._game_system_config
+        if has_sort_order(cfg):
+            return cfg.get_sort_order()
+        return 0
     
     @property
     def brand(self):
-        return self._game_system_config.get_brand()
+        cfg = self._game_system_config
+        if has_brand(cfg):
+            return cfg.get_brand()
+        return ""
     
     @property
     def type(self):
-        return self._game_system_config.get_type()
+        cfg = self._game_system_config
+        if has_type(cfg):
+            return cfg.get_type()
+        return ""
     
     @property
     def release_year(self):
-        return self._game_system_config.get_release_year()
+        cfg = self._game_system_config
+        if has_release_year(cfg):
+            return cfg.get_release_year()
+        return ""
         
     @property
-    def game_system_config(self) -> FileBasedGameSystemConfig:
+    def game_system_config(self) -> GameSystemConfig:
         return self._game_system_config
     
     # Equality: two systems are equal if their folder_paths are the same

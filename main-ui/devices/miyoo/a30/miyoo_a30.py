@@ -143,7 +143,7 @@ class MiyooA30(MiyooDevice):
         if(self.should_scale_screen()):
             return 1080
         else:
-            return self.screen_widths
+            return self.screen_width()
 
     def get_scale_factor(self):
         if(self.is_hdmi_connected()):
@@ -283,7 +283,7 @@ class MiyooA30(MiyooDevice):
         config_volume = self.system_config.get_volume()
         self._set_volume(config_volume)
 
-    def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
+    def run_game(self, rom_info: RomInfo) -> None:
         def delayed_fix():
             total_time = 2.0
             interval = 0.1
@@ -296,7 +296,7 @@ class MiyooA30(MiyooDevice):
 
         # Start the thread
         threading.Thread(target=delayed_fix, daemon=True).start()
-        return MiyooTrimCommon.run_game(self,rom_info)
+        MiyooTrimCommon.run_game(self,rom_info)
 
     def supports_analog_calibration(self):
         return False

@@ -17,6 +17,8 @@ class ListView(View):
         self.current_bottom = 0
         self.clear_display_each_render_cycle = True
         self.include_index_text = True
+        self.max_rows = 0
+        self.top_bar_text = ""
 
     def center_selection(self):
         if(self.selected != 0):

@@ -110,7 +110,7 @@ class AppMenu:
             selected = Selection(None,None,0)
             app_list = []
             view = None
-            device_apps = self.appFinder.get_apps()
+            device_apps = self.appFinder.get_apps() if self.appFinder else []
             for app in device_apps:
                 hidden = AppsManager.is_hidden(app) and not self.show_all_apps
                 devices = app.get_devices()

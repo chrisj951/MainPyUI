@@ -1,4 +1,5 @@
 import inspect
+import re
 from pathlib import Path
 import subprocess
 import threading
@@ -372,8 +373,8 @@ class MiyooFlip(MiyooDevice):
     
     def read_volume(self):
         try:
-            current_mixer = self.get_current_mixer_value(MiyooDevice.get_device().OUTPUT_MIXER)
-            if(MiyooDevice.get_device().SOUND_DISABLED == current_mixer):
+            current_mixer = self.get_current_mixer_value(self.OUTPUT_MIXER)
+            if(self.SOUND_DISABLED == current_mixer):
                 return 0
             else:
                 output = subprocess.check_output(
@@ -403,8 +404,8 @@ class MiyooFlip(MiyooDevice):
             ProcessRunner.run(["amixer", "cset","numid=2", "2"])
         self._set_volume(config_volume)
 
-    def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
-        return MiyooTrimCommon.run_game(self,rom_info)
+    def run_game(self, rom_info: RomInfo) -> None:
+        MiyooTrimCommon.run_game(self,rom_info)
 
     def supports_analog_calibration(self):
         return True

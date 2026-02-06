@@ -57,6 +57,8 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
                 Device.get_device().enable_wifi()
 
         if(ControllerInput.A == input):
+            if self.wifi_menu is None:
+                return
             self.wifi_menu.show_wifi_menu()
 
     def show_bt_menu(self, input):
@@ -70,6 +72,8 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
 
     def get_theme_folders(self):
         theme_dir = PyUiConfig.get("themeDir")
+        if not isinstance(theme_dir, str):
+            return []
         return sorted(
             [
                 name for name in os.listdir(theme_dir)
@@ -82,7 +86,13 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
     def change_theme(self, input):
         self.theme_ever_changed = True
         theme_folders = self.get_theme_folders()
-        selected_index = theme_folders.index(Device.get_device().get_system_config().get_theme())
+        if not theme_folders:
+            return
+        current_theme = Device.get_device().get_system_config().get_theme()
+        if not isinstance(current_theme, str) or current_theme not in theme_folders:
+            selected_index = 0
+        else:
+            selected_index = theme_folders.index(current_theme)
         if(ControllerInput.DPAD_LEFT == input):
             selected_index-=1
             if(selected_index < 0):
@@ -98,10 +108,13 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
 
 
         if(selected_index is not None):
-            Theme.set_theme_path(os.path.join(PyUiConfig.get("themeDir"), theme_folders[selected_index]), Device.get_device().screen_width(), Device.get_device().screen_height())
+            theme_dir = PyUiConfig.get("themeDir")
+            if not isinstance(theme_dir, str):
+                return
+            Theme.set_theme_path(os.path.join(theme_dir, theme_folders[selected_index]), Device.get_device().screen_width(), Device.get_device().screen_height())
             Display.init_fonts()   
             Device.get_device().get_system_config().set_theme(theme_folders[selected_index])
-            Device.get_device().set_theme(os.path.join(PyUiConfig.get("themeDir"), theme_folders[selected_index]))
+            Device.get_device().set_theme(os.path.join(theme_dir, theme_folders[selected_index]))
             self.theme_changed = True
             Display.restore_bg()
 
@@ -176,7 +189,7 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
                 option_list.append(
                         GridOrListEntry(
                                 primary_text=Language.wifi(),
-                                value_text="<    " + (Device.get_device().get_ip_addr_text()) + "    >",
+                                value_text="<    " + (Device.get_device().get_ip_addr_text() or "") + "    >",
                                 image_path=None,
                                 image_path_selected=None,
                                 description=None,
@@ -201,7 +214,7 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
         option_list.append(
                 GridOrListEntry(
                         primary_text=Language.theme(),
-                        value_text="<    " + Device.get_device().get_system_config().get_theme() + "    >",
+                        value_text="<    " + (Device.get_device().get_system_config().get_theme() or "") + "    >",
                         image_path=None,
                         image_path_selected=None,
                         description=None,

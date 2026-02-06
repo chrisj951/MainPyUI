@@ -2,6 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 import sys
+from typing import Optional
 
 from utils.etension_preserving_rotating_file_handler import ExtensionPreservingRotatingFileHandler
 
@@ -23,7 +24,7 @@ class StreamToLogger:
         pass  # Not needed
 
 class PyUiLogger:
-    _logger = None  # Class-level cache for the logger
+    _logger: Optional[logging.Logger] = None  # Class-level cache for the logger
 
     @classmethod
     def init(cls, log_dir, logger_name):
@@ -123,5 +124,30 @@ class PyUiLogger:
 
     @classmethod
     def get_logger(cls):
-        return cls._logger
+        if cls._logger is not None:
+            return cls._logger
+
+        # Fallback logger for early calls before init().
+        fallback = logging.getLogger("pyui_fallback")
+        fallback.setLevel(logging.DEBUG)
+
+        if not fallback.handlers:
+            formatter = logging.Formatter(
+                "%(asctime)s - %(levelname)s - %(message)s"
+            )
+
+            out_handler = logging.StreamHandler(sys.__stdout__)
+            err_handler = logging.StreamHandler(sys.__stderr__)
+
+            out_handler.setLevel(logging.INFO)
+            err_handler.setLevel(logging.ERROR)
+
+            out_handler.setFormatter(formatter)
+            err_handler.setFormatter(formatter)
+
+            fallback.addHandler(out_handler)
+            fallback.addHandler(err_handler)
+
+        cls._logger = fallback
+        return fallback
     

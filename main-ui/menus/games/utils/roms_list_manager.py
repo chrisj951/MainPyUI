@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from devices.device import Device
 from menus.games.utils.rom_info import RomInfo
 from utils.logger import PyUiLogger
@@ -11,7 +11,7 @@ from utils.logger import PyUiLogger
 class RomsListEntry:
     rom_file_path: str
     game_system_name: str
-    display_name: str = None
+    display_name: Optional[str] = None
 
     def __init__(self, rom_file_path, game_system_name, display_name=None):
         self.rom_file_path = rom_file_path
@@ -31,6 +31,8 @@ class RomsListManager:
         return (str(Path(rom_file_path).resolve()), game_system_name)
 
     def add_game(self, rom_info: RomInfo):
+        if rom_info.game_system is None:
+            return
         key = self._entry_key(rom_info.rom_file_path, rom_info.game_system.folder_name)
 
         if key in self._entries_dict:
@@ -44,6 +46,8 @@ class RomsListManager:
         self.rom_info_list = self.load_entries_as_rom_info()
 
     def remove_game(self, rom_info: RomInfo):
+        if rom_info.game_system is None:
+            return
         key = self._entry_key(rom_info.rom_file_path, rom_info.game_system.folder_name)
         entry = self._entries_dict.pop(key, None)
         if entry:
@@ -98,11 +102,15 @@ class RomsListManager:
         return self.rom_info_list
 
     def is_on_list(self, rom_info: RomInfo) -> bool:
+        if rom_info.game_system is None:
+            return False
         key = self._entry_key(rom_info.rom_file_path, rom_info.game_system.folder_name)
         return key in self._entries_dict
 
     def load_entries_as_rom_info(self) -> List[RomInfo]:
         rom_info_list: List[RomInfo] = []
+        if self.game_system_utils is None:
+            return rom_info_list
 
         for entry in self._entries:
             try:

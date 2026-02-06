@@ -18,6 +18,9 @@ class ThemeSelectionMenu:
         selected = Selection(None, None, 0)
         option_list = []
         theme_dir = PyUiConfig.get("themeDir")
+        if theme_dir is None:
+            PyUiLogger.get_logger().error("Theme directory not configured")
+            return None
         for index, opt in enumerate(options):
             png_path = os.path.join(theme_dir,opt,"preview.png")
             image_path = png_path
@@ -48,6 +51,8 @@ class ThemeSelectionMenu:
 
         while (True):
             selected = view.get_selection(accepted_inputs)
+            if selected is None:
+                return None
             if (ControllerInput.A == selected.get_input()):
                 return selected.get_selection().get_value()
             elif (ControllerInput.B == selected.get_input()):

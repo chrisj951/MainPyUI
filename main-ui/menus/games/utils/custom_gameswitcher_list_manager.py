@@ -6,14 +6,15 @@ from menus.games.utils.roms_list_manager import RomsListManager
 from utils.py_ui_config import PyUiConfig
 
 class CustomGameSwitcherListManager:
-    _recentsManager = Optional[RomsListManager]
+    _recentsManager: Optional[RomsListManager] = None
     _exists = False
     _init_event = threading.Event()  # signals when initialize() has been called
 
     @classmethod
     def initialize(cls):
-        if(PyUiConfig.get_gameswitcher_path() is not None):
-            cls._recentsManager = RomsListManager(PyUiConfig.get_gameswitcher_path())
+        path = PyUiConfig.get_gameswitcher_path()
+        if isinstance(path, str) and path:
+            cls._recentsManager = RomsListManager(path)
             cls._exists = True
         cls._init_event.set()  # unblock waiting methods
 
@@ -24,7 +25,7 @@ class CustomGameSwitcherListManager:
     @classmethod
     def add_game(cls, rom_info: RomInfo):
         cls._wait_for_init()
-        if(cls._exists):
+        if(cls._exists and cls._recentsManager is not None):
             cls._recentsManager.add_game(rom_info)
             games = cls._recentsManager.get_games()
             if len(games) > 20:
@@ -34,7 +35,7 @@ class CustomGameSwitcherListManager:
     @classmethod
     def get_recents(cls) -> List[RomInfo]:
         cls._wait_for_init()
-        if(cls._exists):
+        if(cls._exists and cls._recentsManager is not None):
             return cls._recentsManager.get_games()
         else:
             return []
@@ -42,7 +43,7 @@ class CustomGameSwitcherListManager:
     @classmethod
     def contains_game(cls, rom_info: RomInfo) -> bool:
         cls._wait_for_init()
-        if(cls._exists):
+        if(cls._exists and cls._recentsManager is not None):
             return cls._recentsManager.is_on_list(rom_info)
         else:
             return False  
@@ -50,7 +51,8 @@ class CustomGameSwitcherListManager:
     @classmethod
     def remove_game(cls, rom_info: RomInfo) -> bool:
         cls._wait_for_init()
-        if(cls._exists):
-            return cls._recentsManager.remove_game(rom_info)
+        if(cls._exists and cls._recentsManager is not None):
+            cls._recentsManager.remove_game(rom_info)
+            return True
         else:
             return False

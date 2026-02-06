@@ -221,7 +221,11 @@ def main():
 
         PyUiState.init(Device.get_device().get_state_path())
 
-        selected_theme = os.path.join(PyUiConfig.get("themeDir"), Device.get_device().get_system_config().get_theme())
+        theme_dir = PyUiConfig.get("themeDir")
+        theme_name = Device.get_device().get_system_config().get_theme()
+        if not isinstance(theme_dir, str) or not isinstance(theme_name, str):
+            raise RuntimeError("Theme directory or name is not configured.")
+        selected_theme = os.path.join(theme_dir, theme_name)
         check_for_button_listener_mode(args)
         check_for_startup_init_only(args)
 

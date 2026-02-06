@@ -1,12 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
 import threading
-from typing import Callable, TypeVar
+from typing import Callable, Optional, Any
 
 from devices.device import Device
 from utils.cached_exists import CachedExists
-
-T = TypeVar('T')  # Generic input type
 
 class GridOrListEntry:
     
@@ -15,18 +13,18 @@ class GridOrListEntry:
 
     def __init__(
         self,
-        primary_text,
-        value_text=None,
-        image_path=None,
-        image_path_selected=None,
-        description=None,
-        icon=None,
-        value: T = None,
-        image_path_searcher: Callable[[T], str] = None,
-        image_path_selected_searcher: Callable[[T], str] = None,
-        icon_searcher: Callable[[T], str] = None,
-        primary_text_long=None,
-        extra_data=None
+        primary_text: str,
+        value_text: Optional[str] = None,
+        image_path: Optional[str] = None,
+        image_path_selected: Optional[str] = None,
+        description: Optional[str] | Callable[[], str] = None,
+        icon: Optional[str] = None,
+        value: Any = None,
+        image_path_searcher: Optional[Callable[[Any], str]] = None,
+        image_path_selected_searcher: Optional[Callable[[Any], str]] = None,
+        icon_searcher: Optional[Callable[[Any], str]] = None,
+        primary_text_long: Optional[str] = None,
+        extra_data: Any = None
     ):        
         self.primary_text = primary_text
         self.primary_text_long = primary_text_long
@@ -40,8 +38,8 @@ class GridOrListEntry:
         self.value = value if value is not None else primary_text
         self.icon = icon
 
-        self._description = None
-        self._description_func = None
+        self._description: Optional[str] = None
+        self._description_func: Optional[Callable[[], str]] = None
         self._description_event = threading.Event()
         self.extra_data = extra_data
         if callable(description):
@@ -55,14 +53,17 @@ class GridOrListEntry:
 
     def _load_description_func(self):
         try:
-            desc = self._description_func()
+            if self._description_func is None:
+                desc = None
+            else:
+                desc = self._description_func()
         except Exception as e:
             desc = f"[Error loading description: {e}]"
         self._description = desc
         self._description_event.set()
         return desc
 
-    def get_description(self):
+    def get_description(self) -> Optional[str]:
         # If description is loading asynchronously, block here until done
         if self._description_future is not None:
             # Wait for future to complete if it hasn't yet
@@ -144,21 +145,22 @@ class GridOrListEntry:
             #PyUiLogger.get_logger().info(f"Going with full size image. Target dimensions are  {target_width} x {target_height}")
             return image_path
 
-    def get_primary_text(self):
+    def get_primary_text(self) -> str:
         return self.primary_text
     
-    def get_primary_text_long(self):
+    def get_primary_text_long(self) -> str:
         return self.primary_text_long or self.primary_text
     
-    def get_value_text(self):
+    def get_value_text(self) -> Optional[str]:
         return self.value_text
     
-    def get_value(self):
+    def get_value(self) -> Any:
         return self.value
     
     def get_icon(self):
-        if self.icon is None and self.icon_searcher is not None:
-            return self.icon_searcher(self.value)
+        icon_searcher = self.icon_searcher
+        if self.icon is None and icon_searcher is not None:
+            return icon_searcher(self.value)
         return self.icon
     
     def __eq__(self, other):

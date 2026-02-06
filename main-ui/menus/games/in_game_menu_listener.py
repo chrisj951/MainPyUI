@@ -52,6 +52,8 @@ class InGameMenuListener:
             PyUiLogger.get_logger().error(f"Error in send_signal: {e}")
     
     def game_launched(self, game_process: subprocess.Popen, game: RomInfo):
+        if game.game_system is None:
+            return
         support_menu_button_in_game = game.game_system.game_system_config.run_in_game_menu()
         uses_retroarch = game.game_system.game_system_config.uses_retroarch()
         while(game_process.poll() is None):

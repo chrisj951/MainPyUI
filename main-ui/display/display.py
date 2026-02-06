@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import os
 import time
+from typing import Any, Optional
 from devices.device import Device
 from display.font_purpose import FontPurpose
 from display.loaded_font import LoadedFont
@@ -13,6 +14,7 @@ from menus.common.top_bar import TopBar
 import sdl2
 import sdl2.ext
 import sdl2.sdlttf
+import sdl2.sdlimage as sdlimage
 from themes.theme import Theme
 from utils.logger import PyUiLogger
 import ctypes
@@ -30,7 +32,7 @@ class ImageTextureCache:
     def __init__(self):
         self.cache = {} 
 
-    def get_texture(self, texture_id) -> CachedImageTexture:
+    def get_texture(self, texture_id) -> Optional[CachedImageTexture]:
         return self.cache.get(texture_id)
 
     def add_texture(self, texture_id, surface, texture):
@@ -62,7 +64,7 @@ class TextTextureCache:
     def __init__(self):
         self.cache = {} 
 
-    def get_texture(self, texture_id, font, color) -> CachedTextTexture:
+    def get_texture(self, texture_id, font, color) -> Optional[CachedTextTexture]:
         return self.cache.get(TextTextureKey(texture_id, font, color))
 
     def add_texture(self, texture_id, font, color, surface, texture):
@@ -77,16 +79,16 @@ class TextTextureCache:
         
 class Display:
     debug = False
-    renderer = None
-    fonts = {}
-    bg_canvas = None
-    render_canvas = None
+    renderer: Any = None
+    fonts: dict = {}
+    bg_canvas: Any = None
+    render_canvas: Any = None
     bg_path = ""
     top_bar = TopBar()
     bottom_bar = BottomBar()
-    window = None
-    background_texture = None
-    top_bar_text = None
+    window: Any = None
+    background_texture: Any = None
+    top_bar_text: Optional[str] = None
     _image_texture_cache = ImageTextureCache()
     _text_texture_cache = TextTextureCache()
     _problematic_images = set()  # Class-level set to track images that won't load properly
@@ -443,13 +445,24 @@ class Display:
 
 
     @classmethod
-    def _render_surface_texture(cls, x, y, texture, surface, render_mode: RenderMode, texture_id,
-                                scale_width=None, scale_height=None, crop_w=None, crop_h=None,
-                                resize_type=ResizeType.FIT):
-        #If resize_type is none set it to fit for now,
-        #Need to push this further up stream though
-        if(resize_type is None):
-            resize_type=ResizeType.FIT
+    def _render_surface_texture(
+        cls,
+        x,
+        y,
+        texture,
+        surface,
+        render_mode: RenderMode,
+        texture_id,
+        scale_width=None,
+        scale_height=None,
+        crop_w=None,
+        crop_h=None,
+        resize_type: Optional[ResizeType] = ResizeType.FIT,
+    ):
+        # If resize_type is none set it to fit for now,
+        # Need to push this further up stream though
+        if resize_type is None:
+            resize_type = ResizeType.FIT
         
         orig_w = surface.contents.w
         orig_h = surface.contents.h
@@ -566,7 +579,7 @@ class Display:
         if(text is None or len(text) == 0):
             return 0, 0
         loaded_font = cls.fonts[purpose]
-        cache : CachedImageTexture = cls._text_texture_cache.get_texture(text, purpose, color)
+        cache: Optional[CachedTextTexture] = cls._text_texture_cache.get_texture(text, purpose, color)
         cached = True
         if cache and alpha is None:
             surface = cache.surface
@@ -637,7 +650,7 @@ class Display:
     @classmethod
     def image_load(cls, image_path):
         #PyUiLogger.get_logger().info(f"Loading {image_path}")
-        return sdl2.sdlimage.IMG_Load(image_path.encode("utf-8"))
+        return sdlimage.IMG_Load(image_path.encode("utf-8"))
     
     @classmethod
     def convert_surface_to_safe_format(cls, surface):
@@ -654,11 +667,22 @@ class Display:
         return surface
                      
     @classmethod
-    def render_image(cls, image_path: str, x: int, y: int, render_mode=RenderMode.TOP_LEFT_ALIGNED, target_width=None, target_height=None, resize_type=None, crop_w=None, crop_h=None):        
+    def render_image(
+        cls,
+        image_path: Optional[str],
+        x: int,
+        y: int,
+        render_mode=RenderMode.TOP_LEFT_ALIGNED,
+        target_width=None,
+        target_height=None,
+        resize_type: Optional[ResizeType] = None,
+        crop_w=None,
+        crop_h=None,
+    ):
         if(image_path is None or image_path in cls._problematic_images):
             return 0, 0
 
-        cache : CachedImageTexture = cls._image_texture_cache.get_texture(image_path)
+        cache: Optional[CachedImageTexture] = cls._image_texture_cache.get_texture(image_path)
         cached = True
         if cache:
             surface = cache.surface
@@ -727,7 +751,14 @@ class Display:
         return w,h
 
     @classmethod
-    def render_image_centered(cls, image_path: str, x: int, y: int, target_width=None, target_height=None):
+    def render_image_centered(
+        cls,
+        image_path: Optional[str],
+        x: int,
+        y: int,
+        target_width=None,
+        target_height=None,
+    ):
         return cls.render_image(image_path, x, y, RenderMode.TOP_CENTER_ALIGNED, target_width, target_height)
 
     @classmethod
@@ -850,7 +881,7 @@ class Display:
 
 
     @classmethod
-    def rotate_canvas(cls) -> sdl2.SDL_Texture:
+    def rotate_canvas(cls) -> Optional[sdl2.SDL_Texture]:
         """
         Rotates a texture by a given angle (supports 90, 180, 270) without scaling.
         Returns a new texture with dimensions swapped if needed.

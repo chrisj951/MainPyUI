@@ -1,7 +1,10 @@
 import os
 from logging.handlers import RotatingFileHandler
+from typing import IO
 
 class ExtensionPreservingRotatingFileHandler(RotatingFileHandler):
+    stream: IO[str] | None
+
     def doRollover(self):
         if self.stream:
             self.stream.close()

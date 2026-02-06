@@ -20,7 +20,7 @@ class ImageUtils(ABC):
         pass
 
     @abstractmethod
-    def get_image_dimensions(self, path):
+    def get_image_dimensions(self, path) -> tuple[int, int] | None:
         pass
 
     @abstractmethod

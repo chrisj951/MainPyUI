@@ -1,7 +1,6 @@
 import re
 import tempfile
 import time
-from asyncio import sleep
 import json
 from pathlib import Path
 import subprocess
@@ -353,7 +352,7 @@ class MiyooMiniCommon(MiyooDevice):
                         "-B",
                         "-D", "nl80211",
                         "-i", "wlan0",
-                        "-c", self.get_wpa_supplicant_conf_path()
+                        "-c", self.get_wpa_supplicant_conf_path() or ""
                     ])
                     subprocess.run(["udhcpc", "-i", "wlan0", "-s", "/etc/init.d/udhcpc.script"])
                     time.sleep(3)
@@ -379,7 +378,7 @@ class MiyooMiniCommon(MiyooDevice):
 
     def get_volume(self):
         try:
-            return self.mainui_volume * 5
+            return (self.mainui_volume or 0) * 5
         except:
             return 0
 
@@ -412,7 +411,7 @@ class MiyooMiniCommon(MiyooDevice):
             self.volume_up()
         else:
             self.volume_down()
-        sleep(0.1)
+        time.sleep(0.1)
         self.on_mainui_config_change()
 
     def _set_volume(self, volume: int) -> int:
@@ -442,13 +441,13 @@ class MiyooMiniCommon(MiyooDevice):
         pass #uneeded
 
 
-    def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
+    def run_game(self, rom_info: RomInfo) -> None:
         preload_path = "/mnt/SDCARD/miyoo/app/../lib/libpadsp.so"
         if os.path.exists(preload_path):
             run_prefix = f"LD_PRELOAD={preload_path} "
         else:
             run_prefix = "LD_PRELOAD=/customer/lib/libpadsp.so "
-        return MiyooTrimCommon.run_game(self, rom_info, run_prefix=run_prefix)
+        MiyooTrimCommon.run_game(self, rom_info, run_prefix=run_prefix)
 
     def double_init_sdl_display(self):
         return True

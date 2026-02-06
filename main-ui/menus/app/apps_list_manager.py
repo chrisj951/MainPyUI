@@ -24,6 +24,8 @@ class AppListManager:
     def ensure_app_exists(self, app_config: AppConfig):
         """Add the app if it doesn't exist, and save to disk."""
         launch = app_config.get_launch()
+        if not isinstance(launch, str) or not launch:
+            return
         if launch not in self._entries_dict:
             new_entry = AppEntry(launch)
             self._entries.insert(0, new_entry)  # keep list for order
@@ -64,6 +66,8 @@ class AppListManager:
     def get_app(self, app_config: AppConfig) -> AppEntry:
         """Return the AppEntry for the given AppConfig, creating and saving it if missing."""
         launch = app_config.get_launch()
+        if not isinstance(launch, str) or not launch:
+            return AppEntry("")
         entry = self._entries_dict.get(launch)
 
         if entry is None:

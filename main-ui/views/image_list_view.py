@@ -71,6 +71,7 @@ class ImageListView(NonDescriptiveListView):
 
             y_value += visible_index * self.line_height
 
+            text_available_width = Device.get_device().screen_width() - text_pad * 2
             if(TextToImageRelationship.TEXT_AROUND_LEFT_IMAGE == self.text_to_image_relationship and self.is_y_coord_in_img_box(y_value)):
                 x_value += self.img_width//2 + self.img_offset_x
                 text_available_width = Device.get_device().screen_width() - self.img_width - text_pad*2

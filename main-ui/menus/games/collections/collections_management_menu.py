@@ -64,6 +64,8 @@ class CollectionsManagementMenu():
                     selected_index=selected.get_index())
                 refresh = False
             else:
+                if list_view is None:
+                    continue
                 list_view.set_options(option_list)
     
             control_options = [ControllerInput.A]

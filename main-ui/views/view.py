@@ -1,11 +1,15 @@
 
 
 from abc import ABC
+from typing import Any, Sequence
+
+from views.selection import Selection
 
 
 class View(ABC):
     def __init__(self):
-        pass
+        self.options: list[Any] = []
+        self.selected: int = 0
 
     def is_alphabetized(self,options: list):
         texts = [opt.get_primary_text() for opt in options]
@@ -15,6 +19,12 @@ class View(ABC):
         #Callers should always call this one the view
         #is done with so it can be cleaned up as needed
         pass
+
+    def get_selection(self, select_controller_inputs: Sequence[Any] = ()) -> Selection:
+        raise NotImplementedError
+
+    def set_options(self, options: list[Any]) -> None:
+        self.options = options
 
     def calculate_amount_to_move_by(self, amount, skip_by_letter):
         # --- Step 1: If amount is not 1 or -1, jump to next/previous letter ---

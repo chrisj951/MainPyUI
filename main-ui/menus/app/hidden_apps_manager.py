@@ -5,7 +5,7 @@ from apps.app_config import AppConfig
 from menus.app.apps_list_manager import AppListManager
 
 class AppsManager:
-    _appsManager = Optional[AppListManager]
+    _appsManager: Optional[AppListManager] = None
     _init_event = threading.Event()  # signals when initialize() has been called
 
     @classmethod
@@ -20,18 +20,24 @@ class AppsManager:
     @classmethod
     def hide_app(cls, app_config: AppConfig):
         cls._wait_for_init()
+        if cls._appsManager is None:
+            return
         cls._appsManager.get_app(app_config).hidden = True
         cls._appsManager.save_to_file()
 
     @classmethod
     def show_app(cls, app_config: AppConfig):
         cls._wait_for_init()
+        if cls._appsManager is None:
+            return
         cls._appsManager.get_app(app_config).hidden = False
         cls._appsManager.save_to_file()
 
     @classmethod
     def is_hidden(cls, app_config: AppConfig) -> bool:
         cls._wait_for_init()
+        if cls._appsManager is None:
+            return False
         app_entry = cls._appsManager.get_app(app_config)
         if(app_entry is None):
             return False

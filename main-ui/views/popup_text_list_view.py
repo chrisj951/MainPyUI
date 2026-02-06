@@ -31,13 +31,14 @@ class PopupTextListView(TextListView):
 
         self.starting_x_offset = self.view_x + Theme.pop_menu_text_padding()
         self.base_y_offset = self.view_y
-        Device.get_device().screen_width()//4
-        Display.render_image(
-            image_path=Theme.menu_popup_bg_large(),
-            x=self.view_x,
-            y=self.view_y,
-            render_mode=RenderMode.TOP_LEFT_ALIGNED
-        )
+        bg_image = Theme.menu_popup_bg_large()
+        if bg_image is not None:
+            Display.render_image(
+                image_path=bg_image,
+                x=self.view_x,
+                y=self.view_y,
+                render_mode=RenderMode.TOP_LEFT_ALIGNED
+            )
         Display.present()
         Display.lock_current_image()
 

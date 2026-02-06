@@ -3,12 +3,13 @@
 from abc import ABC, abstractmethod
 
 from games.utils.game_system import GameSystem
+from typing import Optional
 
 
 class GameSystemUtils(ABC):
 
     @abstractmethod
-    def get_game_system_by_name(self, system_name) -> GameSystem:
+    def get_game_system_by_name(self, system_name) -> GameSystem | None:
         pass
 
     @abstractmethod

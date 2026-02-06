@@ -1,0 +1,27 @@
+{
+  "include": [
+    "main-ui"
+  ],
+  "extraPaths": [
+    "./main-ui"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/.git",
+    "boxartdb",
+    "docs",
+    "lang",
+    "misc",
+    "miyoo_mini_flip",
+    "muOS",
+    "onionOS",
+    "Themes"
+  ],
+  "pythonVersion": "3.10",
+  "pythonPlatform": "Linux",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingTypeStubs": false,
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false
+}

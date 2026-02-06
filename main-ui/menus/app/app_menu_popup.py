@@ -1,6 +1,7 @@
 
 
 from apps.app_config import AppConfig
+from typing import Optional
 from controller.controller_inputs import ControllerInput
 from menus.app.hidden_apps_manager import AppsManager
 from themes.theme import Theme
@@ -27,7 +28,7 @@ class AppMenuPopup:
         if(ControllerInput.A == input_value):
             self.current_show_all_apps_setting = not self.current_show_all_apps_setting
 
-    def run_app_menu_popup(self, app: AppConfig):
+    def run_app_menu_popup(self, app: AppConfig | None):
         popup_options = []
 
         if(app):

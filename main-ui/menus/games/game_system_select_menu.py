@@ -1,5 +1,6 @@
 
 import os
+from typing import Optional
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from games.utils.device_specific.game_system_utils import GameSystemUtils
@@ -118,7 +119,7 @@ class GameSystemSelectMenu:
         self.collections_menu = collections_menu
         self.recents_menu = recents_menu
         self.settings_menu = settings_menu
-        self.game_utils : GameSystemUtils = Device.get_device().get_game_system_utils()
+        self.game_utils: Optional[GameSystemUtils] = Device.get_device().get_game_system_utils()
         self.rom_select_menu : GameSelectMenu = GameSelectMenu()
         self.use_emu_cfg = False
         self.game_system_select_menu_popup = GameSystemSelectMenuPopup()
@@ -167,13 +168,19 @@ class GameSystemSelectMenu:
                     icon_system_name_priority.append(icon)
                     selected_icon_system_name_priority.append(icon)
 
-        if(game_system.game_system_config.get_icon() is not None):
-            icon_system_name_priority.append(os.path.join(game_system.game_system_config.get_emu_folder(),game_system.game_system_config.get_icon()))
+        icon_name = game_system.game_system_config.get_icon()
+        if isinstance(icon_name, str) and icon_name:
+            icon_system_name_priority.append(os.path.join(game_system.game_system_config.get_emu_folder(), icon_name))
 
-            if(game_system.game_system_config.get_icon_selected() is not None):
-                selected_icon_system_name_priority.append(os.path.join(game_system.game_system_config.get_emu_folder(),game_system.game_system_config.get_icon_selected()))
+            icon_selected_name = game_system.game_system_config.get_icon_selected()
+            if isinstance(icon_selected_name, str) and icon_selected_name:
+                selected_icon_system_name_priority.append(
+                    os.path.join(game_system.game_system_config.get_emu_folder(), icon_selected_name)
+                )
             else:
-                selected_icon_system_name_priority.append(os.path.join(game_system.game_system_config.get_emu_folder(),game_system.game_system_config.get_icon()))
+                selected_icon_system_name_priority.append(
+                    os.path.join(game_system.game_system_config.get_emu_folder(), icon_name)
+                )
         
         if(Theme.get_default_system_icon() is not None):
             icon_system_name_priority.append(Theme.get_default_system_icon())
@@ -288,7 +295,9 @@ class GameSystemSelectMenu:
 
     def build_system_list(self):
         systems_list = []
-        active_systems = self.game_utils.get_active_systems()
+        if self.game_utils is None:
+            return systems_list, None
+        active_systems = self.game_utils.get_active_systems() or []
 
         index = 0
         total_count = len(active_systems)

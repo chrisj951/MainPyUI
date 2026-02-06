@@ -5,7 +5,7 @@ from menus.games.utils.rom_info import RomInfo
 from menus.games.utils.roms_list_manager import RomsListManager
 
 class RecentsManager:
-    _recentsManager = Optional[RomsListManager]
+    _recentsManager: Optional[RomsListManager] = None
     _init_event = threading.Event()  # signals when initialize() has been called
 
     @classmethod
@@ -20,6 +20,8 @@ class RecentsManager:
     @classmethod
     def add_game(cls, rom_info: RomInfo):
         cls._wait_for_init()
+        if cls._recentsManager is None:
+            return
         cls._recentsManager.add_game(rom_info)
         games = cls._recentsManager.get_games()
         if len(games) > 20:
@@ -29,10 +31,14 @@ class RecentsManager:
     @classmethod
     def get_recents(cls) -> List[RomInfo]:
         cls._wait_for_init()
+        if cls._recentsManager is None:
+            return []
         return cls._recentsManager.get_games()
 
 
     @classmethod
     def remove_game(cls, rom_info: RomInfo):
         cls._wait_for_init()
+        if cls._recentsManager is None:
+            return
         cls._recentsManager.remove_game(rom_info)

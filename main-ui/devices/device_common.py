@@ -52,7 +52,7 @@ class DeviceCommon(AbstractDevice):
         self.run_cmd([self.reboot_cmd()])
 
 
-    def input_timeout_default(self):
+    def input_timeout_default(self) -> float:
         return 1/12 # 12 fps
     
 
@@ -505,7 +505,7 @@ class DeviceCommon(AbstractDevice):
                 check=True
             )
         except Exception as e:
-            PyUiLogger.get_logger.error(f"Failed to run hwclock: {e}")
+            PyUiLogger.get_logger().error(f"Failed to run hwclock: {e}")
 
     def animation_divisor(self):
         return self.get_system_config().animation_speed(1)
@@ -513,7 +513,7 @@ class DeviceCommon(AbstractDevice):
     def get_wifi_menu(self):
         return WifiMenu()
 
-    def get_new_wifi_scanner(self):
+    def get_new_wifi_scanner(self) -> WiFiScanner:
         return WiFiScanner()
 
     def post_present_operations(self):

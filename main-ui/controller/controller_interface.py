@@ -12,27 +12,31 @@ class ControllerInterface(ABC):
         pass
 
     @abstractmethod
-    def close():
+    def close(self):
         pass
 
     @abstractmethod
-    def still_held_down():
+    def still_held_down(self):
         pass
 
     @abstractmethod
-    def force_refresh():
+    def force_refresh(self):
         pass
 
     @abstractmethod
-    def get_input(timeout):
+    def get_input(self, timeout):
         pass
 
     @abstractmethod
-    def clear_input(timeout):
+    def clear_input(self):
         pass
 
     @abstractmethod
-    def clear_input_queue():
+    def clear_input_queue(self):
+        pass
+
+    @abstractmethod
+    def print_key_state_changes(self):
         pass
 
     #TODO These 2 things are too tied to SDL

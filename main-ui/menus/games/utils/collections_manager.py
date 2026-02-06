@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import json
 import os
 import threading
-from typing import List
+from typing import Any, List
 from devices.device import Device
 from menus.games.utils.rom_info import RomInfo
 from menus.games.utils.roms_list_manager import RomsListEntry
@@ -21,6 +21,7 @@ class CollectionEntry:
 class CollectionsManager:
     _collections: List[CollectionEntry] = []
     _collections_file_name = "collections.json"
+    _game_system_utils: Any = None
     _init_event = threading.Event()  # signals when initialize() has been called
 
     @classmethod
@@ -43,6 +44,8 @@ class CollectionsManager:
     def load_entries_as_rom_info(cls, game_list) -> List['RomInfo']:
         cls._wait_for_init()
         rom_info_list: List['RomInfo'] = []
+        if cls._game_system_utils is None:
+            return rom_info_list
 
         for entry in game_list:
             try:

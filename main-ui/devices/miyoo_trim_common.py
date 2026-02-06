@@ -11,6 +11,7 @@ from display.font_purpose import FontPurpose
 from menus.games.utils.rom_info import RomInfo
 from themes.theme import Theme
 from utils.logger import PyUiLogger
+from utils.type_guards import has_force_refresh
 
 
 class MiyooTrimCommon():
@@ -59,8 +60,10 @@ class MiyooTrimCommon():
             PyUiLogger.get_logger().error(f"Failed to delete file: {e}")
 
     @staticmethod
-    def run_game(device, rom_info: RomInfo, remap_sdcard_path = True, run_prefix ="") -> subprocess.Popen:
+    def run_game(device, rom_info: RomInfo, remap_sdcard_path = True, run_prefix ="") -> None:
         Theme.check_and_create_ra_assets()
+        if rom_info.game_system is None:
+            return
         launch_path = os.path.join(rom_info.game_system.game_system_config.get_emu_folder(),rom_info.game_system.game_system_config.get_launch())
         
         #file_path = /mnt/SDCARD/Roms/FAKE08/Alpine Alpaca.p8
@@ -116,16 +119,21 @@ class MiyooTrimCommon():
         try:
             # Check if wpa_supplicant is running using ps -f
             result = Device.get_device().get_running_processes()
+            if result is None:
+                return
             if 'wpa_supplicant' in result.stdout:
                 return
 
             # If not running, start it in the background
+            conf_path = Device.get_device().get_wpa_supplicant_conf_path()
+            if conf_path is None:
+                return
             subprocess.Popen([
                 'wpa_supplicant',
                 '-B',
                 '-D', 'nl80211',
                 '-i', 'wlan0',
-                '-c', Device.get_device().get_wpa_supplicant_conf_path()
+                '-c', conf_path
             ])
             time.sleep(0.5)  # Wait for it to initialize
             PyUiLogger.get_logger().info("wpa_supplicant started.")
@@ -150,7 +158,7 @@ class MiyooTrimCommon():
             PyUiLogger.get_logger().error(f"Error creating {wpa_supplicant_path}: {e}")
 
     def should_scale_screen(self):
-        return self.is_hdmi_connected()
+        return Device.get_device().is_hdmi_connected()
     
     @staticmethod
     def disable_wifi(device):
@@ -159,8 +167,12 @@ class MiyooTrimCommon():
         Device.get_device().system_config.save_config()
         ProcessRunner.run(["ifconfig","wlan0","down"])
         Device.get_device().stop_wifi_services()
-        Device.get_device().get_wifi_status.force_refresh()
-        Device.get_device().get_ip_addr_text.force_refresh()
+        wifi_status = Device.get_device().get_wifi_status
+        ip_addr_text = Device.get_device().get_ip_addr_text
+        if has_force_refresh(wifi_status):
+            wifi_status.force_refresh()
+        if has_force_refresh(ip_addr_text):
+            ip_addr_text.force_refresh()
 
     @staticmethod
     def enable_wifi(device):
@@ -169,8 +181,12 @@ class MiyooTrimCommon():
         Device.get_device().system_config.save_config()
         ProcessRunner.run(["ifconfig","wlan0","up"])
         Device.get_device().start_wifi_services()
-        Device.get_device().get_wifi_status.force_refresh()
-        Device.get_device().get_ip_addr_text.force_refresh()
+        wifi_status = Device.get_device().get_wifi_status
+        ip_addr_text = Device.get_device().get_ip_addr_text
+        if has_force_refresh(wifi_status):
+            wifi_status.force_refresh()
+        if has_force_refresh(ip_addr_text):
+            ip_addr_text.force_refresh()
 
     @staticmethod
     def run_analog_stick_calibration(device, stick_name, joystick, file_path, leftOrRight):

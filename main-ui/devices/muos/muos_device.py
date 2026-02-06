@@ -9,6 +9,7 @@ from devices.charge.charge_status import ChargeStatus
 import os
 from devices.device_common import DeviceCommon
 from devices.miyoo.system_config import SystemConfig
+from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
 from games.utils.device_specific.muos_game_system_utils import MuosGameSystemUtils
@@ -26,6 +27,7 @@ from views.grid_or_list_entry import GridOrListEntry
 from menus.language.language import Language
 
 class MuosDevice(DeviceCommon):
+    miyoo_games_file_parser: MiyooGamesFileParser
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
         self.muos_systems = self.load_assign_json()
@@ -95,6 +97,8 @@ class MuosDevice(DeviceCommon):
         return self.system_config.get_volume()
 
     def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
+        if rom_info.game_system is None:
+            raise RuntimeError("Missing game system for ROM.")
         launch_path = os.path.join(rom_info.game_system.game_system_config.get_emu_folder(),rom_info.game_system.game_system_config.get_launch())
         PyUiLogger.get_logger().info(f"About to launch {launch_path} with rom {rom_info.rom_file_path}")
         return subprocess.Popen([launch_path,rom_info.rom_file_path], stdin=subprocess.DEVNULL,
@@ -213,6 +217,9 @@ class MuosDevice(DeviceCommon):
         pass
 
     def enable_bluetooth(self):
+        pass
+
+    def fix_sleep_sound_bug(self):
         pass
             
     def perform_startup_tasks(self):

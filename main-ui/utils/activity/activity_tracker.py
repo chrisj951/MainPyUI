@@ -15,7 +15,10 @@ class ActivityTracker:
         self.activity_log = []
 
     def run_activity_tracking_app(self):
-        activity_log = ActivityLog(PyUiConfig.get_activity_log_path())
+        path = PyUiConfig.get_activity_log_path()
+        if not path:
+            return
+        activity_log = ActivityLog(path)
 
         option_list = []
         option_list.append(

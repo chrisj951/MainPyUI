@@ -1,10 +1,10 @@
-from asyncio import subprocess
+import subprocess
 from pathlib import Path
 import configparser
 import time
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
-from devices.gkd.connman_wifi_scanner import WiFiNetwork
+from devices.gkd.connman_wifi_scanner import ConnmanWiFiScanner, WiFiNetwork
 from devices.utils.process_runner import ProcessRunner
 from display.display import Display
 from display.on_screen_keyboard import OnScreenKeyboard
@@ -32,7 +32,7 @@ class ConnmanWifiMenu:
 
         # Build config options
         config = configparser.RawConfigParser()
-        config.optionxform = lambda option: option
+        config.optionxform = lambda optionstr: optionstr
 
         config.add_section("Settings")
         config["Settings"]["AutoConnect"] = "true"
@@ -160,10 +160,14 @@ class ConnmanWifiMenu:
 
     def _show_menu(self):
         selected = Selection(None, None, 0)
-        self.wifi_scanner = Device.get_device().get_new_wifi_scanner()
+        wifi_scanner = Device.get_device().get_new_wifi_scanner()
+        if not isinstance(wifi_scanner, ConnmanWiFiScanner):
+            Display.display_message("WiFi scanner unavailable")
+            return
+        self.wifi_scanner = wifi_scanner
 
         # Start background scanning immediately
-        self.wifi_scanner.scan_networks()
+        wifi_scanner.scan_networks()
 
         connected_ssid = None
 
@@ -177,16 +181,16 @@ class ConnmanWifiMenu:
 
         try:
             while selected is not None:
-                wifi_enabled = Device.get_device().is_wifi_enabled()
+                wifi_enabled = bool(Device.get_device().is_wifi_enabled())
 
                 # Pull latest scan snapshot (non-blocking)
                 networks = (
-                    self.wifi_scanner.scan_networks()
+                    wifi_scanner.scan_networks()
                     if wifi_enabled
                     else []
                 )
 
-                ssid = self.wifi_scanner.get_connected_ssid()
+                ssid = wifi_scanner.get_connected_ssid()
                 connected_ssid = ssid
 
                 # Build options (single source of truth)
@@ -220,4 +224,5 @@ class ConnmanWifiMenu:
 
         finally:
             Display.display_message("Stopping WiFi scanner...")
-            self.wifi_scanner.stop()
+            if self.wifi_scanner is not None:
+                self.wifi_scanner.stop()

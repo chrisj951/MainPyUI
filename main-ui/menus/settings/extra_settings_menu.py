@@ -184,7 +184,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                 )
         )
 
-        option_list.extend(Device.get_device().get_extra_settings_options())
+        option_list.extend(Device.get_device().get_extra_settings_options() or [])
 
         option_list.append(
             GridOrListEntry(

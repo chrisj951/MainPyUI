@@ -7,6 +7,7 @@ from controller.sdl.sdl2_controller_interface import Sdl2ControllerInterface
 from devices.charge.charge_status import ChargeStatus
 from devices.device_common import DeviceCommon
 from devices.miyoo_trim_common import MiyooTrimCommon
+from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
 from display.display import Display
@@ -16,8 +17,11 @@ from menus.games.utils.rom_info import RomInfo
 from menus.settings.button_remapper import ButtonRemapper
 from utils import throttle
 from utils.logger import PyUiLogger
+from utils.type_guards import has_force_refresh
 
 class GKDDevice(DeviceCommon):
+    sdl_button_to_input: dict[int, ControllerInput]
+    miyoo_games_file_parser: MiyooGamesFileParser
     
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
@@ -174,6 +178,12 @@ class GKDDevice(DeviceCommon):
     def stop_wifi_services(self):
         pass
 
+    def set_wifi_power(self, power):
+        pass
+
+    def start_wpa_supplicant(self):
+        pass
+
     def is_wifi_enabled(self):
         return self.system_config.is_wifi_enabled()
 
@@ -203,8 +213,10 @@ class GKDDevice(DeviceCommon):
         self.system_config.set_wifi(0)
         self.system_config.save_config()
         ProcessRunner.run(["connmanctl", "disable", "wifi"])
-        self.get_wifi_status.force_refresh()
-        self.get_ip_addr_text.force_refresh()
+        if has_force_refresh(self.get_wifi_status):
+            self.get_wifi_status.force_refresh()
+        if has_force_refresh(self.get_ip_addr_text):
+            self.get_ip_addr_text.force_refresh()
 
     def enable_wifi(self):
         self.system_config.reload_config()
@@ -212,8 +224,10 @@ class GKDDevice(DeviceCommon):
         self.system_config.save_config()
         ProcessRunner.run(["systemctl", "restart", "connman"])
         ProcessRunner.run(["connmanctl", "enable", "wifi"])
-        self.get_wifi_status.force_refresh()
-        self.get_ip_addr_text.force_refresh()
+        if has_force_refresh(self.get_wifi_status):
+            self.get_wifi_status.force_refresh()
+        if has_force_refresh(self.get_ip_addr_text):
+            self.get_ip_addr_text.force_refresh()
 
     @throttle.limit_refresh(5)
     def get_charge_status(self):
@@ -299,16 +313,16 @@ class GKDDevice(DeviceCommon):
     def take_snapshot(self, path):
         return None
     
-    def supports_brightness_calibration():
+    def supports_brightness_calibration(self):
         return True
 
-    def supports_contrast_calibration():
+    def supports_contrast_calibration(self):
         return True
 
-    def supports_saturation_calibration():
+    def supports_saturation_calibration(self):
         return True
 
-    def supports_hue_calibration():
+    def supports_hue_calibration(self):
         return True
 
     def get_save_state_image(self, rom_info: RomInfo):

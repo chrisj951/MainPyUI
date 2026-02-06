@@ -46,6 +46,9 @@ class TrimUIJoystick:
     
     def _poll_thread(self):
         while self.running:
+            if self.serial is None:
+                time.sleep(0.05)
+                continue
             # read exactly TRIMUI_PAD_FRAME_LEN bytes
             frame = self.serial.read(self.TRIMUI_PAD_FRAME_LEN)
             

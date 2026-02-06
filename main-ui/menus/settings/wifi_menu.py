@@ -1,5 +1,5 @@
 
-from asyncio import subprocess
+import subprocess
 import tempfile
 import time
 import os
@@ -32,6 +32,9 @@ class WifiMenu:
         else:
             Device.get_device().enable_wifi()
 
+    def adapter_is_connected(self):
+        return True
+
 
     def write_wpa_supplicant_conf(self, ssid: str, pw_line: str):
         """
@@ -41,6 +44,9 @@ class WifiMenu:
         """
 
         file_path = Device.get_device().get_wpa_supplicant_conf_path()
+        if file_path is None:
+            PyUiLogger.get_logger().error("No wpa_supplicant.conf path configured")
+            return
 
         HEADER = (
             "ctrl_interface=/var/run/wpa_supplicant\n"
@@ -118,9 +124,13 @@ class WifiMenu:
         # Atomic write
         # ---------------------------
         try:
+            base_dir = os.path.dirname(file_path) if file_path else None
+            if base_dir is None:
+                PyUiLogger.get_logger().error("Unable to determine wpa_supplicant.conf directory")
+                return
             tmp_fd, tmp_path = tempfile.mkstemp(
                 prefix="wpa_supplicant.",
-                dir=os.path.dirname(file_path)
+                dir=base_dir
             )
             with os.fdopen(tmp_fd, "w") as f:
                 f.write(final_content)
@@ -231,10 +241,14 @@ class WifiMenu:
 
     def show_wifi_menu(self):
         selected = Selection(None, None, 0)
-        self.wifi_scanner = Device.get_device().get_new_wifi_scanner()
+        wifi_scanner = Device.get_device().get_new_wifi_scanner()
+        if not isinstance(wifi_scanner, WiFiScanner):
+            Display.display_message("WiFi scanner unavailable")
+            return
+        self.wifi_scanner = wifi_scanner
 
         # Start background scanning immediately
-        self.wifi_scanner.scan_networks()
+        wifi_scanner.scan_networks()
 
         connected_ssid = None
         connected_is_5ghz = False
@@ -249,16 +263,16 @@ class WifiMenu:
 
         try:
             while selected is not None:
-                wifi_enabled = Device.get_device().is_wifi_enabled()
+                wifi_enabled = bool(Device.get_device().is_wifi_enabled())
 
                 # Pull latest scan snapshot (non-blocking)
                 networks = (
-                    self.wifi_scanner.scan_networks()
+                    wifi_scanner.scan_networks()
                     if wifi_enabled
                     else []
                 )
 
-                ssid, freq = self.wifi_scanner.get_connected_ssid()
+                ssid, freq = wifi_scanner.get_connected_ssid()
                 connected_ssid = ssid
                 connected_is_5ghz = bool(freq and 5000 <= freq <= 6000)
 
@@ -294,4 +308,5 @@ class WifiMenu:
 
         finally:
             Display.display_message("Stopping WiFi scanner...")
-            self.wifi_scanner.stop()
+            if self.wifi_scanner is not None:
+                self.wifi_scanner.stop()

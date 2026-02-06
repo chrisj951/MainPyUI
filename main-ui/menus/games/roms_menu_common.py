@@ -34,7 +34,7 @@ class RomsMenuCommon(ABC):
     def _remove_extension(self,file_name):
         return os.path.splitext(file_name)[0]
     
-    def _get_image_path(self, rom_path):
+    def _get_image_path(self, rom_path: RomInfo):
         # Get the base filename without extension (e.g., "DKC")
         return get_rom_select_options_builder().get_image_path(rom_path, prefer_savestate_screenshot=self.prefer_savestate_screenshot())
         
@@ -51,13 +51,18 @@ class RomsMenuCommon(ABC):
     @abstractmethod
     def _get_rom_list(self) -> list[GridOrListEntry]:
         pass
+
+    def prefer_savestate_screenshot(self) -> bool:
+        return False
     
-    def _run_subfolder_menu(self, rom_info : RomInfo) -> list[GridOrListEntry]:
+    def _run_subfolder_menu(self, rom_info : RomInfo):
         from menus.games.game_select_menu import GameSelectMenu
+        if rom_info.game_system is None:
+            return []
         return GameSelectMenu().run_rom_selection(rom_info.game_system, rom_info.rom_file_path)
 
 
-    def _load_collection_menu(self, rom_info : RomInfo) -> list[GridOrListEntry]:
+    def _load_collection_menu(self, rom_info : RomInfo) -> None:
         self.current_collection = rom_info.rom_file_path
         PyUiState.set_in_game_selection_screen(True)
         rom_list = self.build_rom_selection_for_collection(self.current_collection)
@@ -75,9 +80,10 @@ class RomsMenuCommon(ABC):
         for rom_info in raw_rom_list:
             rom_file_name = RomFileNameUtils.get_rom_name_without_extensions(rom_info.game_system, rom_info.rom_file_path)
             img_path = self._get_image_path(rom_info)
+            game_system_name = self._extract_game_system(rom_info.rom_file_path) or "Unknown"
             rom_list.append(
                 GridOrListEntry(
-                    primary_text=self._remove_extension(rom_file_name)  +" (" + self._extract_game_system(rom_info.rom_file_path)+")",
+                    primary_text=f"{self._remove_extension(rom_file_name)} ({game_system_name})",
                     image_path=img_path,
                     image_path_selected=img_path,
                     description=collection, 
@@ -141,7 +147,14 @@ class RomsMenuCommon(ABC):
 
         filtered_roms = []
         for rom_info_ui_entry in rom_list:
-            devices = rom_info_ui_entry.value.game_system.game_system_config.get_devices()
+            rom_info = rom_info_ui_entry.get_value()
+            if not isinstance(rom_info, RomInfo):
+                continue
+            if rom_info.game_system is None:
+                continue
+            from utils.type_guards import has_devices
+            cfg = rom_info.game_system.game_system_config
+            devices = cfg.get_devices() if has_devices(cfg) else None
             supported_device = not devices or current_device in devices
             if supported_device:
                 filtered_roms.append(rom_info_ui_entry)
@@ -321,7 +334,7 @@ class RomsMenuCommon(ABC):
         #recents is handled one level up to account for launched_via_special_case
         Display.deinit_display()
 
-        game_thread: subprocess.Popen = Device.get_device().run_game(game_path)
+        game_thread: subprocess.Popen | None = Device.get_device().run_game(game_path)
         if (game_thread is not None):
             self.in_game_menu_listener.game_launched(
                 game_thread, game_path)
@@ -332,6 +345,8 @@ class RomsMenuCommon(ABC):
 
 
     def launched_via_special_case(self, rom_info : RomInfo):
+        if rom_info.game_system is None:
+            return False
         subfolder_launch_file = rom_info.game_system.game_system_config.subfolder_launch_file()
 
         if(subfolder_launch_file is not None and subfolder_launch_file != ""):

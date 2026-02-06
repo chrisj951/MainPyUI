@@ -63,9 +63,12 @@ class GameSystemSelectMenuPopup:
             roms = rom_select_options_builder.build_rom_list(game_system, subfolder=None)
             rom_image_list = []
             for rom in roms:
-                if(rom.get_image_path() is not None and os.path.exists(rom.get_image_path())):
+                existing_image = rom.get_image_path()
+                if existing_image and os.path.exists(existing_image):
                     continue
                 img_path = rom_select_options_builder.get_default_image_path(game_system, rom.get_value().rom_file_path)
+                if img_path is None:
+                    continue
                 name_without_ext = RomFileNameUtils.get_rom_name_without_extensions(
                     rom.get_value().game_system,
                     rom.get_value().rom_file_path

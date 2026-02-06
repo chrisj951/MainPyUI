@@ -96,22 +96,23 @@ class DescriptiveListView(ListView):
                 FontPurpose.DESCRIPTIVE_LIST_TITLE,
                 render_mode=title_render_mode)
 
-            if(gridOrListEntry.get_value_text() is not None):
-                value_text = gridOrListEntry.get_value_text()
+            value_text = gridOrListEntry.get_value_text()
+            if value_text is not None:
+                value_text_str = value_text
                 max_value_text_length = 25
                 
-                if(len(value_text) > max_value_text_length):
-                    value_text = value_text[1:-1].strip()
+                if len(value_text_str) > max_value_text_length:
+                    value_text_str = value_text_str[1:-1].strip()
                     if actual_index == self.selected:
-                        value_text = TextUtils.scroll_string_chars(text=value_text,
+                        value_text_str = TextUtils.scroll_string_chars(text=value_text_str,
                                                 amt=self.scroll_value_text_amount,
-                                                max_chars=max_value_text_length)
+                                                max_chars=max_value_text_length) or ""
                     else:
-                        value_text = value_text[:max_value_text_length-3] + "..."
+                        value_text_str = value_text_str[:max_value_text_length-3] + "..."
 
-                    value_text = "< " + value_text + " >"
+                    value_text_str = "< " + value_text_str + " >"
                 Display.render_text(
-                    value_text, 
+                    value_text_str, 
                     Device.get_device().screen_width() - Theme.get_descriptive_list_text_from_icon_offset(), 
                     row_offset_y + self.each_entry_height // 2, 
                     color, 

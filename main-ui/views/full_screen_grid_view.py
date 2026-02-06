@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import List, Optional
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from display.font_purpose import FontPurpose
@@ -16,13 +16,13 @@ from views.view import View
 
 
 class FullScreenGridView(View):
-    def __init__(self, top_bar_text, options: List[GridOrListEntry], selected_bg: str = None,
-                 selected_index=0, show_grid_text=True,
-                 set_top_bar_text_to_selection=False, 
-                 unselected_bg = None, missing_image_path=None,
+    def __init__(self, top_bar_text: str, options: List[GridOrListEntry], selected_bg: Optional[str] = None,
+                 selected_index: int = 0, show_grid_text: bool = True,
+                 set_top_bar_text_to_selection: bool = False, 
+                 unselected_bg: Optional[str] = None, missing_image_path: Optional[str] = None,
                  resize_type = ResizeType.ZOOM,
-                 render_text_overlay = True,
-                 image_resize_height_multiplier = None):
+                 render_text_overlay: Optional[bool] = True,
+                 image_resize_height_multiplier: Optional[float] = None):
         super().__init__()
         if(render_text_overlay is None):
             render_text_overlay = True
@@ -179,6 +179,8 @@ class FullScreenGridView(View):
             return 0
 
     def _render_image(self, index=None, x_offset=0, y_add_offset=0, render_text_overlay=True, text_alpha=None):
+        if index is None:
+            index = 0
         imageTextPair = self.options[index]
         image_path = imageTextPair.get_image_path_selected_ideal(self.resized_width, self.resized_height) 
         primary_text = imageTextPair.get_primary_text_long()
@@ -328,7 +330,8 @@ class FullScreenGridView(View):
         if not Device.get_device().get_system_config().animations_enabled():
             return
 
-        animation_duration = 0.30 / Device.get_device().animation_divisor() - self.animated_count *0.04  # seconds
+        divisor = Device.get_device().animation_divisor() or 1
+        animation_duration = 0.30 / divisor - self.animated_count * 0.04  # seconds
         start_time = time.time()
                 
         if(self.y_rotate_instead):

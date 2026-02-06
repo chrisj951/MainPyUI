@@ -141,7 +141,11 @@ class ThemeSettingsMenu():
 
             control_options = [ControllerInput.A, ControllerInput.DPAD_LEFT, ControllerInput.DPAD_RIGHT,
                                ControllerInput.L1, ControllerInput.R1]
+            if list_view is None:
+                break
             selected = list_view.get_selection(control_options)
+            if selected is None:
+                break
 
             if (selected.get_input() in control_options):
                 selected.get_selection().get_value()(selected.get_input())

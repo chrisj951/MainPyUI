@@ -85,15 +85,18 @@ class Theme():
 
     @classmethod
     def bgm_setting_changed(cls):
-        Device.get_device().get_audio_system().audio_stop_loop()
+        audio = Device.get_device().get_audio_system()
+        if audio is None:
+            return
+        audio.audio_stop_loop()
         if(Device.get_device().get_system_config().play_bgm()):
             bgm_wav = os.path.join(cls._path, "sound", "bgm.wav")
             bgm_mp3 = os.path.join(cls._path, "sound", "bgm.mp3")
-            Device.get_device().get_audio_system().audio_set_volume(Device.get_device().get_system_config().bgm_volume())
+            audio.audio_set_volume(Device.get_device().get_system_config().bgm_volume())
             if os.path.exists(bgm_wav) and os.path.getsize(bgm_wav) > 0:
-                Device.get_device().get_audio_system().audio_loop_wav(bgm_wav)
+                audio.audio_loop_wav(bgm_wav)
             elif os.path.exists(bgm_mp3) and os.path.getsize(bgm_mp3) > 0:
-                Device.get_device().get_audio_system().audio_loop_mp3(bgm_mp3)
+                audio.audio_loop_mp3(bgm_mp3)
 
     @classmethod
     def button_press_sounds_changed(cls):
@@ -101,12 +104,16 @@ class Theme():
         button_press_wav = os.path.join(cls._path, "sound", "change.wav")
         if(os.path.exists(button_press_wav)) and os.path.getsize(button_press_wav) > 0:
             cls._button_press_wav = button_press_wav
-            Device.get_device().get_audio_system().load_wav(button_press_wav)
+            audio = Device.get_device().get_audio_system()
+            if audio is not None:
+                audio.load_wav(button_press_wav)
 
     @classmethod
     def controller_button_pressed(cls, input):
         if(cls._play_button_press_sounds and cls._button_press_wav is not None):
-            Device.get_device().get_audio_system().audio_play_wav(cls._button_press_wav)
+            audio = Device.get_device().get_audio_system()
+            if audio is not None:
+                audio.audio_play_wav(cls._button_press_wav)
 
     @classmethod
     def convert_theme_if_needed(cls, path, width, height):
@@ -592,10 +599,6 @@ class Theme():
                 case FontPurpose.LIST_TOTAL:
                     cls._data["indexTotalSize"] = size
                 case FontPurpose.SHADOWED:
-                    cls._data["indexSelectedFontSize"] = size
-                case FontPurpose.SHADOWED_BACKDROP:
-                    cls._data["indexTotalSize"] = size
-                case FontPurpose.SHADOWED:
                     cls._data["shadowed"]["shadowedFontSize"] = size
                 case FontPurpose.SHADOWED_BACKDROP:
                     cls._data["shadowed"]["shadowedFontBackdropSize"]  = size
@@ -633,8 +636,9 @@ class Theme():
                 case FontPurpose.GRID_MULTI_ROW:
                     return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.LIST | FontPurpose.DESCRIPTIVE_LIST_TITLE | FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION:
-                    if(cls._data.get("list") and cls._data.get("list").get("color")):
-                        return cls.hex_to_color(cls._data.get("list").get("color"))
+                    list_config = cls._data.get("list") or {}
+                    if list_config.get("color"):
+                        return cls.hex_to_color(list_config.get("color"))
                     else:
                         return cls.hex_to_color(cls._data["grid"]["color"])
                 case FontPurpose.MESSAGE:
@@ -682,8 +686,9 @@ class Theme():
                 case FontPurpose.GRID_MULTI_ROW:
                     return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
                 case FontPurpose.LIST | FontPurpose.DESCRIPTIVE_LIST_TITLE | FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION:
-                    if(cls._data.get("list") and cls._data.get("list").get("selectedcolor")):
-                        color = cls.hex_to_color(cls._data.get("list").get("selectedcolor"))
+                    list_config = cls._data.get("list") or {}
+                    if list_config.get("selectedcolor"):
+                        color = cls.hex_to_color(list_config.get("selectedcolor"))
                         #PyUiLogger.get_logger().error(f"list selected color is {color}")                        
                         return color
                     else:
@@ -701,9 +706,9 @@ class Theme():
                     return cls.hex_to_color(cls._data["shadowed"]["shadowedFontColor"])
                 case FontPurpose.SHADOWED_BACKDROP:
                     return cls.hex_to_color(cls._data["shadowed"]["shadowedFontBackdropColor"])
-                case FontPurpose.SHADOWED:
+                case FontPurpose.SHADOWED_SMALL:
                     return cls.hex_to_color(cls._data["shadowed"]["shadowedFontSmallColor"])
-                case FontPurpose.SHADOWED_BACKDROP:
+                case FontPurpose.SHADOWED_BACKDROP_SMALL:
                     return cls.hex_to_color(cls._data["shadowed"]["shadowedFontBackdropSmallColor"])
                 case _:
                     return cls.hex_to_color(cls._data["grid"]["selectedcolor"])
@@ -1305,10 +1310,6 @@ class Theme():
         cls.save_changes()
         
     @classmethod
-    def set_set_top_bar_text_to_game_selection(cls, value):
-        cls._data["setTopBarTextToGameSelection"] = value
-        cls.save_changes()
-
     @classmethod
     def get_main_menu_grid_wrap_around_single_row(cls):
         return cls._data.get("mainMenuGridWrapAroundSingleRow", False)
@@ -1574,7 +1575,11 @@ class Theme():
             PyUiLogger.get_logger().debug(f"CFW theme is None, cannot get icon")
             return None
         else:
-            cfw_theme_path = os.path.join(PyUiConfig.get("themeDir"),cfw_theme)
+            theme_dir = PyUiConfig.get("themeDir")
+            if theme_dir is None:
+                PyUiLogger.get_logger().debug("CFW theme directory is None, cannot get icon")
+                return None
+            cfw_theme_path = os.path.join(theme_dir, cfw_theme)
             PyUiLogger.get_logger().debug(f"cfw_theme_path is '{cfw_theme_path}'")
             path = os.path.join(cfw_theme_path, 
                                 cls._get_asset_folder(cfw_theme_path, "icons", 

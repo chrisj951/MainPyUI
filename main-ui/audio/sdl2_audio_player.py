@@ -48,8 +48,13 @@ class Sdl2AudioPlayer:
         Sdl2AudioPlayer._ensure_worker()
         resp_q = queue.Queue(maxsize=1) if expect_reply else None
         cmd = _Cmd(cmd_name, args=args, kwargs=kwargs, resp_q=resp_q)
-        Sdl2AudioPlayer._cmd_q.put(cmd)
+        cmd_q = Sdl2AudioPlayer._cmd_q
+        if cmd_q is None:
+            return None
+        cmd_q.put(cmd)
         if expect_reply:
+            if resp_q is None:
+                return None
             try:
                 return resp_q.get(timeout=2.0)
             except queue.Empty:
@@ -163,6 +168,9 @@ class Sdl2AudioPlayer:
         All SDL_mixer and SDL2 calls happen here ONLY.
         Commands come in through _cmd_q. Worker maintains its own maps.
         """
+        cmd_q = Sdl2AudioPlayer._cmd_q
+        if cmd_q is None:
+            return
         chunk_map = {}  # path -> Mix_Chunk pointer
         music_map = {}  # path -> Mix_Music pointer
         loop_channel = None
@@ -278,7 +286,7 @@ class Sdl2AudioPlayer:
         # main worker loop
         while Sdl2AudioPlayer._running:
             try:
-                cmd: _Cmd = Sdl2AudioPlayer._cmd_q.get(timeout=0.2)
+                cmd: _Cmd = cmd_q.get(timeout=0.2)
             except queue.Empty:
                 # nothing to do; allow loop to continue and react to running state
                 continue

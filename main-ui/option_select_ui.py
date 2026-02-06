@@ -205,7 +205,7 @@ class OptionSelectUI:
         root_dict = OptionSelectUI._build_tree_from_flat_map(data)
         folder = str(json_path.parent)
 
-        return OptionSelectUI.navigate_menu(
+        result = OptionSelectUI.navigate_menu(
             root_dict,
             title="",
             folder=folder,
@@ -215,6 +215,7 @@ class OptionSelectUI:
             is_root=True,
             descriptions=descriptions
         )
+        return result if isinstance(result, list) else []
 
     @staticmethod
     def display_menu_ui(title, menu_dict, folder, exit_after_running, view_type):

@@ -127,7 +127,7 @@ class MiyooTrimGameSystemUtils(GameSystemUtils):
             self.roms_paths.append("/media/sdcard1/Roms/")
         self.rom_utils = RomUtils(self.roms_paths[0])
 
-    def get_game_system_by_name(self, system_name) -> GameSystem:
+    def get_game_system_by_name(self, system_name) -> GameSystem | None:
         game_system_config = FileBasedGameSystemConfig(system_name)
 
         if(game_system_config is not None):
@@ -186,7 +186,7 @@ class MiyooTrimGameSystemUtils(GameSystemUtils):
         if("Alphabetical" == PyUiConfig.game_system_sort_mode()):        
             active_systems.sort(key=lambda system: system.display_name)
         elif("SortOrderKey" == PyUiConfig.game_system_sort_mode()):
-            active_systems.sort(key=lambda system: system.sort_order)
+            active_systems.sort(key=lambda system: (system.sort_order or 0, system.display_name))
         elif("Custom" == PyUiConfig.game_system_sort_mode()):
             # Get priorities (1 = highest priority, 3 = lowest)
             type_priority = PyUiConfig.game_system_sort_type_priority()
@@ -245,6 +245,8 @@ class MiyooTrimGameSystemUtils(GameSystemUtils):
                 return None
 
     def get_save_state_image(self, rom_info: RomInfo):
+        if rom_info.game_system is None:
+            return None
         # Get the base filename without extension
         # Normalize and split the path into components
         parts = os.path.normpath(rom_info.rom_file_path).split(os.sep)
@@ -258,13 +260,17 @@ class MiyooTrimGameSystemUtils(GameSystemUtils):
         base_name = RomFileNameUtils.get_rom_name_without_extensions(rom_info.game_system, rom_info.rom_file_path)
 
     
-        core_selection_in_config = Device.get_device().get_core_for_game(rom_info.game_system.game_system_config, os.path.basename(rom_info.rom_file_path))
+        core_selection_in_config = Device.get_device().get_core_for_game(
+            rom_info.game_system.game_system_config,
+            os.path.basename(rom_info.rom_file_path)
+        )
+        if core_selection_in_config is None:
+            return None
        
         core_names = self.CORE_TO_FOLDER_LOOKUP.get(core_selection_in_config)
         if(core_names is not None):       
             for core in core_names:
-                cores_to_try = Device.get_device().get_core_name_overrides(core)
-            
+                cores_to_try = Device.get_device().get_core_name_overrides(core) or []
                 for core_to_try in cores_to_try:
                     state_png = self.check_for_image_with_core(core_to_try, saves_root, base_name, rom_info)
                     if(state_png is not None):

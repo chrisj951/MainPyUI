@@ -1,11 +1,14 @@
 
 
+from typing import Optional
+
 from display.display import Display
 from display.font_purpose import FontPurpose
 
 
 class TextUtils():
-    def scroll_string(text, amt, text_available_width):
+    @staticmethod
+    def scroll_string(text: Optional[str], amt: int, text_available_width: int) -> Optional[str]:
         if not text:
             return text
         space_width, char_height = Display.get_space_dimensions()
@@ -19,7 +22,7 @@ class TextUtils():
         return text[amt:] + text[:amt]
 
     @staticmethod
-    def scroll_string_chars(text, amt, max_chars, padding_spaces_count = 8):
+    def scroll_string_chars(text: Optional[str], amt: int, max_chars: int, padding_spaces_count: int = 8) -> Optional[str]:
         if not text or max_chars <= 0:
             return text
 

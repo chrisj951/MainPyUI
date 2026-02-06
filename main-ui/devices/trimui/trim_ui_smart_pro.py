@@ -120,9 +120,6 @@ class TrimUISmartPro(TrimUIDevice):
 
     def get_controller_interface(self):
         return KeyWatcherController(event_path="/dev/input/event3", mapping_provider=MiyooTrimKeyMappingProvider(), event_format='llHHi')
-    
-    def get_device_name(self):
-        return self.device_name
         
     def set_theme(self, theme_path: str):
         MiyooTrimCommon.set_theme(TrimUISmartPro.TRIMUI_STOCK_CONFIG_LOCATION, theme_path)

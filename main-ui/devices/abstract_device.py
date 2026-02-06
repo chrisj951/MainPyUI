@@ -1,59 +1,58 @@
 from abc import ABC, abstractmethod
 import subprocess
+from typing import Any
 
+from controller.controller_interface import ControllerInterface
 from devices.miyoo.system_config import SystemConfig
 from games.utils.game_entry import GameEntry
 from menus.games.utils.rom_info import RomInfo
 from utils.image_utils import ImageUtils
 
 class AbstractDevice(ABC):
+    system_config: SystemConfig
  
     @abstractmethod
-    def screen_width(self):
+    def screen_width(self) -> int:
         pass
 
     @abstractmethod
-    def screen_height(self):
+    def screen_height(self) -> int:
         pass
 
     @abstractmethod
-    def screen_rotation(self):
+    def screen_rotation(self) -> int:
         pass
 
     @abstractmethod
-    def output_screen_width(self):
+    def output_screen_width(self) -> int:
         pass
 
     @abstractmethod
-    def output_screen_height(self):
+    def output_screen_height(self) -> int:
         pass
 
     @abstractmethod
-    def should_scale_screen(self):
+    def should_scale_screen(self) -> bool:
         pass
     
     @abstractmethod
-    def lumination(self):
+    def lumination(self) -> int:
         pass
 
     @abstractmethod
-    def contrast(self):
+    def contrast(self) -> int:
         pass
 
     @abstractmethod
-    def saturation(self):
+    def saturation(self) -> int:
         pass
 
     @abstractmethod
-    def input_timeout_default(self):
+    def input_timeout_default(self) -> float:
         pass
 
     @abstractmethod
     def get_app_finder(self):
-        pass
-    
-    @abstractmethod
-    def get_wifi_status(self):
         pass
     
     @abstractmethod
@@ -89,7 +88,11 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def run_game(self, rom_info) -> subprocess.Popen:
+    def get_charge_status(self):
+        pass
+
+    @abstractmethod
+    def run_game(self, rom_info) -> subprocess.Popen | None:
         pass
 
     @abstractmethod
@@ -109,6 +112,18 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
+    def clear_framebuffer(self):
+        pass
+
+    @abstractmethod
+    def capture_framebuffer(self):
+        pass
+
+    @abstractmethod
+    def restore_framebuffer(self):
+        pass
+
+    @abstractmethod
     def special_input(self, key_code, length_in_seconds):   
         pass
 
@@ -117,19 +132,19 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def get_favorites_path(self):
+    def get_favorites_path(self) -> str:
         pass
 
     @abstractmethod
-    def get_recents_path(self):
+    def get_recents_path(self) -> str:
         pass
 
     @abstractmethod
-    def get_collections_path(self):
+    def get_collections_path(self) -> str:
         pass
 
     @abstractmethod
-    def get_apps_config_path(self):
+    def get_apps_config_path(self) -> str:
         pass
 
     @abstractmethod
@@ -150,7 +165,7 @@ class AbstractDevice(ABC):
 
     
     @abstractmethod
-    def brightness(self):
+    def brightness(self) -> int:
         pass
 
     @abstractmethod
@@ -179,7 +194,7 @@ class AbstractDevice(ABC):
     
     
     @abstractmethod
-    def hue(self):
+    def hue(self) -> int:
         pass
 
     @abstractmethod
@@ -195,11 +210,11 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def get_volume(self):
+    def get_volume(self) -> int:
         pass
 
     @abstractmethod
-    def get_display_volume(self):
+    def get_display_volume(self) -> int:
         pass
 
     
@@ -227,25 +242,97 @@ class AbstractDevice(ABC):
     @abstractmethod
     def get_ip_addr_text(self):
         pass
-    
-    @staticmethod  
-    def launch_stock_os_menu(self):
-        pass
-    
-    @staticmethod  
-    def supports_analog_calibration(self):
-        pass
-        
-    @staticmethod  
-    def supports_image_resizing(self):
+
+    @abstractmethod
+    def is_hdmi_connected(self) -> bool:
         pass
 
-    @staticmethod  
+    @abstractmethod
+    def fix_sleep_sound_bug(self):
+        pass
+
+    @abstractmethod
+    def get_running_processes(self):
+        pass
+
+    @abstractmethod
+    def start_wifi_services(self):
+        pass
+
+    @abstractmethod
+    def get_roms_dir(self) -> str:
+        pass
+
+    @abstractmethod
+    def get_game_system_utils(self) -> Any:
+        pass
+
+    @abstractmethod
+    def _set_lumination_to_config(self):
+        pass
+
+    @abstractmethod
+    def _set_contrast_to_config(self):
+        pass
+
+    @abstractmethod
+    def _set_brightness_to_config(self):
+        pass
+
+    @abstractmethod
+    def _set_saturation_to_config(self):
+        pass
+
+    @abstractmethod
+    def _set_hue_to_config(self):
+        pass
+
+    @abstractmethod
+    def _set_volume(self, volume):
+        pass
+
+    @abstractmethod
+    def stop_wifi_services(self):
+        pass
+
+    @abstractmethod
+    def get_wifi_connection_quality_info(self) -> Any:
+        pass
+
+    @abstractmethod
+    def set_wifi_power(self, power):
+        pass
+
+    @abstractmethod
+    def start_wpa_supplicant(self):
+        pass
+
+    @abstractmethod
+    def launch_stock_os_menu(self):
+        pass
+
+    @abstractmethod
+    def supports_analog_calibration(self) -> bool:
+        pass
+
+    @abstractmethod
+    def supports_image_resizing(self) -> bool:
+        pass
+
+    @abstractmethod
+    def supports_wifi(self) -> bool:
+        pass
+
+    @abstractmethod
+    def supports_volume(self) -> bool:
+        pass
+
+    @abstractmethod
     def calibrate_sticks(self):
         pass
-    
-    @staticmethod  
-    def get_state_path(self):
+
+    @abstractmethod
+    def get_state_path(self) -> str:
         pass
 
     @abstractmethod
@@ -269,19 +356,19 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def get_text_width_measurement_multiplier(self):
+    def get_text_width_measurement_multiplier(self) -> float:
         pass
 
     @abstractmethod
-    def max_texture_width(self):
+    def max_texture_width(self) -> int:
         pass
 
     @abstractmethod
-    def max_texture_height(self):
+    def max_texture_height(self) -> int:
         pass
 
     @abstractmethod
-    def get_guaranteed_safe_max_text_char_count(self):
+    def get_guaranteed_safe_max_text_char_count(self) -> int:
         pass
 
     @abstractmethod
@@ -293,19 +380,19 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def supports_brightness_calibration(self):
+    def supports_brightness_calibration(self) -> bool:
         pass
 
     @abstractmethod
-    def supports_contrast_calibration(self):
+    def supports_contrast_calibration(self) -> bool:
         pass
 
     @abstractmethod
-    def supports_saturation_calibration(self):
+    def supports_saturation_calibration(self) -> bool:
         pass
 
     @abstractmethod
-    def supports_rgb_calibration(self):
+    def supports_rgb_calibration(self) -> bool:
         pass
 
     @abstractmethod
@@ -333,15 +420,15 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def supports_hue_calibration(self):
+    def supports_hue_calibration(self) -> bool:
         pass
 
     @abstractmethod
-    def supports_popup_menu(self):
+    def supports_popup_menu(self) -> bool:
         pass
 
     @abstractmethod
-    def supports_timezone_setting(self):
+    def supports_timezone_setting(self) -> bool:
         pass
 
     @abstractmethod
@@ -365,11 +452,11 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def supports_caching_rom_lists(self):
+    def supports_caching_rom_lists(self) -> bool:
         pass
 
     @abstractmethod
-    def keep_running_on_error(self):
+    def keep_running_on_error(self) -> bool:
         pass
 
     @abstractmethod
@@ -377,15 +464,15 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def get_boxart_medium_resize_dimensions(self):
+    def get_boxart_medium_resize_dimensions(self) -> tuple[int, int]:
         pass
 
     @abstractmethod
-    def get_boxart_small_resize_dimensions(self):
+    def get_boxart_small_resize_dimensions(self) -> tuple[int, int]:
         pass
 
     @abstractmethod
-    def get_boxart_large_resize_dimensions(self):
+    def get_boxart_large_resize_dimensions(self) -> tuple[int, int]:
         pass
 
     @abstractmethod
@@ -393,7 +480,7 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def supports_qoi(self):
+    def supports_qoi(self) -> bool:
         pass
 
     @abstractmethod
@@ -402,6 +489,14 @@ class AbstractDevice(ABC):
 
     @abstractmethod
     def get_audio_system(self):
+        pass
+
+    @abstractmethod
+    def get_controller_interface(self) -> ControllerInterface:
+        pass
+
+    @abstractmethod
+    def wifi_error_detected(self):
         pass
     
     @abstractmethod
@@ -434,7 +529,7 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
-    def get_new_wifi_scanner(self):
+    def get_new_wifi_scanner(self) -> Any:
         pass
 
     @abstractmethod

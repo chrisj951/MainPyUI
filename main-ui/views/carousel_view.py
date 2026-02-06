@@ -40,7 +40,6 @@ class CarouselView(View):
         self.options_are_sorted = self.is_alphabetized(options)
         self.font_purpose = FontPurpose.GRID_ONE_ROW
         self.show_grid_text = show_grid_text
-        self.selected_entry_width_percent = selected_entry_width_percent
         self.shrink_further_away = shrink_further_away
         self.sides_hang_off_edge = sides_hang_off_edge
         if(set_bottom_bar_text_to_selection is None):
@@ -49,8 +48,11 @@ class CarouselView(View):
         self.set_bottom_bar_text_to_selection = set_bottom_bar_text_to_selection
 
         self.options_length = len(options)
-        if(self.selected_entry_width_percent is None):
-            self.selected_entry_width_percent = 40
+        if selected_entry_width_percent is None:
+            selected_entry_width_percent = 40.0
+        else:
+            selected_entry_width_percent = float(selected_entry_width_percent)
+        self.selected_entry_width_percent: float = float(selected_entry_width_percent)
         self.fixed_width = fixed_width        
 
         if(x_pad is None):
@@ -88,6 +90,8 @@ class CarouselView(View):
         self.current_right = (cols-1)//2
         self.correct_selected_for_off_list()
         self.prev_visible_options = None
+        self.prev_x_offsets: list[float] = []
+        self.prev_widths: list[float] = []
         self.animated_count = 0
         self.include_index_text = True
         self.missing_image_path = missing_image_path
@@ -325,8 +329,8 @@ class CarouselView(View):
 
         self.prev_selected = self.selected
         self.prev_visible_options = visible_options
-        self.prev_x_offsets = x_offsets
-        self.prev_widths = widths
+        self.prev_x_offsets = [float(x) for x in x_offsets]
+        self.prev_widths = [float(w) for w in widths]
         if(self.include_index_text):
             letter = ''
             if(self.options_are_sorted):
@@ -419,7 +423,8 @@ class CarouselView(View):
 
     def animate_transition(self):
         if(not self.skip_next_animation):
-            animation_frames = math.floor(10 // Device.get_device().animation_divisor()) - self.animated_count
+            divisor = Device.get_device().animation_divisor() or 1
+            animation_frames = math.floor(10 // divisor) - self.animated_count
             if Device.get_device().get_system_config().animations_enabled() and animation_frames > 1:
                 render_mode = self.get_img_render_mode()
                 #frame_duration = 1 / 60.0  # 60 FPS
@@ -429,7 +434,7 @@ class CarouselView(View):
                 rotate_left = diff > (len(self.options) + 1) // 2
                 x_offsets_for_animation = list(self.prev_x_offsets)
                 widths_for_animation = list(self.prev_widths)
-                image_list = list(self.prev_visible_options)
+                image_list = list(self.prev_visible_options or [])
                 new_visible_options, selected_visible_index = self.get_visible_options()
         
                 if(not self.sides_hang_off_edge):

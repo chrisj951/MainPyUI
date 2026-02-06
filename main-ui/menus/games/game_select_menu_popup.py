@@ -55,6 +55,8 @@ class GameSelectMenuPopup:
 
     def execute_game_search(self, game_system, input_value):
         from menus.games.search_games_for_system_menu import SearchGamesForSystemMenu
+        if game_system is None:
+            return
         search_txt = OnScreenKeyboard().get_input("Game Search:")
         if(search_txt is not None):
             return SearchGamesForSystemMenu(game_system, search_txt.upper()).run_rom_selection()
@@ -70,6 +72,8 @@ class GameSelectMenuPopup:
 
     def download_boxart(self, input, rom_info : RomInfo):
         if (ControllerInput.A == input):
+            if rom_info.game_system is None:
+                return
             rom_select_options_builder = get_rom_select_options_builder()
 
             rom_image_list = []
@@ -108,6 +112,8 @@ class GameSelectMenuPopup:
 
     def select_specific_boxart(self, input, rom_info : RomInfo):
         if (ControllerInput.A == input):
+            if rom_info.game_system is None:
+                return
             Display.display_message("Loading boxart list...")
             scraper = BoxArtScraper()
             if(not scraper.check_wifi()):
@@ -132,10 +138,14 @@ class GameSelectMenuPopup:
                         Display.clear_image_cache()
                     PyUiLogger().get_logger().info(f"Downloading {box_art} to {img_path}")
                     Display.display_message(f"Downloading {box_art} to {img_path}")
-                    scraper.download_remote_image_for_system(rom_info.game_system.folder_name, box_art,img_path)
+                    if img_path is None:
+                        return
+                    scraper.download_remote_image_for_system(rom_info.game_system.folder_name, box_art, img_path)
                     BoxArtResizer.patch_boxart_list([img_path])
 
     def get_game_options(self, rom_info : RomInfo, additional_popup_options = [], rom_list= [], use_full_text = True):
+        if rom_info.game_system is None:
+            return []
         popup_options = []
         popup_options.extend(additional_popup_options)
         rom_name = os.path.basename(rom_info.rom_file_path)
@@ -223,6 +233,8 @@ class GameSelectMenuPopup:
 
 
     def run_game_select_popup_menu(self, rom_info : RomInfo, additional_popup_options = [], rom_list= []):
+        if rom_info.game_system is None:
+            return
         popup_options = []
         popup_options.append(GridOrListEntry(
             primary_text=f"{rom_info.game_system.display_name} Game Search",

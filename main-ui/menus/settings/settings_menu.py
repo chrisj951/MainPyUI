@@ -26,6 +26,8 @@ class SettingsMenu(ABC):
         self.theme_ever_changed = False
         while(selected is not None):
             option_list = self.build_options_list()
+            if option_list is None:
+                option_list = []
             
             if(self.theme_changed):
                 self.theme_ever_changed = True
@@ -136,7 +138,7 @@ class SettingsMenu(ABC):
                     option_list.append(
                                     GridOrListEntry(
                                     primary_text=display_name,
-                                    value_text="<    " + selected_value + "    >",
+                                    value_text="<    " + str(selected_value or "") + "    >",
                                     image_path=None,
                                     image_path_selected=None,
                                     description=description,

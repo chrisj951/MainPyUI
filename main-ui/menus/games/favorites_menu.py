@@ -23,9 +23,10 @@ class FavoritesMenu(RomsMenuCommon):
             if(display_name is None):
                 display_name =  RomFileNameUtils.get_rom_name_without_extensions(rom_info.game_system, rom_info.rom_file_path)
 
+            system_name = self._extract_game_system(rom_info.rom_file_path) or "Unknown"
             rom_list.append(
                 GridOrListEntry(
-                    primary_text=display_name  +" (" + self._extract_game_system(rom_info.rom_file_path)+")",
+                    primary_text=f"{display_name} ({system_name})",
                     image_path=img_path,
                     image_path_selected=img_path,
                     description=None, 

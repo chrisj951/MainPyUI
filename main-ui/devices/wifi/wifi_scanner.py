@@ -154,7 +154,7 @@ class WiFiScanner:
     # Other helpers (unchanged)
     # ----------------------------
 
-    def get_connected_ssid(self):
+    def get_connected_ssid(self) -> tuple[str | None, int | None]:
         ssid = None
         freq = None
         try:
