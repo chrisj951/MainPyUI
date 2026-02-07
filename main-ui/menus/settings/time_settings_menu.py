@@ -3,9 +3,12 @@ from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from menus.settings import settings_menu
 from menus.settings.set_time_menu import SetTimeMenu
+from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 from views.grid_or_list_entry import GridOrListEntry
 
+
+from menus.language.language import Language
 
 class TimeSettingsMenu(settings_menu.SettingsMenu):
     def __init__(self):
@@ -13,11 +16,7 @@ class TimeSettingsMenu(settings_menu.SettingsMenu):
 
     def set_timezone(self, input):
         if (ControllerInput.A == input):
-            Device.prompt_timezone_update()
-
-    def change_show_clock(self, input):
-        if (ControllerInput.DPAD_LEFT == input or ControllerInput.DPAD_RIGHT == input or ControllerInput.A == input):
-            PyUiConfig.set_show_clock(not PyUiConfig.show_clock())
+            Device.get_device().prompt_timezone_update()
 
     def change_24_hour_clock_setting(self, input):
         if (ControllerInput.DPAD_LEFT == input or ControllerInput.DPAD_RIGHT == input or ControllerInput.A == input):
@@ -42,7 +41,7 @@ class TimeSettingsMenu(settings_menu.SettingsMenu):
 
         option_list.append(
             GridOrListEntry(
-                primary_text="Set Time & Date",
+                primary_text=Language.set_time_date(),
                 value_text=None,
                 image_path=None,
                 image_path_selected=None,
@@ -52,10 +51,10 @@ class TimeSettingsMenu(settings_menu.SettingsMenu):
             )
         )
 
-        if(Device.supports_timezone_setting()):
+        if(Device.get_device().supports_timezone_setting()):
             option_list.append(
                 GridOrListEntry(
-                    primary_text="Set Timezone",
+                    primary_text=Language.set_timezone(),
                     value_text=None,
                     image_path=None,
                     image_path_selected=None,
@@ -64,44 +63,33 @@ class TimeSettingsMenu(settings_menu.SettingsMenu):
                     value=self.set_timezone
                 )
             )
+        else:
+            PyUiLogger.get_logger().info("Timezone setting not supported on this Device.get_device().")
 
         option_list.append(
             GridOrListEntry(
-                primary_text="Clock",
+                primary_text=Language.twenty_four_hour_clock(),
                 value_text="<    " +
-                ("On" if PyUiConfig.show_clock() else "Off") + "    >",
-                image_path=None,
-                image_path_selected=None,
-                description=None,
-                icon=None,
-                value=self.change_show_clock
+                 ("On" if PyUiConfig.use_24_hour_clock() else "Off") + "    >",
+                 image_path=None,
+                 image_path_selected=None,
+                 description=None,
+                 icon=None,
+                 value=self.change_24_hour_clock_setting
             )
         )
-        if (PyUiConfig.show_clock()):
-            option_list.append(
+        option_list.append(
                 GridOrListEntry(
-                    primary_text="24 Hour Clock",
+                    primary_text=Language.show_am_pm(),
                     value_text="<    " +
-                    ("On" if PyUiConfig.use_24_hour_clock() else "Off") + "    >",
+                    ("On" if PyUiConfig.show_am_pm() else "Off") + "    >",
                     image_path=None,
                     image_path_selected=None,
                     description=None,
                     icon=None,
-                    value=self.change_24_hour_clock_setting
-                )
-            )
-            if (not PyUiConfig.use_24_hour_clock()):
-                option_list.append(
-                    GridOrListEntry(
-                        primary_text="Show AM/PM",
-                        value_text="<    " +
-                        ("On" if PyUiConfig.show_am_pm() else "Off") + "    >",
-                        image_path=None,
-                        image_path_selected=None,
-                        description=None,
-                        icon=None,
-                        value=self.change_am_pm_setting
-                    )
-                )
+                    value=self.change_am_pm_setting
+               )
+        )
 
         return option_list
+

@@ -7,16 +7,19 @@ from controller.controller_interface import ControllerInterface
 from utils.logger import PyUiLogger
 from ctypes import byref
 
+from utils.time_logger import log_timing
+
 
 class Sdl2ControllerInterface(ControllerInterface):
 
     def __init__(self):
-        self.event = sdl2.SDL_Event()
-        self.controller = None
-        self.print_key_changes = False
+        with log_timing("SDL2 Controller initialization", PyUiLogger.get_logger()):    
+            self.event = sdl2.SDL_Event()
+            self.controller = None
+            self.print_key_changes = False
 
-        self.clear_input_queue()
-        self.init_controller()
+            self.clear_input_queue()
+            self.init_controller()
 
     def print_key_state_changes(self):
         self.print_key_changes = True
@@ -79,23 +82,23 @@ class Sdl2ControllerInterface(ControllerInterface):
     def print_last_event(self):
         if(self.print_key_changes):
             if self.event.type == sdl2.SDL_CONTROLLERBUTTONDOWN:
-                mapping = Device.map_digital_input(self.event.cbutton.button)
+                mapping = Device.get_device().map_digital_input(self.event.cbutton.button)
                 if(mapping is not None):
                     print(f"KEY,{mapping},PRESS")
             elif self.event.type == sdl2.SDL_CONTROLLERBUTTONUP:
-                mapping = Device.map_digital_input(self.event.cbutton.button)
+                mapping = Device.get_device().map_digital_input(self.event.cbutton.button)
                 if(mapping is not None):
                     print(f"KEY,{mapping},RELEASE")
             elif self.event.type == sdl2.SDL_CONTROLLERAXISMOTION:
-                mapping = Device.map_analog_input(self.event.cbutton.button,self.event.caxis.value)
+                mapping = Device.get_device().map_analog_input(self.event.cbutton.button,self.event.caxis.value)
                 if(mapping is not None):
                     print(f"ANALOG,{mapping}")
 
     def last_input(self):
         if self.event.type == sdl2.SDL_CONTROLLERBUTTONDOWN:
-            return Device.map_digital_input(self.event.cbutton.button)
+            return Device.get_device().map_digital_input(self.event.cbutton.button)
         elif self.event.type == sdl2.SDL_CONTROLLERAXISMOTION:
-            return Device.map_analog_input(self.event.caxis.axis, self.event.caxis.value)
+            return Device.get_device().map_analog_input(self.event.caxis.axis, self.event.caxis.value)
         return None
 
     def clear_input(self):

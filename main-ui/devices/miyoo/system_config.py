@@ -1,4 +1,5 @@
 import json
+import os
 import threading
 
 from controller.controller_inputs import ControllerInput
@@ -116,6 +117,11 @@ class SystemConfig:
 
     def set_wifi(self, value):
         self.config["wifi"] = value
+        self.save_config()
+
+    def set_bluetooth(self, value):
+        self.config["bluetooth"] = value
+        self.save_config()
 
     def get_language(self):
         return self.config.get("language")
@@ -250,6 +256,8 @@ class SystemConfig:
             theme = PyUiConfig.get("theme")
             PyUiLogger.get_logger().info(f"Current user config does not have theme set, so loading from PyUIConfig as {theme}")
             self.set_theme(theme)
+            from devices.device import Device
+            Device.get_device().set_theme(os.path.join(PyUiConfig.get("themeDir"), theme))
         return theme
 
     def set_theme(self, theme):
@@ -325,3 +333,30 @@ class SystemConfig:
         self.config["simpleMode"] = value
         self.save_config()
 
+    def get_preferred_region(self):
+        return self.config.get("preferredRegion", "USA")
+
+    def set_preferred_region(self,value):
+        self.config["preferredRegion"] = value
+        self.save_config()
+
+    def animations_enabled(self):
+        return self.config.get("animationsEnabled", True)
+
+    def set_animations_enabled(self, value):
+        self.config["animationsEnabled"] = value
+        self.save_config()
+
+    def animation_speed(self, default_value):
+        return self.config.get("animationSpeed", default_value)
+
+    def set_animation_speed(self, value):
+        self.config["animationSpeed"] = value
+        self.save_config()
+
+    def get_input_rate_limit_ms(self):
+        return self.config.get("inputRateLimitMs", 16)
+
+    def set_input_rate_limit_ms(self, value):
+        self.config["inputRateLimitMs"] = value
+        self.save_config()

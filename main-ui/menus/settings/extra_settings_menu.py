@@ -1,13 +1,11 @@
 
-from controller.controller import Controller
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
-from display.display import Display
-from display.font_purpose import FontPurpose
 from display.on_screen_keyboard import OnScreenKeyboard
 from games.utils.box_art_resizer import BoxArtResizer
 from menus.language.language import Language
 from menus.settings import settings_menu
+from menus.settings.animation_settings_menu import AnimationSettingsMenu
 from menus.settings.cfw_system_settings_menu_for_category import CfwSystemSettingsMenuForCategory
 from menus.settings.controller_settings_menu import ControllerSettingsMenu
 from menus.settings.display_settings_menu import DisplaySettingsMenu
@@ -16,10 +14,7 @@ from menus.settings.game_select_settings_menu import GameSelectSettingsMenu
 from menus.settings.game_switcher_settings_menu import GameSwitcherSettingsMenu
 from menus.settings.language_menu import LanguageMenu
 from menus.settings.game_system_select_settings_menu import GameSystemSelectSettingsMenu
-from menus.settings.modes_menu import ModesMenu
 from menus.settings.time_settings_menu import TimeSettingsMenu
-from themes.theme import Theme
-from utils.boxart.box_art_scraper import BoxArtScraper
 from utils.cfw_system_config import CfwSystemConfig
 from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
@@ -53,12 +48,16 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
 
     def launch_stock_os_menu(self,input):
         if(ControllerInput.A == input):
-            Device.launch_stock_os_menu()
+            Device.get_device().launch_stock_os_menu()
 
     def launch_controller_settings(self,input):
         if(ControllerInput.A == input):
             ControllerSettingsMenu().show_menu()
 
+    def launch_animation_settings(self,input):
+        if(ControllerInput.A == input):
+            AnimationSettingsMenu().show_menu()
+            
     def launch_gammeswitcher_settings(self,input):
         if(ControllerInput.A == input):
             GameSwitcherSettingsMenu().show_menu()
@@ -73,16 +72,6 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
     def launch_game_art_display_settings(self,input):
         if(ControllerInput.A == input):
             GameArtDisplaySettingsMenu().show_menu()
-
-    def scrape_box_art(self,input):
-        if(ControllerInput.A == input):
-            BoxArtScraper().scrape_boxart()
-
-    def launch_modes_menu(self,input):
-        if(ControllerInput.A == input):
-            ModesMenu().show_menu()
-
-
     def resize_boxart(self, input):
         if (ControllerInput.A == input):
             BoxArtResizer.patch_boxart()
@@ -93,13 +82,19 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
             CfwSystemSettingsMenuForCategory(category).show_menu()
 
 
+    def is_excluded_setting(self,category):
+        excluded_settings = [
+            GameSwitcherSettingsMenu.SETTINGS_NAME
+        ]
+        return category in excluded_settings
+
 
     def build_options_list(self):
         option_list = []
         
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Display Settings",
+                        primary_text=Language.display_settings(),
                         value_text=None,
                         image_path=None,
                         image_path_selected=None,
@@ -108,10 +103,21 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                         value=self.launch_display_settings
                     )
             )
-        
+
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Time Settings",
+                        primary_text=Language.animation_settings(),
+                        image_path=None,
+                        image_path_selected=None,
+                        description=None,
+                        icon=None,
+                        value=self.launch_animation_settings
+                )
+        )
+
+        option_list.append(
+                GridOrListEntry(
+                        primary_text=Language.time_settings(),
                         value_text=None,
                         image_path=None,
                         image_path_selected=None,
@@ -123,7 +129,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
         
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Game System Select Settings",
+                        primary_text=Language.game_system_select_settings(),
                         value_text=None,
                         image_path=None,
                         image_path_selected=None,
@@ -135,7 +141,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
         
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Game Select Settings",
+                        primary_text=Language.game_select_settings(),
                         value_text=None,
                         image_path=None,
                         image_path_selected=None,
@@ -148,7 +154,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
         if(PyUiConfig.allow_pyui_game_switcher()):
             option_list.append(
                     GridOrListEntry(
-                            primary_text="Game Switcher Settings",
+                            primary_text=Language.game_switcher_settings(),
                             image_path=None,
                             image_path_selected=None,
                             description=None,
@@ -158,7 +164,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
             )
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Game Art Display Settings",
+                        primary_text=Language.game_art_display_settings(),
                         image_path=None,
                         image_path_selected=None,
                         description=None,
@@ -167,24 +173,9 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                 )
         )
 
-        #Future
-        if(False):
-            option_list.append(
-                    GridOrListEntry(
-                            primary_text="Download BoxArt",
-                            image_path=None,
-                            image_path_selected=None,
-                            description=None,
-                            icon=None,
-                            value=self.scrape_box_art
-                    )
-            )    
-
-                    
-
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Controller Settings",
+                        primary_text=Language.controller_settings(),
                         image_path=None,
                         image_path_selected=None,
                         description=None,
@@ -193,11 +184,11 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                 )
         )
 
-        option_list.extend(Device.get_extra_settings_options())
+        option_list.extend(Device.get_device().get_extra_settings_options())
 
         option_list.append(
             GridOrListEntry(
-                primary_text="Language Settings",
+                primary_text=Language.language_settings(),
                 value_text=None,
                 image_path=None,
                 image_path_selected=None,
@@ -211,7 +202,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
         if(PyUiConfig.include_stock_os_launch_option()):
             option_list.append(
                     GridOrListEntry(
-                            primary_text="Stock OS Menu",
+                            primary_text=Language.stock_os_menu(),
                             value_text=None,
                             image_path=None,
                             image_path_selected=None,
@@ -226,14 +217,13 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
             menu_options = CfwSystemConfig.get_menu_options(category=category)
             contains_entry_for_device = False
             for name, option in menu_options.items():
-                PyUiLogger.get_logger().info(f"{option}")
                 devices = option.get('devices')
-                supported_device = not devices or Device.get_device_name() in devices
+                supported_device = not devices or Device.get_device().get_device_name() in devices
                 if(supported_device):
                     contains_entry_for_device = True
                     break
 
-            if(contains_entry_for_device):
+            if(contains_entry_for_device and not self.is_excluded_setting(category)):
                 option_list.append(
                         GridOrListEntry(
                                 primary_text=category,
@@ -248,31 +238,6 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                             )
                     )
 
-
-        if(Device.supports_image_resizing()):
-            option_list.append(
-                GridOrListEntry(
-                    primary_text="Optimize Boxart",
-                    value_text=None,
-                    image_path=None,
-                    image_path_selected=None,
-                    description=None,
-                    icon=None,
-                    value=self.resize_boxart
-                )
-            )        
-
-        option_list.append(
-            GridOrListEntry(
-                primary_text="Locked Down Modes",
-                value_text=None,
-                image_path=None,
-                image_path_selected=None,
-                description=None,
-                icon=None,
-                value=self.launch_modes_menu
-                )
-            )
-
+      
 
         return option_list

@@ -1,23 +1,25 @@
 import inspect
-import json
 from pathlib import Path
 import subprocess
 import threading
 import time
 from audio.audio_player_delegate_sdl2 import AudioPlayerDelegateSdl2
 from controller.controller_inputs import ControllerInput
+from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
 import os
-from controller.sdl.sdl2_controller_interface import Sdl2ControllerInterface
+from controller.key_watcher_controller import KeyWatcherController
+from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 from devices.charge.charge_status import ChargeStatus
 from devices.miyoo.flip.miyoo_flip_poller import MiyooFlipPoller
 from devices.miyoo.miyoo_device import MiyooDevice
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
-from devices.miyoo.system_config import SystemConfig
 from devices.miyoo_trim_common import MiyooTrimCommon
+from devices.miyoo_trim_mapping_provider import MiyooTrimKeyMappingProvider
 from devices.utils.file_watcher import FileWatcher
 from devices.utils.process_runner import ProcessRunner
+from devices.wifi.wifi_status import WifiStatus
 from display.display import Display
 from menus.games.utils.rom_info import RomInfo
 from menus.settings.timezone_menu import TimezoneMenu
@@ -46,7 +48,6 @@ class MiyooFlip(MiyooDevice):
             4: "SDL_CONTROLLER_AXIS_TRIGGERLEFT",
             5: "SDL_CONTROLLER_AXIS_TRIGGERRIGHT"
         }
-        self.sdl2_controller_interface = Sdl2ControllerInterface()
         self.audio_player = AudioPlayerDelegateSdl2()
 
         self.sdl_button_to_input = {
@@ -69,13 +70,16 @@ class MiyooFlip(MiyooDevice):
         
         os.environ["SDL_VIDEODRIVER"] = "KMSDRM"
         os.environ["SDL_RENDER_DRIVER"] = "kmsdrm"
+        os.environ["KMSDRM_DEVICE"] = "/dev/dri/card0"
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_DRIVER, b"opengles2")
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_OPENGL_SHADERS, b"1")
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_FRAMEBUFFER_ACCELERATION, b"1")
         
-        self.system_config = None
+        script_dir = Path(__file__).resolve().parent
+        source = script_dir / 'flip-system.json'
+        self._load_system_config("/mnt/SDCARD/Saves/flip-system.json", source)
+
         if(main_ui_mode):
-            script_dir = Path(__file__).resolve().parent
-            source = script_dir / 'flip-system.json'
-            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/flip-system.json", source)
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/flip-system.json")
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
             miyoo_stock_json_file = script_dir.parent / 'stock/flip.json'
             ConfigCopier.ensure_config(MiyooFlip.MIYOO_STOCK_CONFIG_LOCATION, miyoo_stock_json_file)
@@ -96,17 +100,17 @@ class MiyooFlip(MiyooDevice):
           
             # Done to try to account for external systems editting the config file
             self.config_watcher_thread, self.config_watcher_thread_stop_event = FileWatcher().start_file_watcher(
-                "/mnt/SDCARD/Saves/flip-system.json", self.on_system_config_changed, interval=1.0)
-
-        if(self.system_config is None):
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/flip-system.json")
+                "/mnt/SDCARD/Saves/flip-system.json", self.on_system_config_changed, interval=0.2, repeat_trigger_for_mtime_granularity_issues=True)
 
         super().__init__()
 
 
-    def get_controller_interface(self):
-        return self.sdl2_controller_interface
+    def power_off_cmd(self):
+        return "poweroff"
 
+    def get_controller_interface(self):
+        return KeyWatcherController(event_path="/dev/input/event5", mapping_provider=MiyooTrimKeyMappingProvider(), event_format='llHHi')
+        
     def on_system_config_changed(self):
         old_volume = self.system_config.get_volume()
         self.system_config.reload_config()
@@ -114,7 +118,7 @@ class MiyooFlip(MiyooDevice):
         if(old_volume != new_volume):
             Display.volume_changed(new_volume)
 
-    def startup_init(self):
+    def startup_init(self, include_wifi=True):
         self._set_lumination_to_config()
         self._set_contrast_to_config()
         self._set_saturation_to_config()
@@ -123,7 +127,7 @@ class MiyooFlip(MiyooDevice):
         self.ensure_wpa_supplicant_conf()
         self.init_gpio()
 
-        if(PyUiConfig.enable_wifi_monitor()):
+        if(PyUiConfig.enable_wifi_monitor() and include_wifi):
             PyUiLogger.get_logger().info(f"Starting wifi monitor")
             threading.Thread(target=self.monitor_wifi, daemon=True).start()
             if(self.is_wifi_enabled()):
@@ -145,13 +149,15 @@ class MiyooFlip(MiyooDevice):
             except Exception as e:
                 PyUiLogger.get_logger().error(f"Error running insmod {e}")
 
-            if(not self.is_btmanager_runing()):
-                try:
-                    subprocess.Popen(["/usr/miyoo/bin/btmanager"],
-                                    stdout=subprocess.DEVNULL,
-                                    stderr=subprocess.DEVNULL)
-                except Exception as e:
-                    PyUiLogger.get_logger().error(f"Error running insmod {e}")
+            #Is this needed? Temporarily disable
+            if(False):
+                if(not self.is_btmanager_runing()):
+                    try:
+                        subprocess.Popen(["/usr/miyoo/bin/btmanager"],
+                                        stdout=subprocess.DEVNULL,
+                                        stderr=subprocess.DEVNULL)
+                    except Exception as e:
+                        PyUiLogger.get_logger().error(f"Error running insmod {e}")
         else:
             self.disable_bluetooth()
 
@@ -210,23 +216,23 @@ class MiyooFlip(MiyooDevice):
             PyUiLogger.get_logger().error(f"An error occurred: {e}")
             return False
 
-    @property
+
     def screen_width(self):
         return 640
 
-    @property
+
     def screen_height(self):
         return 480
     
     
-    @property
+
     def output_screen_width(self):
         if(self.should_scale_screen()):
             return 1920
         else:
             return 640
         
-    @property
+
     def output_screen_height(self):
         if(self.should_scale_screen()):
             return 1080
@@ -259,35 +265,6 @@ class MiyooFlip(MiyooDevice):
         ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
                                      "179:hue:"+str(self.system_config.hue * 5)])
         
-
-    #This was from ChatGPT and might be able to be modified to get the current display
-    #but currently its capturing an old one which just says Loading...
-    def capture_kmsdrm_png(self, output_path="/tmp/screenshot.png", fb_path="/dev/fb0"):
-        logger = PyUiLogger.get_logger()
-
-        # Read width/height/stride from sysfs if possible
-        try:
-            with open("/sys/class/graphics/fb0/virtual_size", "r") as f:
-                width_str, height_str = f.read().strip().split(",")
-                width, height = int(width_str), int(height_str)
-            with open("/sys/class/graphics/fb0/stride", "r") as f:
-                stride = int(f.read().strip())
-        except Exception as e:
-            logger.warning(f"Failed to read fb0 sysfs info: {e}, using defaults")
-            width, height, stride = 640, 480, 2560
-
-        # Open framebuffer for reading
-        frame_bytes = bytearray()
-        with open(fb_path, "rb") as fb:
-            for _ in range(height):
-                row = fb.read(stride)
-                frame_bytes.extend(row[:width*4])  # slice only visible pixels
-
-        # Convert BGRA to RGBA
-        img = Image.frombytes("RGBA", (width, height), bytes(frame_bytes), "raw", "BGRA")
-        img.save(output_path)
-        logger.info(f"Framebuffer saved to {output_path} ({width}x{height})")
-        return output_path
             
     def _take_snapshot(self, path):
         ProcessRunner.run(["/mnt/sdcard/spruce/flip/screenshot.sh", path])
@@ -326,12 +303,12 @@ class MiyooFlip(MiyooDevice):
     def get_bluetooth_scanner(self):
         return BluetoothScanner()
     
-    @property
+
     def reboot_cmd(self):
         return "reboot"
 
     def get_wpa_supplicant_conf_path(self):
-        return "/userdata/cfg/wpa_supplicant.conf"
+        return PyUiConfig.get_wpa_supplicant_conf_file_location("/userdata/cfg/wpa_supplicant.conf")
 
     def get_volume(self):
         return self.system_config.get_volume()
@@ -395,8 +372,8 @@ class MiyooFlip(MiyooDevice):
     
     def read_volume(self):
         try:
-            current_mixer = self.get_current_mixer_value(MiyooDevice.OUTPUT_MIXER)
-            if(MiyooDevice.SOUND_DISABLED == current_mixer):
+            current_mixer = self.get_current_mixer_value(MiyooDevice.get_device().OUTPUT_MIXER)
+            if(MiyooDevice.get_device().SOUND_DISABLED == current_mixer):
                 return 0
             else:
                 output = subprocess.check_output(
@@ -427,7 +404,7 @@ class MiyooFlip(MiyooDevice):
         self._set_volume(config_volume)
 
     def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
-        return MiyooTrimCommon.run_game(self,rom_info, remap_sdcard_path = True)
+        return MiyooTrimCommon.run_game(self,rom_info)
 
     def supports_analog_calibration(self):
         return True
@@ -475,3 +452,51 @@ class MiyooFlip(MiyooDevice):
 
     def get_audio_system(self):
         return self.audio_player
+    
+    def get_fw_version(self):
+        try:
+            with open(f"/usr/miyoo/version") as f:
+                return f.read().strip()
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"Could not read FW version : {e}")
+            return "Unknown"
+
+    def get_core_name_overrides(self, core_name):
+        return [core_name, core_name+"-64"]
+
+    def get_core_for_game(self, game_system_config, rom_file_path):
+        core = game_system_config.get_effective_menu_selection("Emulator", rom_file_path)
+        if(core is None):
+            core = game_system_config.get_effective_menu_selection("Emulator_64", rom_file_path)
+        return core
+    
+    @throttle.limit_refresh(15)
+    def get_wifi_status(self):
+        if(self.is_wifi_enabled()):
+            if(self.get_ip_addr_text() in ["Off","Error","Connecting"]):
+                return WifiStatus.OFF
+            wifi_connection_quality_info = self.get_wifi_connection_quality_info()
+            # Composite score out of 100 based on weighted contribution
+            # Adjust weights as needed based on empirical testing
+            if(wifi_connection_quality_info.link_quality == 0.0 and wifi_connection_quality_info.signal_level == 0.0):
+                return WifiStatus.OFF
+            else:
+                score = (
+                    (wifi_connection_quality_info.link_quality / 70.0) * 0.5 +          # 50% weight
+                    (wifi_connection_quality_info.signal_level / 70.0) * 0.3 +        # 30% weight
+                    ((70 - wifi_connection_quality_info.noise_level) / 70.0) * 0.2    # 20% weight (less noise is better)
+                ) * 100
+
+            # Ensure signal and settings stay in sync
+            self.get_ip_addr_text()
+            
+            if score >= 80:
+                return WifiStatus.GREAT
+            elif score >= 60:
+                return WifiStatus.GOOD
+            elif score >= 40:
+                return WifiStatus.OKAY
+            else:
+                return WifiStatus.BAD
+        else:            
+            return WifiStatus.OFF

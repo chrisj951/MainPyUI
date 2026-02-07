@@ -2,7 +2,8 @@ import threading
 from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
-from controller.key_watcher_controller import InputResult, KeyEvent, KeyWatcherController
+from controller.key_watcher_controller import DictKeyMappingProvider, KeyWatcherController
+from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.miyoo.flip.miyoo_flip_poller import MiyooFlipPoller
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
 from devices.muos.muos_device import MuosDevice
@@ -90,7 +91,7 @@ class MuosAnbernicRGXX(MuosDevice):
         key_mappings[KeyEvent(3, 16, 0)] = [InputResult(ControllerInput.DPAD_LEFT, KeyState.RELEASE), InputResult(ControllerInput.DPAD_RIGHT, KeyState.RELEASE)]
 
         
-        return KeyWatcherController(event_path="/dev/input/event1", key_mappings=key_mappings)
+        return KeyWatcherController(event_path="/dev/input/event1", mapping_provider=DictKeyMappingProvider(key_mappings))
 
 
     def are_headphones_plugged_in(self):
@@ -111,11 +112,11 @@ class MuosAnbernicRGXX(MuosDevice):
 
     def map_key(self, key_code):
         if(114 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.VOLUME_DOWN)
+            return ControllerInput.VOLUME_DOWN
         elif(115 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.VOLUME_UP)
+            return ControllerInput.VOLUME_UP
         elif(116 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.POWER_BUTTON)
+            return ControllerInput.POWER_BUTTON
         else:
             PyUiLogger.get_logger().debug(f"Unrecognized keycode {key_code}")
             return None

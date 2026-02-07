@@ -23,6 +23,8 @@ from devices.device_common import DeviceCommon
 from views.grid_or_list_entry import GridOrListEntry
 
 
+from menus.language.language import Language
+
 class MuosDevice(DeviceCommon):
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
@@ -35,8 +37,7 @@ class MuosDevice(DeviceCommon):
         self.parent_dir = os.path.dirname(base_dir)
         source = os.path.join(self.script_dir,"muos-system.json") 
         system_json_path = os.path.join(self.parent_dir,"muos-system.json")
-        ConfigCopier.ensure_config(system_json_path, Path(source))
-        self.system_config = SystemConfig(system_json_path)
+        self._load_system_config(system_json_path, Path(source))
 
     def sleep(self):
         ProcessRunner.run(["/opt/muos/script/system/suspend.sh"])
@@ -47,11 +48,11 @@ class MuosDevice(DeviceCommon):
     def should_scale_screen(self):
         return self.is_hdmi_connected()
 
-    @property
+    
     def power_off_cmd(self):
         return "poweroff"
     
-    @property
+    
     def reboot_cmd(self):
         return "reboot"
 
@@ -256,31 +257,31 @@ class MuosDevice(DeviceCommon):
     def get_roms_dir(self):
         return "/mnt/union/ROMS/"
     
-    @property
+    
     def screen_width(self):
         return  int(self.read_based_on_muos_config("/opt/muos/device/config/screen/internal/width"))
 
-    @property
+    
     def screen_height(self):
         return int(self.read_based_on_muos_config("/opt/muos/device/config/screen/internal/height"))
     
-    @property
+    
     def screen_rotation(self):
         return int(self.read_based_on_muos_config("/opt/muos/device/config/screen/rotate"))
 
-    @property
+    
     def output_screen_width(self):
         if(self.should_scale_screen()):
             return 1920
         else:
-            return self.screen_width
+            return self.screen_width()
         
-    @property
+    
     def output_screen_height(self):
         if(self.should_scale_screen()):
             return 1080
         else:
-            return self.screen_height
+            return self.screen_height()
 
     def get_scale_factor(self):
         if(self.is_hdmi_connected()):
@@ -340,7 +341,7 @@ class MuosDevice(DeviceCommon):
         option_list = []
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Set PyUI as Startup",
+                        primary_text=Language.set_pyui_as_startup(),
                         value_text=None,
                         image_path=None,
                         image_path_selected=None,
@@ -378,3 +379,6 @@ class MuosDevice(DeviceCommon):
 
     def keep_running_on_error(self):
         return False
+
+    def perform_sdcard_ro_check(self):
+        PyUiLogger.get_logger().info("MUOS Device does not check for read-only SD card status.")

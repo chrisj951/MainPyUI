@@ -1,16 +1,25 @@
 
 import os
+import shutil
+import sys
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
 from display.display import Display
 from games.utils.game_system import GameSystem
+from menus.games.utils.collections_manager import CollectionsManager
+from menus.games.utils.favorites_manager import FavoritesManager
+from menus.games.utils.recents_manager import RecentsManager
 from menus.games.utils.rom_info import RomInfo
+from menus.games.utils.rom_select_options_builder import get_rom_select_options_builder
 from utils.logger import PyUiLogger
+from utils.user_prompt import UserPrompt
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
 from views.view_creator import ViewCreator
 from views.view_type import ViewType
 
+
+from menus.language.language import Language
 
 # Would like this to be generic in the future but this is so Miyoo specific right now 
 # Due to the oddities in how its handled
@@ -89,7 +98,7 @@ class GameConfigMenu:
                     update_value(entry_name, all_options[selected_index])
 
     def toggle_overridable_entries(self,input_value, rom_file_path, overridable_entries):
-        if(ControllerInput.A == input):
+        if(ControllerInput.A == input_value):
             all_overriden = True
             for entry_name in overridable_entries:
                 if not self.game_system.game_system_config.contains_menu_override(entry_name,rom_file_path):
@@ -120,13 +129,44 @@ class GameConfigMenu:
             if(not os.path.isfile(app_path)):
                 app_path = os.path.join("/mnt/SDCARD/Emu", self.game_system.folder_name, launch_option)
 
-            Device.run_app(os.path.join("/mnt/SDCARD/Emu", self.game_system.folder_name), app_path + " \"" +miyoo_game_path +"\"")
+            Device.get_device().run_app(os.path.join("/mnt/SDCARD/Emu", self.game_system.folder_name), app_path + " \"" +miyoo_game_path +"\"")
             # TODO Once we remove the display_kill and popups from launch.sh we can remove this
             # For a good speedup
             Display.reinitialize()
             self.game_system.game_system_config.reload_config()
 
+    def delete_rom(self, input_value):
+        if(ControllerInput.A == input_value):
+            if UserPrompt.prompt_yes_no(Language.delete_rom(), [f"Would you like to permanently delete", f"{self.game.display_name}?"]):
+                path = self.game.rom_file_path
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                else:
+                    os.remove(path)
+                self.perform_boxart_deletion()
+                Display.display_message(f"{path} deleted.",2000)
+                FavoritesManager.remove_favorite(self.game)
+                RecentsManager.remove_game(self.game)
+                CollectionsManager.remove_game_from_collections(self.game)
+                #TODO don't be hackish and reload. Instead remove it from caches
+                sys.exit()
+    
+    def perform_boxart_deletion(self):
+        PyUiLogger.get_logger().info(f"Deleting boxart for {self.game.rom_file_path}")
+        img_path = get_rom_select_options_builder().get_image_path(self.game)
+        while(img_path is not None):
+            os.remove(img_path)
+            img_path = get_rom_select_options_builder().get_image_path(self.game)
+            Display.clear_image_cache()
+
+    def delete_boxart(self, input_value):
+        if(ControllerInput.A == input_value):
+            if UserPrompt.prompt_yes_no(Language.delete_boxart(), [f"Would you like to permanently delete the boxart for", f"{self.game.display_name}?"]):
+                self.perform_boxart_deletion()
+                Display.display_message(f"Boxart for {self.game.display_name} deleted.",2000)
+
     def show_config(self, rom_file_path) :
+        self.game_system.game_system_config.reload_config()
         selected = Selection(None, None, 0)
         view = None
         #Loop is weird here due to how these options are handled.
@@ -135,7 +175,7 @@ class GameConfigMenu:
         while(selected is not None):
 
             config_list = []
-            if(not Device.get_system_config().simple_mode_enabled()):
+            if(not Device.get_device().get_system_config().simple_mode_enabled()):
                 for config_option in self.game_system.game_system_config.get_launchlist():
                     config_list.append(
                         GridOrListEntry(
@@ -151,17 +191,14 @@ class GameConfigMenu:
                         )
                     )
 
-
-            config_list.extend(self.gen_additional_game_options())
-
             menu_options = self.game_system.game_system_config.get_menu_options()
 
-            if(not Device.get_system_config().simple_mode_enabled()):
+            if(not Device.get_device().get_system_config().simple_mode_enabled()):
 
                 overridable_entries = []
                 for name, option in menu_options.items():
                     devices = option.get("devices")
-                    supported_device = not devices or Device.get_device_name() in devices
+                    supported_device = not devices or Device.get_device().get_device_name() in devices
                     if(supported_device):
                         effective_value = self.game_system.game_system_config.get_effective_menu_selection(name,rom_file_path)
                         display_name = option.get('display')
@@ -189,7 +226,7 @@ class GameConfigMenu:
                 if(overridable_entries):
                     config_list.append(
                         GridOrListEntry(
-                            primary_text="Toggle Settings as Game Specific Override",
+                            primary_text=Language.toggle_settings_as_game_specific_override(),
                             image_path=None,
                             image_path_selected=None,
                             description=None,
@@ -198,6 +235,25 @@ class GameConfigMenu:
                                         : self.toggle_overridable_entries(input_value,rom_file_path,overridable_entries)
                             )
                         )
+
+            if(not Device.get_device().get_system_config().simple_mode_enabled()):
+                config_list.append(
+                    GridOrListEntry(
+                        primary_text=Language.delete_rom(),
+                         value=lambda input_value
+                                 : self.delete_rom(input_value)
+                    )
+                )                
+                config_list.append(
+                    GridOrListEntry(
+                        primary_text=Language.delete_boxart(),
+                        value=lambda input_value
+                                : self.delete_boxart(input_value)
+                    )
+                )
+
+
+            config_list.extend(self.gen_additional_game_options())
 
             if(view is None):        
                 view = ViewCreator.create_view(
@@ -215,3 +271,5 @@ class GameConfigMenu:
                 selected = None
             elif(selected.get_input() is not None):
                 selected.get_selection().get_value()(selected.get_input()) 
+                if(not os.path.exists(self.game.rom_file_path)):
+                    selected = None

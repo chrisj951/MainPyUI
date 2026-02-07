@@ -302,6 +302,11 @@
       "filename": "saturn.jpg"
     },
     {
+      "matchPlatformShortname": "satellaview",
+      "matchPlatformUniqueId": "satellaview",
+      "filename": "satellaview.jpg"
+    },
+    {
       "matchPlatformShortname": "x68000",
       "matchPlatformUniqueId": "x68000",
       "filename": "x68000.jpg"

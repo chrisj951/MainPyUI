@@ -1,4 +1,3 @@
-import sys
 import time
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
@@ -60,8 +59,8 @@ class Controller:
 
     @staticmethod
     def init():
-        Controller.controller_interface = Device.get_controller_interface()
-        Controller._watch_for_secret_code = Device.get_system_config().game_selection_only_mode_enabled() or Device.get_system_config().simple_mode_enabled()
+        Controller.controller_interface = Device.get_device().get_controller_interface()
+        Controller._watch_for_secret_code = Device.get_device().get_system_config().game_selection_only_mode_enabled() or Device.get_device().get_system_config().simple_mode_enabled()
 
     @staticmethod
     def init_controller():
@@ -104,6 +103,15 @@ class Controller:
        
     @staticmethod
     def set_last_input(last_input):
+        if(last_input == ControllerInput.LEFT_STICK_UP):
+            last_input = ControllerInput.DPAD_UP
+        elif(last_input == ControllerInput.LEFT_STICK_DOWN):
+            last_input = ControllerInput.DPAD_DOWN
+        elif(last_input == ControllerInput.LEFT_STICK_LEFT):
+            last_input = ControllerInput.DPAD_LEFT
+        elif(last_input == ControllerInput.LEFT_STICK_RIGHT):
+            last_input = ControllerInput.DPAD_RIGHT
+
         Controller.last_controller_input = last_input
 
         if(Controller._watch_for_secret_code and last_input is not None):
@@ -123,9 +131,9 @@ class Controller:
             # Check for match
             if Controller._input_history == Controller._SECRET_CODE:
                 PyUiLogger().get_logger().info(f"Secret code entered")
-                Device.get_system_config().set_game_selection_only_mode_enabled(False)
-                Device.get_system_config().set_simple_mode_enabled(False)
-                Device.exit_pyui()
+                Device.get_device().get_system_config().set_game_selection_only_mode_enabled(False)
+                Device.get_device().get_system_config().set_simple_mode_enabled(False)
+                Device.get_device().exit_pyui()
 
 
             if(Controller._matches_secret_prefix()):
@@ -152,7 +160,7 @@ class Controller:
             callback()
 
         if timeout == DEFAULT_TIMEOUT_FLAG:
-            timeout = Device.input_timeout_default()
+            timeout = Device.get_device().input_timeout_default()
 
         now = time.time()
         time_since_last_input = now - Controller.last_input_time
@@ -179,17 +187,15 @@ class Controller:
             # Reset hold delay and clear any lingering event
             Controller.hold_delay = PyUiConfig.get_turbo_delay_ms()
 
-            Controller.clear_last_input()
-
             # Blocking wait for event until timeout
+            elapsed = time.time() - start_time
+            remaining_time = timeout - elapsed
+            remaining_time = max(remaining_time, 0.001)
             while True:
-                elapsed = time.time() - start_time
-                remaining_time = timeout - elapsed
-                if remaining_time <= 0:
-                    break
 
                 ms_remaining = int(remaining_time * 1000)
                 input = Controller.controller_interface.get_input(ms_remaining)
+                input = Device.get_device().check_for_button_remap(input)
                 Controller.set_last_input(input)
 
                 if Controller.last_controller_input is not None:
@@ -204,6 +210,10 @@ class Controller:
                                 Controller.check_for_hotkey()
                     else:
                         break  # Valid non-hotkey input
+                elapsed = time.time() - start_time
+                remaining_time = timeout - elapsed
+                if remaining_time <= 0:
+                    break
 
 
         #TODO i think this loop is in the wrong place
@@ -227,7 +237,7 @@ class Controller:
             elif(started_held_down):
                 #if(Controller.last_controller_input is not None):
                 #    PyUiLogger.get_logger().info(f"Controller input held down but isn't menu")
-                Controller.hold_delay = 0.0  # No input was released yet
+                Controller.hold_delay = Device.get_device().get_system_config().get_input_rate_limit_ms() / 1000
 
         Controller.last_input_time = time.time()
         #if(Controller.last_controller_input is not None):
@@ -237,7 +247,7 @@ class Controller:
 
     @staticmethod
     def allow_pyui_game_switcher():
-        return PyUiConfig.allow_pyui_game_switcher() and Device.get_system_config().game_switcher_enabled()
+        return PyUiConfig.allow_pyui_game_switcher() and Device.get_device().get_system_config().game_switcher_enabled()
 
     @staticmethod
     def clear_input_queue():
@@ -285,9 +295,9 @@ class Controller:
         PyUiLogger.get_logger().info(f"Performing hotkey for {controller_input}")
         #TODO where to let these be user definable
         if(ControllerInput.VOLUME_UP == controller_input):
-            Device.raise_lumination()
+            Device.get_device().raise_lumination()
         elif(ControllerInput.VOLUME_DOWN == controller_input):
-            Device.lower_lumination()
+            Device.get_device().lower_lumination()
         
     @staticmethod
     def non_sdl_input_event(controller_input, is_down):
@@ -302,14 +312,14 @@ class Controller:
                     if(last_press_time_length > TRIGGER_TIME_FOR_HOLD_BUTTONS):
                         PyUiLogger.get_logger().info(f"Starting special non sdl event : {controller_input}")
                         Controller.special_non_sdl_event = True
-                        Controller.render_required_callback = lambda ci=controller_input, lpt=last_press_time_length: Device.special_input(ci, lpt)
+                        Controller.render_required_callback = lambda ci=controller_input, lpt=last_press_time_length: Device.get_device().special_input(ci, lpt)
                         Controller.non_sdl_input = None
                         Controller.special_non_sdl_event = False
                         PyUiLogger.get_logger().info(f"Ending special non sdl event : {controller_input}")
 
             else:
                 if(not Controller.is_check_for_hotkey):
-                    Device.special_input(controller_input, 0)
+                    Device.get_device().special_input(controller_input, 0)
                 else:
                     Controller.non_sdl_input = controller_input
         elif(not is_down):
@@ -317,7 +327,7 @@ class Controller:
             if(controller_input in Controller.hold_buttons):
                 last_press_time_length = time.time() - Controller.last_press_time_map[controller_input]
                 if(last_press_time_length < TRIGGER_TIME_FOR_HOLD_BUTTONS):
-                    Device.special_input(controller_input, 0)
+                    Device.get_device().special_input(controller_input, 0)
 
             Controller.last_press_time_map.pop(controller_input,None)
 

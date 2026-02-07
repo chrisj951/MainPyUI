@@ -7,7 +7,8 @@ from menus.games.utils.rom_file_name_utils import RomFileNameUtils
 from menus.games.utils.rom_info import RomInfo
 from utils.consts import FAVORITES
 from views.grid_or_list_entry import GridOrListEntry
-from menus.games.utils.rom_select_options_builder import get_rom_select_options_builder
+from menus.language.language import Language
+
 class FavoritesMenu(RomsMenuCommon):
     def __init__(self):
         super().__init__()
@@ -36,7 +37,6 @@ class FavoritesMenu(RomsMenuCommon):
     def run_rom_selection(self) :
         return self._run_rom_selection("Favorites")
 
-
     def sort_favorites_alphabetically(self, input_value):
         if(ControllerInput.A == input_value):
             FavoritesManager.sort_favorites_alphabetically()
@@ -44,7 +44,7 @@ class FavoritesMenu(RomsMenuCommon):
     def get_additional_menu_options(self):
         popup_options = []
         popup_options.append(GridOrListEntry(
-            primary_text="Sort Favorites",
+            primary_text=Language.sort_favorites(),
             description=None,
             image_path=None,
             image_path_selected=None,
@@ -54,4 +54,4 @@ class FavoritesMenu(RomsMenuCommon):
         return popup_options
         
     def prefer_savestate_screenshot(self):
-        return Device.get_system_config().use_savestate_screenshots(FAVORITES)
+        return Device.get_device().get_system_config().use_savestate_screenshots(FAVORITES)

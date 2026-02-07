@@ -126,6 +126,7 @@ class FileBasedGameSystemConfig():
         menu_options = self._data.get('menuOptions', {})
         option = menu_options.get(option_name)
         if not option:
+            PyUiLogger.get_logger().info(f"No menu option found for {option_name}")
             return None
 
         if override_key is None:
@@ -168,3 +169,14 @@ class FileBasedGameSystemConfig():
 
         overrides = option.get('overrides', {})
         return override_key in overrides
+
+            
+    def scan_subfolders(self):
+        return self._data.get('scanSubfolders', True)
+        
+    def get_alternative_folder_names(self):
+        return self._data.get('alternativeFolderNames', [])
+    
+    def get_ignore_list(self):
+        return self._data.get('ignoreList', [])
+

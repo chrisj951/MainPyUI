@@ -25,7 +25,7 @@ class CollectionsManager:
 
     @classmethod
     def initialize(cls, _collections_folder: str):
-        cls._game_system_utils = Device.get_game_system_utils()
+        cls._game_system_utils = Device.get_device().get_game_system_utils()
         cls._collections_folder = _collections_folder
         cls.load_from_file()
         cls._init_event.set()  # unblock waiting methods
@@ -77,11 +77,12 @@ class CollectionsManager:
             with open(file_path, 'r') as f:
                 data = json.load(f)
                 for coll in data:
-                    game_list = [
-                        RomsListEntry(game["rom_file_path"], game["game_system_name"])
-                        for game in coll["game_list"]
-                    ]
-                    cls._collections.append(CollectionEntry(coll["collection_name"], game_list))
+                    if(coll["collection_name"] is not None):
+                        game_list = [
+                            RomsListEntry(game["rom_file_path"], game["game_system_name"])
+                            for game in coll["game_list"]
+                        ]
+                        cls._collections.append(CollectionEntry(coll["collection_name"], game_list))
         except Exception as e:
             PyUiLogger.get_logger().error(f"Failed to load collections file: {e}")
             cls._collections = []
@@ -192,3 +193,30 @@ class CollectionsManager:
             if not any(game.rom_file_path == rom_file_path for game in coll.game_list):
                 matching_collections.append(coll.collection_name)
         return matching_collections
+    
+    @classmethod
+    def remove_game_from_collections(cls, rom_info: RomInfo):
+        cls._wait_for_init()
+
+        to_delete = []
+
+        # Remove this ROM from all collections
+        for coll in cls._collections:
+            original_len = len(coll.game_list)
+
+            coll.game_list = [
+                g for g in coll.game_list if g.rom_file_path != rom_info.rom_file_path
+            ]
+
+            # If this collection became empty, mark it for deletion
+            if original_len > 0 and len(coll.game_list) == 0:
+                to_delete.append(coll)
+
+        # Delete empty collections
+        for coll in to_delete:
+            cls._collections.remove(coll)
+
+        # Save and reload
+        cls.save_to_file()
+        cls.load_from_file()
+

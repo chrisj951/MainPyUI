@@ -6,15 +6,15 @@ from devices.device import Device
 from display.display import Display
 from menus.language.language import Language
 from menus.settings import settings_menu
+from menus.settings.about_menu import AboutMenu
 from menus.settings.extra_settings_menu import ExtraSettingsMenu
 from menus.settings.bluetooth_menu import BluetoothMenu
 from menus.settings.sound_settings import SoundSettings
-from menus.settings.list_of_options_selection_menu import ListOfOptionsSelectionMenu
+from menus.settings.tasks_menu import TasksMenu
 from menus.settings.theme.theme_selection_menu import ThemeSelectionMenu
 from menus.settings.theme.theme_settings_menu import ThemeSettingsMenu
 from menus.settings.wifi_menu import WifiMenu
 from themes.theme import Theme
-from utils.cfw_system_config import CfwSystemConfig
 from utils.py_ui_config import PyUiConfig
 from views.grid_or_list_entry import GridOrListEntry
 from views.selection import Selection
@@ -25,46 +25,46 @@ from views.view_type import ViewType
 class BasicSettingsMenu(settings_menu.SettingsMenu):
     def __init__(self):
         super().__init__()
-        self.wifi_menu = WifiMenu()
+        self.wifi_menu = Device.get_device().get_wifi_menu()
         self.bt_menu = BluetoothMenu()
         self.theme_ever_changed = False
 
     def shutdown(self, input: ControllerInput):
         if(ControllerInput.A == input):
-           Device.prompt_power_down()
+           Device.get_device().prompt_power_down()
     
     def lumination_adjust(self, input: ControllerInput):
         if(ControllerInput.DPAD_LEFT == input or ControllerInput.L1 == input):
-            Device.lower_lumination()
+            Device.get_device().lower_lumination()
         elif(ControllerInput.DPAD_RIGHT == input or ControllerInput.R1 == input):
-            Device.raise_lumination()
+            Device.get_device().raise_lumination()
         
     def volume_adjust(self, input: ControllerInput):
         if(ControllerInput.DPAD_LEFT == input):
-            Device.change_volume(-5)
+            Device.get_device().change_volume(-5)
         elif(ControllerInput.L1 == input):
-            Device.change_volume(-5)
+            Device.get_device().change_volume(-5)
         elif(ControllerInput.DPAD_RIGHT == input):
-            Device.change_volume(+5)
+            Device.get_device().change_volume(+5)
         elif(ControllerInput.R1 == input):
-            Device.change_volume(+5)
+            Device.get_device().change_volume(+5)
 
     def show_wifi_menu(self, input):
         if(ControllerInput.DPAD_LEFT == input or ControllerInput.DPAD_RIGHT == input):
-            if(Device.is_wifi_enabled()):
-                Device.disable_wifi()
+            if(Device.get_device().is_wifi_enabled()):
+                Device.get_device().disable_wifi()
             else:
-                Device.enable_wifi()
+                Device.get_device().enable_wifi()
 
         if(ControllerInput.A == input):
             self.wifi_menu.show_wifi_menu()
 
     def show_bt_menu(self, input):
         if(ControllerInput.DPAD_LEFT == input or ControllerInput.DPAD_RIGHT == input):
-            if(Device.is_bluetooth_enabled()):
-                Device.disable_bluetooth()
+            if(Device.get_device().is_bluetooth_enabled()):
+                Device.get_device().disable_bluetooth()
             else:
-                Device.enable_bluetooth()
+                Device.get_device().enable_bluetooth()
         else:
             self.bt_menu.show_bluetooth_menu()
 
@@ -82,7 +82,7 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
     def change_theme(self, input):
         self.theme_ever_changed = True
         theme_folders = self.get_theme_folders()
-        selected_index = theme_folders.index(Device.get_system_config().get_theme())
+        selected_index = theme_folders.index(Device.get_device().get_system_config().get_theme())
         if(ControllerInput.DPAD_LEFT == input):
             selected_index-=1
             if(selected_index < 0):
@@ -91,17 +91,17 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
             selected_index+=1
             if(selected_index == len(theme_folders)):
                 selected_index = 0
-        elif(ControllerInput.X == input and not Device.get_system_config().simple_mode_enabled()):
+        elif(ControllerInput.X == input and not Device.get_device().get_system_config().simple_mode_enabled()):
             ThemeSettingsMenu().show_theme_options_menu()
         elif(ControllerInput.A == input):
             selected_index = ThemeSelectionMenu().get_selected_option_index(theme_folders, "Themes")
 
 
         if(selected_index is not None):
-            Theme.set_theme_path(os.path.join(PyUiConfig.get("themeDir"), theme_folders[selected_index]), Device.screen_width(), Device.screen_height())
+            Theme.set_theme_path(os.path.join(PyUiConfig.get("themeDir"), theme_folders[selected_index]), Device.get_device().screen_width(), Device.get_device().screen_height())
             Display.init_fonts()   
-            Device.get_system_config().set_theme(theme_folders[selected_index])
-            Device.set_theme(os.path.join(PyUiConfig.get("themeDir"), theme_folders[selected_index]))
+            Device.get_device().get_system_config().set_theme(theme_folders[selected_index])
+            Device.get_device().set_theme(os.path.join(PyUiConfig.get("themeDir"), theme_folders[selected_index]))
             self.theme_changed = True
             Display.restore_bg()
 
@@ -109,6 +109,14 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
         if(ControllerInput.A == input):
             if(ExtraSettingsMenu().show_menu()):
                 self.theme_changed = True
+
+    def launch_tasks(self,input):
+        if(ControllerInput.A == input):
+            TasksMenu().show_menu()
+
+    def launch_about(self,input):
+        if(ControllerInput.A == input):
+            AboutMenu().show_menu()
 
     def launch_theme_settings(self,input):
         if(ControllerInput.A == input):
@@ -128,7 +136,7 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
         option_list = []
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Power Off",
+                        primary_text=Language.power_off(),
                         image_path=None,
                         image_path_selected=None,
                         description=None,
@@ -138,8 +146,8 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
             )
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Backlight",
-                        value_text="<    " + str(Device.lumination()) + "    >",
+                        primary_text=Language.backlight(),
+                        value_text="<    " + str(Device.get_device().lumination()) + "    >",
                         image_path=None,
                         image_path_selected=None,
                         description=None,
@@ -148,11 +156,11 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
                     )
             )
 
-        if(Device.supports_volume()):
+        if(Device.get_device().supports_volume()):
             option_list.append(
                     GridOrListEntry(
-                            primary_text="Volume",
-                            value_text="<    " + str(Device.get_volume()//5) + "    >",
+                            primary_text=Language.volume(),
+                            value_text="<    " + str(Device.get_device().get_volume()//5) + "    >",
                             image_path=None,
                             image_path_selected=None,
                             description=None,
@@ -162,13 +170,13 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
                 )
         
 
-        if(not Device.get_system_config().simple_mode_enabled()):
+        if(not Device.get_device().get_system_config().simple_mode_enabled()):
 
-            if(Device.supports_wifi()):
+            if(Device.get_device().supports_wifi() and self.wifi_menu is not None):
                 option_list.append(
                         GridOrListEntry(
-                                primary_text="WiFi",
-                                value_text="<    " + (Device.get_ip_addr_text()) + "    >",
+                                primary_text=Language.wifi(),
+                                value_text="<    " + (Device.get_device().get_ip_addr_text()) + "    >",
                                 image_path=None,
                                 image_path_selected=None,
                                 description=None,
@@ -177,11 +185,11 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
                             )
                     )
             
-            if(Device.get_bluetooth_scanner() is not None):
+            if(Device.get_device().get_bluetooth_scanner() is not None):
                 option_list.append(
                         GridOrListEntry(
-                                primary_text="Bluetooth",
-                                value_text="<    " + ("On" if Device.is_bluetooth_enabled() else "Off") + "    >",
+                                primary_text=Language.bluetooth(),
+                                value_text="<    " + ("On" if Device.get_device().is_bluetooth_enabled() else "Off") + "    >",
                                 image_path=None,
                                 image_path_selected=None,
                                 description=None,
@@ -192,8 +200,8 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
                 
         option_list.append(
                 GridOrListEntry(
-                        primary_text="Theme",
-                        value_text="<    " + Device.get_system_config().get_theme() + "    >",
+                        primary_text=Language.theme(),
+                        value_text="<    " + Device.get_device().get_system_config().get_theme() + "    >",
                         image_path=None,
                         image_path_selected=None,
                         description=None,
@@ -203,10 +211,10 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
         )
             
 
-        if(not Device.get_system_config().simple_mode_enabled()):
+        if(not Device.get_device().get_system_config().simple_mode_enabled()):
             option_list.append(
                         GridOrListEntry(
-                                primary_text="Theme Settings",
+                                primary_text=Language.theme_settings(),
                                 value_text=None,
                                 image_path=None,
                                 image_path_selected=None,
@@ -218,7 +226,7 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
 
             option_list.append(
                 GridOrListEntry(
-                    primary_text="Sound Settings",
+                    primary_text=Language.sound_settings(),
                     value_text="",
                     image_path=None,
                     image_path_selected=None,
@@ -230,13 +238,37 @@ class BasicSettingsMenu(settings_menu.SettingsMenu):
 
             option_list.append(
                     GridOrListEntry(
-                            primary_text="Additional Settings",
+                            primary_text=Language.additional_settings(),
                             value_text=None,
                             image_path=None,
                             image_path_selected=None,
                             description=None,
                             icon=None,
                             value=self.launch_extra_settings
+                        )
+                )
+
+            option_list.append(
+                    GridOrListEntry(
+                            primary_text=Language.tasks(),
+                            value_text=None,
+                            image_path=None,
+                            image_path_selected=None,
+                            description=None,
+                            icon=None,
+                            value=self.launch_tasks
+                        )
+                )
+
+            option_list.append(
+                    GridOrListEntry(
+                            primary_text=Language.aboutThisDevice(),
+                            value_text=None,
+                            image_path=None,
+                            image_path_selected=None,
+                            description=None,
+                            icon=None,
+                            value=self.launch_about
                         )
                 )
 

@@ -8,27 +8,22 @@ from utils.image_utils import ImageUtils
 
 class AbstractDevice(ABC):
  
-    @property
     @abstractmethod
     def screen_width(self):
         pass
 
-    @property
     @abstractmethod
     def screen_height(self):
         pass
 
-    @property
     @abstractmethod
     def screen_rotation(self):
         pass
 
-    @property
     @abstractmethod
     def output_screen_width(self):
         pass
 
-    @property
     @abstractmethod
     def output_screen_height(self):
         pass
@@ -37,22 +32,18 @@ class AbstractDevice(ABC):
     def should_scale_screen(self):
         pass
     
-    @property
     @abstractmethod
     def lumination(self):
         pass
 
-    @property
     @abstractmethod
     def contrast(self):
         pass
 
-    @property
     @abstractmethod
     def saturation(self):
         pass
 
-    @property
     @abstractmethod
     def input_timeout_default(self):
         pass
@@ -157,7 +148,7 @@ class AbstractDevice(ABC):
     def raise_lumination(self):
         pass
 
-    @property
+    
     @abstractmethod
     def brightness(self):
         pass
@@ -186,7 +177,7 @@ class AbstractDevice(ABC):
     def raise_saturation(self):
         pass
     
-    @property
+    
     @abstractmethod
     def hue(self):
         pass
@@ -211,7 +202,7 @@ class AbstractDevice(ABC):
     def get_display_volume(self):
         pass
 
-    @property
+    
     @abstractmethod
     def power_off_cmd(self):
         pass
@@ -220,7 +211,7 @@ class AbstractDevice(ABC):
     def prompt_power_down(self):
         pass
     
-    @property
+    
     @abstractmethod
     def reboot_cmd(self):
         pass
@@ -362,6 +353,14 @@ class AbstractDevice(ABC):
         pass
 
     @abstractmethod
+    def get_core_name_overrides(self, core_name):
+        pass
+
+    @abstractmethod
+    def get_core_for_game(self, game_system_config, rom_file_path):
+        pass
+    
+    @abstractmethod
     def prompt_timezone_update(self):
         pass
 
@@ -404,3 +403,46 @@ class AbstractDevice(ABC):
     @abstractmethod
     def get_audio_system(self):
         pass
+    
+    @abstractmethod
+    def get_about_info_entries(self):
+        pass
+
+    @abstractmethod
+    def startup_init(self, include_wifi):
+        pass
+
+    @abstractmethod
+    def might_require_surface_format_conversion(self):
+        pass
+
+    @abstractmethod
+    def perform_sdcard_ro_check(self):
+        pass
+
+    @abstractmethod
+    def sync_hw_clock(self):
+        pass
+
+    @abstractmethod
+    def animation_divisor(self):
+        pass
+
+    # TODO potentially combine these two wifi methods
+    @abstractmethod
+    def get_wifi_menu(self):
+        pass
+
+    @abstractmethod
+    def get_new_wifi_scanner(self):
+        pass
+
+    @abstractmethod
+    def post_present_operations(self):
+        pass
+    
+    @abstractmethod
+    def check_for_button_remap(self, input):
+        pass
+
+    

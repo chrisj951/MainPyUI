@@ -1,17 +1,24 @@
 
 
+import os
 import socket
 import subprocess
 import sys
+import tempfile
 import time
+from pathlib import Path
 from audio.audio_player_none import AudioPlayerNone
 from controller.controller_inputs import ControllerInput
 from devices.abstract_device import AbstractDevice
+from devices.miyoo.system_config import SystemConfig
 from devices.utils.process_runner import ProcessRunner
+from devices.wifi.wifi_scanner import WiFiScanner
 from devices.wifi.wifi_status import WifiStatus
 from display.display import Display
 from display.font_purpose import FontPurpose
+from menus.settings.wifi_menu import WifiMenu
 from utils import throttle
+from utils.config_copier import ConfigCopier
 from utils.logger import PyUiLogger
 
 
@@ -24,11 +31,11 @@ class DeviceCommon(AbstractDevice):
         while(True):
             PyUiLogger.get_logger().info("Prompting for shutdown")
             Display.clear("Power")
-            Display.render_text_centered(f"Would you like to power down?",self.screen_width//2, self.screen_height//2,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
-            if(self.reboot_cmd is not None):
-                Display.render_text_centered(f"A = Power Down, X = Reboot, B = Cancel",self.screen_width //2, self.screen_height//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
+            Display.render_text_centered(f"Would you like to power down?",self.screen_width()//2, self.screen_height()//2,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
+            if(self.reboot_cmd() is not None):
+                Display.render_text_centered(f"A = Power Down, X = Reboot, B = Cancel",self.screen_width() //2, self.screen_height()//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
             else:
-                Display.render_text_centered(f"A = Power Down, B = Cancel",self.screen_width //2, self.screen_height//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
+                Display.render_text_centered(f"A = Power Down, B = Cancel",self.screen_width() //2, self.screen_height()//2+100,Theme.text_color(FontPurpose.LIST), purpose=FontPurpose.LIST)
             Display.present()
             if(Controller.get_input()):
                 if(Controller.last_input() == ControllerInput.A):
@@ -39,16 +46,16 @@ class DeviceCommon(AbstractDevice):
                     return
 
     def power_off(self):
-        self.run_cmd([self.power_off_cmd])
+        self.run_cmd([self.power_off_cmd()])
 
     def reboot(self):
-        self.run_cmd([self.reboot_cmd])
+        self.run_cmd([self.reboot_cmd()])
 
-    @property
+
     def input_timeout_default(self):
         return 1/12 # 12 fps
     
-    @property
+
     def screen_rotation(self):
         return 0
 
@@ -146,23 +153,23 @@ class DeviceCommon(AbstractDevice):
             self.system_config.save_config()
             self._set_hue_to_config()
 
-    @property
+
     def hue(self):
         return self.system_config.get_hue()
     
-    @property
+
     def lumination(self):
         return self.system_config.backlight
     
-    @property
+
     def contrast(self):
         return self.system_config.get_contrast()
 
-    @property
+
     def brightness(self):
         return self.system_config.get_brightness()
     
-    @property
+
     def saturation(self):
         return self.system_config.get_saturation()
 
@@ -236,31 +243,36 @@ class DeviceCommon(AbstractDevice):
 
             time.sleep(10)
 
-    @throttle.limit_refresh(10)
+    @throttle.limit_refresh(15)
     def get_wifi_status(self):
-        if(self.is_wifi_enabled()):
-            wifi_connection_quality_info = self.get_wifi_connection_quality_info()
-            # Composite score out of 100 based on weighted contribution
-            # Adjust weights as needed based on empirical testing
-            score = (
-                (wifi_connection_quality_info.link_quality / 70.0) * 0.5 +          # 50% weight
-                (wifi_connection_quality_info.signal_level / 70.0) * 0.3 +        # 30% weight
-                ((70 - wifi_connection_quality_info.noise_level) / 70.0) * 0.2    # 20% weight (less noise is better)
-            ) * 100
-
-            # Ensure signal and settings stay in sync
-            self.get_ip_addr_text()
-            
-            if score >= 80:
-                return WifiStatus.GREAT
-            elif score >= 60:
-                return WifiStatus.GOOD
-            elif score >= 40:
-                return WifiStatus.OKAY
-            else:
-                return WifiStatus.BAD
-        else:            
+        if not self.is_wifi_enabled():
             return WifiStatus.OFF
+
+        if self.get_ip_addr_text() in ["Off", "Error", "Connecting"]:
+            return WifiStatus.OFF
+
+        info = self.get_wifi_connection_quality_info()
+
+        # RSSI in dBm (negative values)
+        rssi = info.signal_level
+
+        # Missing / invalid RSSI
+        if rssi is None or rssi <= -200:
+            return WifiStatus.OFF
+
+        # Keep network state synced
+        self.get_ip_addr_text()
+
+        # RSSI-based classification
+        if rssi >= -50:
+            return WifiStatus.GREAT      # Excellent
+        elif rssi >= -67:
+            return WifiStatus.GOOD       # Strong / stable
+        elif rssi >= -75:
+            return WifiStatus.OKAY       # Usable
+        else:
+            return WifiStatus.BAD        # Weak / unreliable
+
         
     def get_running_processes(self):
         #bypass ProcessRunner.run_and_print() as it makes the log too big
@@ -350,7 +362,13 @@ class DeviceCommon(AbstractDevice):
 
     def set_theme(self, theme_path):
         pass
+
+    def get_core_name_overrides(self, core_name):
+        return [core_name]
     
+    def get_core_for_game(self, game_system_config, rom_file_path):
+        return None
+
     def prompt_timezone_update(self):
         #Unsupported by default
         pass
@@ -415,3 +433,89 @@ class DeviceCommon(AbstractDevice):
     def get_audio_system(self):
         return AudioPlayerNone()
 
+    def get_extra_settings_options(self):
+        return []
+    
+    def get_device_specific_about_info_entries(self):
+        return []
+
+    def get_mac_address(self,iface="wlan0"):
+        try:
+            with open(f"/sys/class/net/{iface}/address") as f:
+                return f.read().strip()
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"Could not read MAC address for interface {iface} : {e}")
+            return "Unknown"
+
+    def get_fw_version(self):
+        return "Unknown"
+
+    def get_about_info_entries(self):
+        about_info_entries = []
+        about_info_entries.append( ("IP Address", self.get_ip_addr_text()) )
+        about_info_entries.append( ("Mac Address", self.get_mac_address()) )
+        about_info_entries.append( ("FW Version",self.get_fw_version()) )
+        about_info_entries.extend(self.get_device_specific_about_info_entries())
+        return about_info_entries
+    
+    def startup_init(self, include_wifi):
+        pass
+
+    def might_require_surface_format_conversion(self):
+        return False
+
+    def _load_system_config(self, config_path, config_if_missing):
+        ConfigCopier.ensure_config(config_path, config_if_missing)
+
+        try:
+            self.system_config = SystemConfig(config_path)
+        except Exception as e:
+            logger = PyUiLogger.get_logger()
+            logger.error(f"Failed to load system config, backing up and resetting config: {e}")
+
+            config_path = Path(config_path)
+            bak_path = config_path.with_suffix(config_path.suffix + ".bak")
+
+            try:
+                os.replace(config_path, bak_path)  # overwrites existing .bak
+            except FileNotFoundError:
+                pass  # config may not exist; ignore
+
+            ConfigCopier.ensure_config(config_path, config_if_missing)
+            self.system_config = SystemConfig(config_path)
+
+
+    def is_filesystem_read_only(self,path="/mnt/SDCARD"):
+        try:
+            with tempfile.NamedTemporaryFile(dir=path, delete=True):
+                pass
+            return False
+        except OSError:
+            return True
+
+    def perform_sdcard_ro_check(self):
+        if self.is_filesystem_read_only("/mnt/SDCARD"):
+            Display.display_message("Warning: /mnt/SDCARD is read-only. Please check your SD card.", duration_ms=10000)
+
+    def sync_hw_clock(self):
+        #Is this different per device? Should be right for the tina linux handhelds at least
+        try:
+            subprocess.run(
+                ["hwclock", "-w", "-u"],
+                check=True
+            )
+        except Exception as e:
+            PyUiLogger.get_logger.error(f"Failed to run hwclock: {e}")
+
+    def animation_divisor(self):
+        return self.get_system_config().animation_speed(1)
+
+    def get_wifi_menu(self):
+        return WifiMenu()
+
+    def get_new_wifi_scanner(self):
+        return WiFiScanner()
+
+    def post_present_operations(self):
+        # Uneeded for most devices
+        pass

@@ -9,7 +9,8 @@ from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher import KeyWatcher
 import os
-from controller.key_watcher_controller import InputResult, KeyEvent, KeyWatcherController
+from controller.key_watcher_controller import DictKeyMappingProvider, KeyWatcherController
+from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
 from devices.charge.charge_status import ChargeStatus
 from devices.miyoo.miyoo_device import MiyooDevice
 from devices.miyoo.miyoo_games_file_parser import MiyooGamesFileParser
@@ -19,7 +20,6 @@ from devices.utils.file_watcher import FileWatcher
 from devices.utils.process_runner import ProcessRunner
 from display.display import Display
 from menus.games.utils.rom_info import RomInfo
-import sdl2
 from utils import throttle
 from utils.config_copier import ConfigCopier
 from utils.ffmpeg_image_utils import FfmpegImageUtils
@@ -33,27 +33,21 @@ class MiyooA30(MiyooDevice):
 
     def __init__(self, device_name, main_ui_mode):
         self.device_name = device_name
-        self.system_config = None
+        self.audio_player = AudioPlayerDelegateSdl2()
+        script_dir = Path(__file__).resolve().parent
+        source = script_dir / 'a30-system.json'
+        self._load_system_config("/mnt/SDCARD/Saves/a30-system.json", source)
+
         if(main_ui_mode):
-            script_dir = Path(__file__).resolve().parent
-            source = script_dir / 'a30-system.json'
-            ConfigCopier.ensure_config("/mnt/SDCARD/Saves/a30-system.json", source)
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/a30-system.json")
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
-            self._set_lumination_to_config()
-            self._set_contrast_to_config()
-            self._set_saturation_to_config()
-            self._set_brightness_to_config()
             self.ensure_wpa_supplicant_conf()
-            self.init_gpio()
             miyoo_stock_json_file = script_dir.parent / 'stock/a30.json'
             ConfigCopier.ensure_config(MiyooA30.MIYOO_STOCK_CONFIG_LOCATION, miyoo_stock_json_file)
-            self.audio_player = AudioPlayerDelegateSdl2()
 
             threading.Thread(target=self.monitor_wifi, daemon=True).start()
             #self.hardware_poller = MiyooFlipPoller(self)
             #threading.Thread(target=self.hardware_poller.continuously_monitor, daemon=True).start()
-
+            threading.Thread(target=self.startup_init, daemon=True).start()
             if(PyUiConfig.enable_button_watchers()):
                 from controller.controller import Controller
                 #/dev/miyooio if we want to get rid of miyoo_inputd
@@ -76,16 +70,22 @@ class MiyooA30(MiyooDevice):
                 4: "SDL_CONTROLLER_AXIS_TRIGGERLEFT",
                 5: "SDL_CONTROLLER_AXIS_TRIGGERRIGHT"
             }
-            config_volume = self.system_config.get_volume()
-            self._set_volume(config_volume)
             super().__init__()
             # Done to try to account for external systems editting the config file
             self.config_watcher_thread, self.config_watcher_thread_stop_event = FileWatcher().start_file_watcher(
-                "/mnt/SDCARD/Saves/a30-system.json", self.on_system_config_changed, interval=1.0)
+                "/mnt/SDCARD/Saves/a30-system.json", self.on_system_config_changed, interval=0.2, repeat_trigger_for_mtime_granularity_issues=True)
 
-        if(self.system_config is None):
-            self.system_config = SystemConfig("/mnt/SDCARD/Saves/a30-system.json")
 
+    def power_off_cmd(self):
+        return "poweroff"
+
+
+    def startup_init(self, include_wifi=True):
+        self._set_lumination_to_config()
+        self._set_screen_settings_to_config()
+        self.init_gpio()
+        config_volume = self.system_config.get_volume()
+        self._set_volume(config_volume)
 
 
     def on_system_config_changed(self):
@@ -119,26 +119,26 @@ class MiyooA30(MiyooDevice):
     def is_hdmi_connected(self):
         return False
 
-    @property
+
     def screen_width(self):
         return 640
 
-    @property
+
     def screen_height(self):
         return 480
         
-    @property
+
     def screen_rotation(self):
         return 270
     
-    @property
+
     def output_screen_width(self):
         if(self.should_scale_screen()):
             return 1920
         else:
-            return self.screen_height
+            return self.screen_height()
         
-    @property
+
     def output_screen_height(self):
         if(self.should_scale_screen()):
             return 1080
@@ -168,20 +168,43 @@ class MiyooA30(MiyooDevice):
         finally:
             os.close(fd)
 
+    def supports_brightness_calibration(self):
+        return True
+
+    def supports_contrast_calibration(self):
+        return True
+
+    def supports_saturation_calibration(self):
+        return True
+
+    def supports_hue_calibration(self):
+        return True
+
     def _set_contrast_to_config(self):
-#        ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
-#                                    "179:contrast:"+str(self.system_config.contrast * 5)])
-        pass
+        self._set_screen_settings_to_config()
     
     def _set_saturation_to_config(self):
-#        ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
-#                                    "179:saturation:"+str(self.system_config.saturation * 5)])
-        pass
+        self._set_screen_settings_to_config()
 
     def _set_brightness_to_config(self):
-#        ProcessRunner.run(["modetest", "-M", "rockchip", "-a", "-w", 
-#                                     "179:brightness:"+str(self.system_config.brightness * 5)])
-        pass
+        self._set_screen_settings_to_config()
+
+    def _set_hue_to_config(self):
+        self._set_screen_settings_to_config()
+
+    def _set_screen_settings_to_config(self):
+        try:
+            enable = "1"
+            brightness = str(self.system_config.brightness*5)
+            contrast = str(self.system_config.contrast*5)
+            saturation = str(self.system_config.saturation*5)
+            hue = str(self.system_config.hue*5)
+            values = ",".join([enable, brightness, contrast, saturation, hue])
+
+            with open("/sys/devices/virtual/disp/disp/attr/enhance", "w") as f:
+                f.write(values)
+        except Exception as e:
+            PyUiLogger.get_logger().warning(f"Failed to set screen settings: {e}")
 
     def take_snapshot(self, path):
         return None
@@ -237,19 +260,20 @@ class MiyooA30(MiyooDevice):
     def get_bluetooth_scanner(self):
         return None
         
-    @property
+
     def reboot_cmd(self):
         return None
 
     def get_wpa_supplicant_conf_path(self):
-        return "/config/wpa_supplicant.conf"
+        return PyUiConfig.get_wpa_supplicant_conf_file_location("/config/wpa_supplicant.conf")
 
     def get_volume(self):
         return self.system_config.get_volume()
 
     def _set_volume(self, volume):
         try:
-            ProcessRunner.run(["amixer","set","headphone volume",str(volume)+"%"], print=True)            
+            scaled = round(255 * max(0, min(100, volume)) / 100)
+            ProcessRunner.run(["amixer","set","Soft Volume Master",str(scaled)], print=True)            
         except Exception as e:
             PyUiLogger.get_logger().error(f"Failed to set volume: {e}")
 
@@ -280,17 +304,6 @@ class MiyooA30(MiyooDevice):
     def supports_image_resizing(self):
         return True
 
-    def supports_brightness_calibration(self):
-        return False
-
-    def supports_contrast_calibration(self):
-        return False
-
-    def supports_saturation_calibration(self):
-        return False
-
-    def supports_hue_calibration(self):
-        return False
 
     def get_image_utils(self):
         return FfmpegImageUtils()
@@ -337,10 +350,28 @@ class MiyooA30(MiyooDevice):
         key_mappings[KeyEvent(1, 1, 1)] = [InputResult(ControllerInput.MENU, KeyState.PRESS)]
         key_mappings[KeyEvent(1, 1, 0)] = [InputResult(ControllerInput.MENU, KeyState.RELEASE)]  
 
-        return KeyWatcherController(event_path="/dev/input/event3", key_mappings=key_mappings)
+        return KeyWatcherController(event_path="/dev/input/event3", mapping_provider=DictKeyMappingProvider(key_mappings))
 
     def set_theme(self, theme_path: str):
         MiyooTrimCommon.set_theme(MiyooA30.MIYOO_STOCK_CONFIG_LOCATION, theme_path)
 
     def get_audio_system(self):
         return self.audio_player
+    
+        
+    def get_fw_version(self):
+        try:
+            with open(f"/usr/miyoo/version") as f:
+                return f.read().strip()
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"Could not read FW version : {e}")
+            return "Unknown"
+
+    def get_core_name_overrides(self, core_name):
+        return [core_name, core_name+"-32"]
+
+    def get_core_for_game(self, game_system_config, rom_file_path):
+        core = game_system_config.get_effective_menu_selection("Emulator", rom_file_path)
+        if(core is None):
+            core = game_system_config.get_effective_menu_selection("Emulator_A30", rom_file_path)
+        return core

@@ -1,4 +1,5 @@
-import math
+from email.mime import text
+import time
 from typing import List
 from devices.device import Device
 from display.display import Display
@@ -9,6 +10,7 @@ from themes.theme import Theme
 from utils.logger import PyUiLogger
 from views.grid_or_list_entry import GridOrListEntry
 from views.list_view import ListView
+from views.text_utils import TextUtils
 
 class DescriptiveListView(ListView):
 
@@ -18,16 +20,20 @@ class DescriptiveListView(ListView):
         self.top_bar_text = top_bar_text
         self.set_options(options)
         self.selected : int = selected
-        PyUiLogger.get_logger().info(f"selected_bg = {selected_bg}")
 
         self.selected_bg = selected_bg
         self.each_entry_width, self.each_entry_height = Display.get_image_dimensions(selected_bg)
 
-        self.max_rows = (Display.get_usable_screen_height(force_include_top_bar=True) // self.each_entry_height)
+        usable = Display.get_usable_screen_height(force_include_top_bar=True) / self.each_entry_height
+
+        self.max_rows = int(usable + (1 if usable % 1 >= 0.80 else 0))
 
         self.current_top = 0
         self.current_bottom = min(self.max_rows,len(options))
         self.center_selection()
+        self.scroll_value_text_amount = 0
+        self.last_selected = -1
+        self.selected_same_entry_time = time.time()
 
     def set_options(self, options):
         self.options = options
@@ -43,6 +49,14 @@ class DescriptiveListView(ListView):
         #TODO get padding from theme
         row_offset_y = Display.get_top_bar_height(force_include_top_bar = True) + 5
         
+        if self.last_selected != self.selected:
+            self.selected_same_entry_time = time.time()
+            self.scroll_value_text_amount = 0
+            self.last_selected = self.selected
+        else:
+            if(time.time() - self.selected_same_entry_time > 1):
+                self.scroll_value_text_amount += 1
+
         for visible_index, (gridOrListEntry) in enumerate(visible_options):
             actual_index = self.current_top + visible_index
             iconPath = gridOrListEntry.get_icon()
@@ -52,7 +66,7 @@ class DescriptiveListView(ListView):
                     self.selected_bg, 
                     0, 
                     row_offset_y,
-                    target_width=Device.screen_width(),
+                    target_width=Device.get_device().screen_width(),
                     target_height=self.each_entry_height,
                     resize_type= ResizeType.ZOOM
                     )
@@ -83,9 +97,22 @@ class DescriptiveListView(ListView):
                 render_mode=title_render_mode)
 
             if(gridOrListEntry.get_value_text() is not None):
+                value_text = gridOrListEntry.get_value_text()
+                max_value_text_length = 25
+                
+                if(len(value_text) > max_value_text_length):
+                    value_text = value_text[1:-1].strip()
+                    if actual_index == self.selected:
+                        value_text = TextUtils.scroll_string_chars(text=value_text,
+                                                amt=self.scroll_value_text_amount,
+                                                max_chars=max_value_text_length)
+                    else:
+                        value_text = value_text[:max_value_text_length-3] + "..."
+
+                    value_text = "< " + value_text + " >"
                 Display.render_text(
-                    gridOrListEntry.get_value_text(), 
-                    Device.screen_width() - Theme.get_descriptive_list_text_from_icon_offset(), 
+                    value_text, 
+                    Device.get_device().screen_width() - Theme.get_descriptive_list_text_from_icon_offset(), 
                     row_offset_y + self.each_entry_height // 2, 
                     color, 
                     FontPurpose.DESCRIPTIVE_LIST_TITLE,

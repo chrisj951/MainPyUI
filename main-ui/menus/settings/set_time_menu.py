@@ -7,9 +7,10 @@ from devices.device import Device
 from devices.utils.process_runner import ProcessRunner
 from menus.settings import settings_menu
 from utils.logger import PyUiLogger
-from utils.py_ui_config import PyUiConfig
 from views.grid_or_list_entry import GridOrListEntry
 
+
+from menus.language.language import Language
 
 class SetTimeMenu(settings_menu.SettingsMenu):
     def __init__(self):
@@ -38,6 +39,7 @@ class SetTimeMenu(settings_menu.SettingsMenu):
         cmd = ["hwclock", "--systohc"]
         PyUiLogger.get_logger().info(f"Running: {' '.join(cmd)}")
         ProcessRunner.run(cmd, check=False, timeout=None, print=True)
+        Device.get_device().sync_hw_clock()
 
     def update_year(self, input_value):
         if(ControllerInput.DPAD_LEFT == input_value):
@@ -83,7 +85,7 @@ class SetTimeMenu(settings_menu.SettingsMenu):
         elif(ControllerInput.DPAD_RIGHT == input_value):
             self.hour +=1
             if(self.hour > 23):
-                self.hour = 10           
+                self.hour = 0           
             self.update_datetime()
 
     def update_minute(self, input_value):
@@ -104,7 +106,7 @@ class SetTimeMenu(settings_menu.SettingsMenu):
 
         option_list.append(
             GridOrListEntry(
-                primary_text="Year",
+                primary_text=Language.year(),
                 value_text="<    " + str(self.year) + "    >",
                 image_path=None,
                 image_path_selected=None,
@@ -116,7 +118,7 @@ class SetTimeMenu(settings_menu.SettingsMenu):
 
         option_list.append(
             GridOrListEntry(
-                primary_text="Month",
+                primary_text=Language.month(),
                 value_text="<    " + str(self.month) + "    >",
                 image_path=None,
                 image_path_selected=None,
@@ -128,7 +130,7 @@ class SetTimeMenu(settings_menu.SettingsMenu):
 
         option_list.append(
             GridOrListEntry(
-                primary_text="Day",
+                primary_text=Language.day(),
                 value_text="<    " + str(self.day) + "    >",
                 image_path=None,
                 image_path_selected=None,
@@ -140,7 +142,7 @@ class SetTimeMenu(settings_menu.SettingsMenu):
 
         option_list.append(
             GridOrListEntry(
-                primary_text="Hour 24",
+                primary_text=Language.hour24(),
                 value_text="<    " + str(self.hour) + "    >",
                 image_path=None,
                 image_path_selected=None,
@@ -152,7 +154,7 @@ class SetTimeMenu(settings_menu.SettingsMenu):
         
         option_list.append(
             GridOrListEntry(
-                primary_text="Minute",
+                primary_text=Language.minute(),
                 value_text="<    " + str(self.minute) + "    >",
                 image_path=None,
                 image_path_selected=None,

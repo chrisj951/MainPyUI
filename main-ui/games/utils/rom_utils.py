@@ -16,7 +16,6 @@ class RomUtils:
             "WSC":"WS"
         }
 
-        self.dont_scan_subfolders = ["PORTS","PORTS32","PORTS64","PM"]
         self._get_roms_cache: dict[tuple, tuple[list[str], list[str]]] = {}
 
     def get_roms_dir_for_emu_dir(self, emu_dir):
@@ -50,13 +49,13 @@ class RomUtils:
             try:
                 for entry in os.scandir(dir_to_search):
                     if not entry.is_file(follow_symlinks=False):
-                        if (entry.is_dir(follow_symlinks=False) and game_system.game_system_config.get_label() not in self.dont_scan_subfolders):
+                        if (entry.is_dir(follow_symlinks=False) and game_system.game_system_config.scan_subfolders()):
                             if(self.has_roms(game_system, directory=entry)):
                                 return True
                         continue
 
                     if len(valid_suffix_set) == 0:
-                        if not entry.name.startswith('.') and not entry.name.endswith(('.xml', '.txt', '.db')):
+                        if not entry.name.startswith('.') and not entry.name.endswith(('.xml', '.txt', '.db')) and not entry.name in game_system.game_system_config.get_ignore_list():
                             return True
                     else:
                         if Path(entry.name).suffix.lower() in valid_suffix_set:
@@ -72,7 +71,6 @@ class RomUtils:
         cache_key = (game_system, directory)
         if cache_key in self._get_roms_cache:
             return self._get_roms_cache[cache_key]
-
         directories_to_search = directory and [directory] or game_system.folder_paths
         valid_files = []
         valid_folders = []
@@ -88,15 +86,17 @@ class RomUtils:
                         if entry.is_file(follow_symlinks=False):
                             suffix = Path(name).suffix.lower()
                             if (not valid_suffix_set and not name.endswith(('.xml', '.txt', '.db'))) or suffix in valid_suffix_set:
-                                valid_files.append(entry.path)
+                                if name not in game_system.game_system_config.get_ignore_list():
+                                    valid_files.append(entry.path)
                         elif entry.is_dir(follow_symlinks=False) and os.path.basename(dir_to_search) != "Imgs":
                             # only consider folders that contain ROMs
-                            if self.has_roms(game_system, entry.path):
-                                valid_folders.append(entry.path)
-            except (FileNotFoundError, PermissionError):
+                            if(game_system.game_system_config.scan_subfolders()):
+                                if self.has_roms(game_system, entry.path):
+                                    valid_folders.append(entry.path)
+            except (Exception):
                 continue
 
         # store in cache
-        if(Device.supports_caching_rom_lists()):
+        if(Device.get_device().supports_caching_rom_lists()):
             self._get_roms_cache[cache_key] = (valid_files, valid_folders)
         return valid_files, valid_folders

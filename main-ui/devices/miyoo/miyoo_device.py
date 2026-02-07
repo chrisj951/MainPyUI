@@ -46,10 +46,6 @@ class MiyooDevice(DeviceCommon):
     def should_scale_screen(self):
         return self.is_hdmi_connected()
 
-    @property
-    def power_off_cmd(self):
-        return "poweroff"
-
 
     def run_cmd(self, args, dir = None):
         MiyooTrimCommon.run_cmd(self, args, dir)
@@ -85,13 +81,13 @@ class MiyooDevice(DeviceCommon):
         mapping = self.sdl_button_to_input.get(sdl_input, ControllerInput.UNKNOWN)
         if(ControllerInput.UNKNOWN == mapping):
             PyUiLogger.get_logger().error(f"Unknown input {sdl_input}")
-        return self.button_remapper.get_mappping(mapping)
+        return mapping
 
     def map_analog_input(self, sdl_axis, sdl_value):
         if sdl_axis == 5 and sdl_value == 32767:
-            return self.button_remapper.get_mappping(ControllerInput.R2)
+            return ControllerInput.R2
         elif sdl_axis == 4 and sdl_value == 32767:
-            return self.button_remapper.get_mappping(ControllerInput.L2)
+            return ControllerInput.L2
         else:
             # Update min/max range
             if sdl_axis not in self.unknown_axis_ranges:
@@ -137,11 +133,11 @@ class MiyooDevice(DeviceCommon):
 
     def map_key(self, key_code):
         if(116 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.POWER_BUTTON)
+            return ControllerInput.POWER_BUTTON
         if(115 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.VOLUME_UP)
+            return ControllerInput.VOLUME_UP
         elif(114 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.VOLUME_DOWN)
+            return ControllerInput.VOLUME_DOWN
         else:
             PyUiLogger.get_logger().debug(f"Unrecognized keycode {key_code}")
             return None
@@ -215,9 +211,11 @@ class MiyooDevice(DeviceCommon):
     
     
     def disable_bluetooth(self):
+        PyUiLogger.get_logger().info(f"Disabling Bluetooth")
         ProcessRunner.run(["killall","-15","bluetoothd"])
         time.sleep(0.1)  
         ProcessRunner.run(["killall","-9","bluetoothd"])
+        self.system_config.set_bluetooth(0)
 
     def enable_bluetooth(self):
         if(not self.is_bluetooth_enabled()):
@@ -225,6 +223,7 @@ class MiyooDevice(DeviceCommon):
                             cwd='/usr/libexec/bluetooth/',
                             stdout=subprocess.DEVNULL,
                             stderr=subprocess.DEVNULL)
+        self.system_config.set_bluetooth(1)
             
     def perform_startup_tasks(self):
         pass
@@ -274,8 +273,11 @@ class MiyooDevice(DeviceCommon):
     def get_roms_dir(self):
         return "/mnt/SDCARD/Roms/"
     
-    def get_extra_settings_options(self):
-        return []
-    
     def get_save_state_image(self, rom_info: RomInfo):
         return self.get_game_system_utils().get_save_state_image(rom_info)
+    
+    def get_device_specific_about_info_entries(self):
+        return []
+
+    def check_for_button_remap(self, input):
+        return self.button_remapper.get_mappping(input)

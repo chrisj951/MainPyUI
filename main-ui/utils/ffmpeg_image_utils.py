@@ -68,6 +68,9 @@ class FfmpegImageUtils(ImageUtils):
                     "-y",
                     "-i", input_path,
                     "-vf", scale_filter,
+                    "-pix_fmt", "rgba",
+                    "-frames:v", "1",
+                    "-update", "1",
                     temp_path
                 ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -87,7 +90,7 @@ class FfmpegImageUtils(ImageUtils):
             )
             return False
 
-    def resize_image(self, input_path, output_path, max_width, max_height, preserve_aspect_ratio=True):
+    def resize_image(self, input_path, output_path, max_width, max_height, preserve_aspect_ratio=True, target_alpha_channel=None):
         """
         Resize the image to fit within max_width/max_height preserving aspect ratio.
         This WILL enlarge the image if it is smaller than the requested bounds.
@@ -125,14 +128,23 @@ class FfmpegImageUtils(ImageUtils):
             # Use a temp file to avoid "cannot overwrite input" problems
             tmp_output = output_path + ".tmp.png"
 
-            ffmpeg_cmd = [
-                "ffmpeg",
-                "-y",                 # overwrite temp if exists
-                "-i", input_path,
-                "-vf", f"scale={new_width}:{new_height}",
-                "-pix_fmt", "rgba",
-                tmp_output
-            ]
+
+            if(target_alpha_channel is None):                
+                ffmpeg_cmd = [
+                    "ffmpeg",
+                    "-y",                 # overwrite temp if exists
+                    "-i", input_path,
+                    "-vf", f"scale={new_width}:{new_height}",
+                    "-pix_fmt", "rgba",
+                    tmp_output
+                ]
+            else:
+                ffmpeg_cmd = [
+                    "ffmpeg",
+                    "-i", input_path,
+                    "-vf", f"scale={new_width}:{new_height},format=rgba,colorchannelmixer=aa={target_alpha_channel}",
+                    tmp_output
+                ]
 
             subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -193,9 +205,11 @@ class FfmpegImageUtils(ImageUtils):
         Converts a PNG file to a 32-bit RGBA QOI using ffmpeg.
         The QOI will be in the same directory with the same basename.
         """
-        if not png_path.lower().endswith(".png"):
-            PyUiLogger().get_logger().info(f"{png_path} is not a png")
+        if png_path.lower().endswith(".qoi"):
+            PyUiLogger().get_logger().info(f"{png_path} is already a qoi")
             return
+        if not png_path.lower().endswith(".png"):
+            PyUiLogger().get_logger().warning(f"{png_path} is not a png")
         PyUiLogger().get_logger().info(f"Converting {png_path} to qoi")
 
         if(qoi_path is None):

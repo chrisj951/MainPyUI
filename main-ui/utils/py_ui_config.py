@@ -98,15 +98,6 @@ class PyUiConfig:
         return cls._data.get("mainMenuTitle", "CFW")
 
     @classmethod
-    def show_clock(cls):
-        return cls.get("showClock",True)
-
-    @classmethod
-    def set_show_clock(cls, value):
-        cls._data["showClock"] = value
-        cls.save()
-
-    @classmethod
     def use_24_hour_clock(cls):
         return cls.get("use24HourClock",False)
 
@@ -179,10 +170,6 @@ class PyUiConfig:
         cls.save()
 
     @classmethod
-    def animations_enabled(cls):
-        return cls.get("animationsEnabled",True)
-
-    @classmethod
     def get_language(cls):
         return cls.get("language","English")
 
@@ -203,3 +190,16 @@ class PyUiConfig:
     def get_gameswitcher_path(cls):
         return cls.get("gameSwitcherPath",None)
 
+    @classmethod
+    def cfw_tasks_json(cls):
+        return cls.get("cfwTasks",None)
+
+    @classmethod
+    def get_wpa_supplicant_conf_file_location(cls, default_path):
+        return cls.get("wpaSupplicantConfigFileLocation",default_path)
+
+    @classmethod
+    def get_activity_log_path(cls):
+        return cls.get("activityLogPath",None)
+    
+    

@@ -24,7 +24,7 @@ class RomsListManager:
         self._entries: List[RomsListEntry] = []
         self._entries_dict: dict[Tuple[str, str], RomsListEntry] = {}
         self.load_from_file()
-        self.game_system_utils = Device.get_game_system_utils()
+        self.game_system_utils = Device.get_device().get_game_system_utils()
         self.rom_info_list = self.load_entries_as_rom_info()
 
     def _entry_key(self, rom_file_path: str, game_system_name: str) -> Tuple[str, str]:
@@ -71,14 +71,28 @@ class RomsListManager:
 
             with open(self.entries_file, 'r') as f:
                 data = json.load(f)
-                self._entries = [RomsListEntry(**entry) for entry in data]
+                validated_entries = []
+                for entry_data in data:
+                    entry = RomsListEntry(**entry_data)
+                    if os.path.exists(entry.rom_file_path):
+                        validated_entries.append(entry)
+                    else:
+                        PyUiLogger.get_logger().warning(
+                            f"ROM file not found, removing from list: {entry.rom_file_path}"
+                        )
+
+                self._entries = validated_entries
                 self._entries_dict = {
                     self._entry_key(entry.rom_file_path, entry.game_system_name): entry
                     for entry in self._entries
                 }
 
+            # Save back the validated list in case some entries were removed
+            self.save_to_file()
+
         except Exception as e:
             PyUiLogger.get_logger().error(f"Failed to load entries: {e}")
+
 
     def get_games(self) -> List[RomInfo]:
         return self.rom_info_list

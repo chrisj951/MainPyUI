@@ -1,6 +1,7 @@
 import json
 import os
 from devices.device import Device
+from utils.cached_exists import CachedExists
 from utils.logger import PyUiLogger
 
 class DaijishoThemeIndex:
@@ -35,6 +36,7 @@ class DaijishoThemeIndex:
             #"arduboy": [""],
             "atari": ["atari"],
             "atari800": ["atari800"],
+            "atari2600": ["atari2600"],
             "atarist": ["atarist"],
             "c64": ["c64"],
             #"chai": ["aaaaa"],
@@ -61,7 +63,7 @@ class DaijishoThemeIndex:
             "mame": ["mame"],
             "md": ["genesis"],
             #"megaduck": ["aaaaa"],
-            #"ms": ["aaaaa"],
+            "ms": ["master"],
             #"msu1": ["aaaaa"],
             #"msumd": ["aaaaa"],
             "msx": ["msx"],
@@ -81,7 +83,7 @@ class DaijishoThemeIndex:
             "ps": ["psx"],
             "psp": ["psp"],
             "quake": ["quake"],
-            #"satella": ["aaaaa"],
+            "satella": ["satellaview"],
             "saturn": ["saturn"],
             "scummvm": ["scummvm"],
             "segacd": ["segacd"],
@@ -105,18 +107,18 @@ class DaijishoThemeIndex:
 
     def _convert_if_needed(self, filename):
         # Check if filename ends with .jpg or .jpeg (case-insensitive)
-        if(Device.supports_qoi()):
+        if(Device.get_device().supports_qoi()):
             if filename.lower().endswith((".jpg", ".jpeg")):
                 jpg_path = os.path.join(self.foldername, filename)
                 qoi_filename = os.path.splitext(filename)[0] + ".qoi"
                 qoi_path = os.path.join(self.foldername, qoi_filename)
-                if os.path.exists(qoi_path):
+                if CachedExists.exists(qoi_path):
                     return qoi_path
 
-                if not os.path.exists(qoi_path):
+                if not CachedExists.exists(qoi_path):
                     PyUiLogger.get_logger().info(f"Converting {jpg_path} to {qoi_path}")
                     try:
-                        Device.get_image_utils().convert_from_jpg_to_qoi(jpg_path, qoi_path)
+                        Device.get_device().get_image_utils().convert_from_jpg_to_qoi(jpg_path, qoi_path)
                     except Exception as e:
                         PyUiLogger.get_logger().warning(
                             f"Failed to convert {jpg_path} to PNG: {e}"
@@ -129,13 +131,13 @@ class DaijishoThemeIndex:
                 jpg_path = os.path.join(self.foldername, filename)
                 png_filename = os.path.splitext(filename)[0] + ".png"
                 png_path = os.path.join(self.foldername, png_filename)
-                if os.path.exists(png_path):
+                if CachedExists.exists(png_path):
                     return png_path
 
-                if not os.path.exists(png_path):
+                if not CachedExists.exists(png_path):
                     PyUiLogger.get_logger().info(f"Converting {jpg_path} to {png_path}")
                     try:
-                        Device.get_image_utils().convert_from_jpg_to_png(jpg_path, png_path)
+                        Device.get_device().get_image_utils().convert_from_jpg_to_png(jpg_path, png_path)
                     except Exception as e:
                         PyUiLogger.get_logger().warning(
                             f"Failed to convert {jpg_path} to PNG: {e}"

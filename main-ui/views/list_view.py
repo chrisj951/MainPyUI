@@ -54,7 +54,7 @@ class ListView(View):
 
     def get_selection(self, select_controller_inputs = [ControllerInput.A]):
         self._render_common()
-        
+        #PyUiLogger.get_logger().error("".join(traceback.format_stack()))
         if(Controller.get_input()):
             if Controller.last_input() == ControllerInput.DPAD_UP:
                 self.adjust_selected(-1, skip_by_letter=False)
@@ -70,9 +70,9 @@ class ListView(View):
                     self.adjust_selected(-1*self.max_rows+1, skip_by_letter=False)
             elif Controller.last_input() == ControllerInput.L2:
                 if(Theme.skip_main_menu()):
-                    self.adjust_selected(-1*self.max_rows+1, skip_by_letter=True)
+                    self.adjust_selected(-1*self.max_rows+1, skip_by_letter=Device.get_device().get_system_config().get_skip_by_letter())
                 else:
-                    self.adjust_selected(-1*self.max_rows+1, skip_by_letter=Device.get_system_config().get_skip_by_letter())
+                    self.adjust_selected(-1*self.max_rows+1, skip_by_letter=True)
             elif Controller.last_input() == ControllerInput.R1:
                 if(Theme.skip_main_menu()):
                     return Selection(self.get_selected_option(),Controller.last_input(), self.selected)
@@ -80,7 +80,7 @@ class ListView(View):
                     self.adjust_selected(self.max_rows-1, skip_by_letter=False)
             elif Controller.last_input() == ControllerInput.R2:
                 if(Theme.skip_main_menu()):
-                    self.adjust_selected(self.max_rows-1, skip_by_letter=Device.get_system_config().get_skip_by_letter())
+                    self.adjust_selected(self.max_rows-1, skip_by_letter=Device.get_device().get_system_config().get_skip_by_letter())
                 else:
                     self.adjust_selected(self.max_rows-1, skip_by_letter=True)
             elif Controller.last_input() == ControllerInput.B:

@@ -1,36 +1,45 @@
 import ctypes
 import fcntl
 import math
+from pathlib import Path
 import re
 import subprocess
+import time
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from controller.controller_inputs import ControllerInput
-from controller.sdl.sdl2_controller_interface import Sdl2ControllerInterface
+from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 from devices.charge.charge_status import ChargeStatus
 import os
 from devices.device_common import DeviceCommon
 from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
+from display.display import Display
 from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
 from games.utils.game_entry import GameEntry
 from menus.games.utils.rom_info import RomInfo
 from menus.settings.button_remapper import ButtonRemapper
+from menus.settings.timezone_menu import TimezoneMenu
 from utils import throttle
 from utils.logger import PyUiLogger
+from utils.py_ui_config import PyUiConfig
 
 class TrimUIDevice(DeviceCommon):
     
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
         self.game_utils = MiyooTrimGameSystemUtils()
-        self.sdl2_controller_interface = Sdl2ControllerInterface()
+        self.last_cache_clear = 0
 
-    def get_controller_interface(self):
-        return self.sdl2_controller_interface
+    def on_system_config_changed(self):
+        old_volume = self.system_config.get_volume()
+        self.system_config.reload_config()
+        new_volume = self.system_config.get_volume()
+        if(old_volume != new_volume):
+            Display.volume_changed(new_volume)
 
     def ensure_wpa_supplicant_conf(self):
-        MiyooTrimCommon.ensure_wpa_supplicant_conf("/userdata/cfg/wpa_supplicant.conf")
+        MiyooTrimCommon.ensure_wpa_supplicant_conf(self.get_wpa_supplicant_conf_path())
         
     def clear_framebuffer(self):
         pass
@@ -41,11 +50,11 @@ class TrimUIDevice(DeviceCommon):
     def restore_framebuffer(self):
         pass
     
-    @property
+
     def power_off_cmd(self):
         return "poweroff"
     
-    @property
+
     def reboot_cmd(self):
         return "reboot"
         
@@ -78,30 +87,6 @@ class TrimUIDevice(DeviceCommon):
     def _set_hue_to_config(self):
         with open("/sys/devices/virtual/disp/disp/attr/color_temperature", "w") as f:
             f.write(str((self.system_config.hue * 5) - 50))
-            
-    def _set_volume(self, user_volume):
-        from display.display import Display
-        if(user_volume < 0):
-            user_volume = 0
-        elif(user_volume > 100):
-            user_volume = 100
-        volume = math.ceil(user_volume * 255//100)
-        
-        try:
-            
-            ProcessRunner.run(
-                ["amixer", "cset", f"numid=17", str(int(volume))],
-                check=True
-            )
-
-        except subprocess.CalledProcessError as e:
-            PyUiLogger.get_logger().error(f"Failed to set volume: {e}")
-
-        self.system_config.reload_config()
-        self.system_config.set_volume(user_volume)
-        self.system_config.save_config()
-        Display.volume_changed(user_volume)
-        return user_volume
 
     def get_volume(self):
         return self.system_config.get_volume()
@@ -143,15 +128,15 @@ class TrimUIDevice(DeviceCommon):
         mapping = self.sdl_button_to_input.get(sdl_input, ControllerInput.UNKNOWN)
         if(ControllerInput.UNKNOWN == mapping):
             PyUiLogger.get_logger().error(f"Unknown input {sdl_input}")
-        return self.button_remapper.get_mappping(mapping)
+        return mapping
     
     def map_key(self, key_code):
         if(116 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.POWER_BUTTON)
+            return ControllerInput.POWER_BUTTON
         if(115 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.VOLUME_UP)
+            return ControllerInput.VOLUME_UP
         elif(114 == key_code):
-            return self.button_remapper.get_mappping(ControllerInput.VOLUME_DOWN)
+            return ControllerInput.VOLUME_DOWN
         else:
             PyUiLogger.get_logger().debug(f"Unrecognized keycode {key_code}")
             return None
@@ -256,20 +241,21 @@ class TrimUIDevice(DeviceCommon):
         return self.miyoo_games_file_parser.parse_recents()
 
     def is_bluetooth_enabled(self):
-        return False
+        return self.system_config.is_bluetooth_enabled()
     
     
     def disable_bluetooth(self):
-        pass
-
-    def enable_bluetooth(self):
-        pass
+        PyUiLogger.get_logger().info(f"Disabling Bluetooth")
+        ProcessRunner.run(["killall","-15","bluetoothd"])
+        time.sleep(0.1)  
+        ProcessRunner.run(["killall","-9","bluetoothd"])
+        self.system_config.set_bluetooth(0)
 
     def perform_startup_tasks(self):
         pass
 
     def get_bluetooth_scanner(self):
-        return None
+        return BluetoothScanner()
 
     def get_favorites_path(self):
         return "/mnt/SDCARD/Saves/pyui-favorites.json"
@@ -309,15 +295,12 @@ class TrimUIDevice(DeviceCommon):
     
     def get_roms_dir(self):
         return "/mnt/SDCARD/Roms/"
-    
-    def get_extra_settings_options(self):
-        return []
-    
+
     def take_snapshot(self, path):
         return None
     
     def get_wpa_supplicant_conf_path(self):
-        return "/userdata/cfg/wpa_supplicant.conf"
+        return PyUiConfig.get_wpa_supplicant_conf_file_location("/userdata/cfg/wpa_supplicant.conf")
     
     def supports_brightness_calibration():
         return True
@@ -333,3 +316,84 @@ class TrimUIDevice(DeviceCommon):
 
     def get_save_state_image(self, rom_info: RomInfo):
         return self.get_game_system_utils().get_save_state_image(rom_info)
+
+    def get_fw_version(self):
+        try:
+            with open(f"/etc/version") as f:
+                return f.read().strip()
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"Could not read FW version : {e}")
+            return "Unknown"
+
+    def get_core_for_game(self, game_system_config, rom_file_path):
+        core = game_system_config.get_effective_menu_selection("Emulator", rom_file_path)
+        if(core is None):
+            core = game_system_config.get_effective_menu_selection("Emulator_64", rom_file_path)
+        return core
+    
+    def supports_timezone_setting(self):
+        return True
+
+    def prompt_timezone_update(self):
+        timezone_menu = TimezoneMenu()
+        tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/usr/share/zoneinfo', verify_via_datetime=True))
+
+        if (tz is not None):
+            self.system_config.set_timezone(tz)
+            self.apply_timezone(tz)
+
+    def apply_timezone(self, timezone):
+        """
+        timezone example: "America/New_York"
+        """
+
+        zoneinfo_path = Path("/usr/share/zoneinfo") / timezone
+        localtime_path = Path("/etc/localtime")
+
+        if not zoneinfo_path.exists():
+            raise ValueError(f"Invalid timezone: {timezone}")
+
+        # Update system timezone symlink 
+        try:
+            subprocess.run(
+                ["ln", "-sf", str(zoneinfo_path), str(localtime_path)],
+                check=True
+            )
+        except Exception as e:
+            PyUiLogger.get_logger.error(f"Failed to update /etc/localtime: {e}")
+
+        # Update environment for current process
+        os.environ["TZ"] = timezone
+        time.tzset()
+        self.sync_hw_clock()
+
+
+    def get_free_mem_mb(self):
+        with open("/proc/meminfo", "r") as f:
+            meminfo = f.read()
+
+        for line in meminfo.splitlines():
+            if line.startswith("MemAvailable:"):
+                # value is in kB
+                return int(line.split()[1]) // 1024
+
+        return None
+
+
+    @throttle.limit_refresh(1)
+    def post_present_operations(self):
+
+        # last cache clear is done to account for the time it takes
+        # the memory to truly become free after we've marked it for deletion
+        # in SDL
+        self.last_cache_clear += 1
+        free_mb = self.get_free_mem_mb()
+
+        if free_mb is not None and free_mb < 100 and self.last_cache_clear > 10:
+            PyUiLogger.get_logger().warning(f"Low memory detected: {free_mb} MB available, clearing display cache.")
+            Display.clear_cache()
+            self.last_cache_clear = 0
+
+    def check_for_button_remap(self, input):
+        return self.button_remapper.get_mappping(input)
+    

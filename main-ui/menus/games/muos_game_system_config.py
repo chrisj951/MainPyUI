@@ -2,7 +2,6 @@ import os
 import sys
 
 from menus.games.utils.rom_extensions import RomFolders
-from utils.logger import PyUiLogger
 
 class MuosGameSystemConfig():
     def __init__(self, display_name, system_name):
@@ -60,3 +59,7 @@ class MuosGameSystemConfig():
     
     def get_selected_core(self):
         return None
+            
+    def scan_subfolders(self):
+        return True
+        

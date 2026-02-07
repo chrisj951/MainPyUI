@@ -9,6 +9,7 @@ from devices.device import Device
 from devices.utils.process_runner import ProcessRunner
 from display.font_purpose import FontPurpose
 from menus.games.utils.rom_info import RomInfo
+from themes.theme import Theme
 from utils.logger import PyUiLogger
 
 
@@ -58,18 +59,21 @@ class MiyooTrimCommon():
             PyUiLogger.get_logger().error(f"Failed to delete file: {e}")
 
     @staticmethod
-    def run_game(device, rom_info: RomInfo, remap_sdcard_path = False, run_prefix ="") -> subprocess.Popen:
+    def run_game(device, rom_info: RomInfo, remap_sdcard_path = True, run_prefix ="") -> subprocess.Popen:
+        Theme.check_and_create_ra_assets()
         launch_path = os.path.join(rom_info.game_system.game_system_config.get_emu_folder(),rom_info.game_system.game_system_config.get_launch())
         
         #file_path = /mnt/SDCARD/Roms/FAKE08/Alpine Alpaca.p8
         #miyoo maps it to /media/sdcard0/Emu/FAKE08/../../Roms/FAKE08/Alpine Alpaca.p8
-        miyoo_app_path = MiyooTrimCommon.convert_game_path_to_miyoo_path(rom_info.rom_file_path, remap_sdcard_path)
+        # Disable path mapping for now -- probably never re-enable
+        #miyoo_app_path = MiyooTrimCommon.convert_game_path_to_miyoo_path(rom_info.rom_file_path, remap_sdcard_path)
+        miyoo_app_path = rom_info.rom_file_path
         escaped_path = re.sub(r'([$`"\\])', r'\\\1', miyoo_app_path)        
         MiyooTrimCommon.write_cmd_to_run(f'''chmod a+x "{launch_path}";{run_prefix}"{launch_path}" "{escaped_path}"''')
-        device.fix_sleep_sound_bug()
+        Device.get_device().fix_sleep_sound_bug()
 
 
-        Device.exit_pyui()
+        Device.get_device().exit_pyui()
         #try:
         #    return subprocess.Popen([launch_path,rom_info.rom_file_path], stdin=subprocess.DEVNULL,
         #         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -79,19 +83,19 @@ class MiyooTrimCommon():
         
     @staticmethod
     def run_cmd(device, args, dir = None):
-        device.fix_sleep_sound_bug()
+        Device.get_device().fix_sleep_sound_bug()
         PyUiLogger.get_logger().debug(f"About to launch app {args} from dir {dir}")
         subprocess.run(args, cwd = dir)
 
     @staticmethod
     def run_app(device, folder,launch, run_prefix =""):
-        device.fix_sleep_sound_bug()
+        Device.get_device().fix_sleep_sound_bug()
         #cd /mnt/SDCARD/App/Commander_Italic; chmod a+x ./launch.sh; LD_PRELOAD=/mnt/SDCARD/miyoo/app/../lib/libpadsp.so   ./launch.sh 
         if '"' in launch:
             MiyooTrimCommon.write_cmd_to_run(f'cd "{folder}"; {run_prefix}{launch}''')
         else:
             MiyooTrimCommon.write_cmd_to_run(f'cd "{folder}"; chmod a+x "{launch}"; {run_prefix}"{launch}"''')
-        Device.exit_pyui()
+        Device.get_device().exit_pyui()
 
     @staticmethod
     def stop_wifi_services(device):
@@ -104,14 +108,14 @@ class MiyooTrimCommon():
         time.sleep(0.1)  
         ProcessRunner.run(['killall', '-9', 'udhcpc'])
         time.sleep(0.1)  
-        device.set_wifi_power(0)
+        Device.get_device().set_wifi_power(0)
 
 
     @staticmethod
     def start_wpa_supplicant(device):
         try:
             # Check if wpa_supplicant is running using ps -f
-            result = device.get_running_processes()
+            result = Device.get_device().get_running_processes()
             if 'wpa_supplicant' in result.stdout:
                 return
 
@@ -121,7 +125,7 @@ class MiyooTrimCommon():
                 '-B',
                 '-D', 'nl80211',
                 '-i', 'wlan0',
-                '-c', device.get_wpa_supplicant_conf_path()
+                '-c', Device.get_device().get_wpa_supplicant_conf_path()
             ])
             time.sleep(0.5)  # Wait for it to initialize
             PyUiLogger.get_logger().info("wpa_supplicant started.")
@@ -143,50 +147,55 @@ class MiyooTrimCommon():
                     f.write(conf_content)
                 PyUiLogger.get_logger().info("Created missing wpa_supplicant.conf.")
         except Exception as e:
-            PyUiLogger.get_logger().error(f"Error creating /userdata/cfg/wpa_supplicant.conf: {e}")
+            PyUiLogger.get_logger().error(f"Error creating {wpa_supplicant_path}: {e}")
 
     def should_scale_screen(self):
         return self.is_hdmi_connected()
     
     @staticmethod
     def disable_wifi(device):
-        device.system_config.reload_config()
-        device.system_config.set_wifi(0)
-        device.system_config.save_config()
+        Device.get_device().system_config.reload_config()
+        Device.get_device().system_config.set_wifi(0)
+        Device.get_device().system_config.save_config()
         ProcessRunner.run(["ifconfig","wlan0","down"])
-        device.stop_wifi_services()
-        device.get_wifi_status.force_refresh()
-        device.get_ip_addr_text.force_refresh()
+        Device.get_device().stop_wifi_services()
+        Device.get_device().get_wifi_status.force_refresh()
+        Device.get_device().get_ip_addr_text.force_refresh()
 
     @staticmethod
     def enable_wifi(device):
-        device.system_config.reload_config()
-        device.system_config.set_wifi(1)
-        device.system_config.save_config()
+        Device.get_device().system_config.reload_config()
+        Device.get_device().system_config.set_wifi(1)
+        Device.get_device().system_config.save_config()
         ProcessRunner.run(["ifconfig","wlan0","up"])
-        device.start_wifi_services()
-        device.get_wifi_status.force_refresh()
-        device.get_ip_addr_text.force_refresh()
+        Device.get_device().start_wifi_services()
+        Device.get_device().get_wifi_status.force_refresh()
+        Device.get_device().get_ip_addr_text.force_refresh()
 
     @staticmethod
     def run_analog_stick_calibration(device, stick_name, joystick, file_path, leftOrRight):
         from display.display import Display
-        from themes.theme import Theme
         
         Display.clear("Stick Calibration")
-        Display.render_text_centered(f"Rotate {stick_name}",device.screen_width//2, device.screen_height//2,Theme.text_color_selected(FontPurpose.LIST), purpose=FontPurpose.LIST)
+        Display.display_message(f"Rotate {stick_name}")
         Display.present()
        
         rotate_stats = joystick.sample_axes_stats()
         
         Display.clear("Stick Calibration")
-        Display.render_text_centered(f"Leave {stick_name} Still",device.screen_width//2, device.screen_height//2,Theme.text_color_selected(FontPurpose.LIST), purpose=FontPurpose.LIST)
+        Display.display_message(f"Leave {stick_name} Still")
         Display.present()
 
         centered_stats = joystick.sample_axes_stats()
-        PyUiLogger.get_logger().info("rotate_stats keys:", rotate_stats.keys())
-        PyUiLogger.get_logger().info("centered_stats keys:", rotate_stats.keys())
-        
+        PyUiLogger.get_logger().info(
+            "rotate_stats keys: %s",
+            list(rotate_stats.keys())
+        )
+
+        PyUiLogger.get_logger().info(
+            "centered_stats keys: %s",
+            list(centered_stats.keys())
+        )        
         x_min = f"x_min={round(rotate_stats['axisX'+leftOrRight]['min'])}"
         x_max = f"x_max={round(rotate_stats['axisX'+leftOrRight]['max'])}"
         x_zero = f"x_zero={round(centered_stats['axisX'+leftOrRight]['avg'])}"
@@ -210,20 +219,24 @@ class MiyooTrimCommon():
             f.write(y_max + "\n")
             f.write(x_zero + "\n")
             f.write(y_zero + "\n")
+        PyUiLogger.get_logger().info("Calibration Complete")
+
 
     @staticmethod
     def set_theme(json_path, theme_path: str):
-        json_path = "/userdata/system.json"
-        # Read the existing JSON
         try:
-            with open(json_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            data = {}  # start with empty if file doesn't exist
+            # Read the existing JSON
+            try:
+                with open(json_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except FileNotFoundError:
+                data = {}  # start with empty if file doesn't exist
 
-        # Update the "Theme" entry
-        data["theme"] = theme_path
+            # Update the "Theme" entry
+            data["theme"] = theme_path
 
-        # Write back to the file
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
+            # Write back to the file
+            with open(json_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=4)
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"Could not set theme in {json_path} : {e}")

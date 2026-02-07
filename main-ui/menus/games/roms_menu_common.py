@@ -29,7 +29,7 @@ class RomsMenuCommon(ABC):
         self.in_game_menu_listener = InGameMenuListener()
         self.popup_menu = GameSelectMenuPopup()
         
-        self.support_only_game_launching = Device.get_system_config().game_selection_only_mode_enabled()
+        self.support_only_game_launching = Device.get_device().get_system_config().game_selection_only_mode_enabled()
 
     def _remove_extension(self,file_name):
         return os.path.splitext(file_name)[0]
@@ -101,6 +101,9 @@ class RomsMenuCommon(ABC):
     def get_game_select_col_count(self):
         return Theme.get_game_select_col_count()
     
+    def get_game_select_carousel_col_count(self):
+        return Theme.get_game_select_carousel_col_count()
+    
     def get_image_resize_height_multiplier(self):
         return None
     
@@ -112,6 +115,7 @@ class RomsMenuCommon(ABC):
                         selected_index=selected.get_index(),
                         rows=self.get_game_select_row_count(),
                         cols=self.get_game_select_col_count(),
+                        carousel_cols=Theme.get_game_select_carousel_col_count(),
                         grid_resized_width=Theme.get_grid_game_select_img_width(),
                         grid_resized_height=Theme.get_grid_game_select_img_height(),
                         use_mutli_row_grid_select_as_backup_for_single_row_grid_select=Theme.get_game_select_show_sel_bg_grid_mode(),
@@ -130,8 +134,20 @@ class RomsMenuCommon(ABC):
                         full_screen_grid_resize_type=self.full_screen_grid_resize_type(),
                         image_resize_height_multiplier=self.get_image_resize_height_multiplier())
 
-    def _run_rom_selection(self, page_name) :
+    def _run_rom_selection(self, page_name):
         rom_list = self._get_rom_list()
+
+        current_device = Device.get_device().get_device_name()
+
+        filtered_roms = []
+        for rom_info_ui_entry in rom_list:
+            devices = rom_info_ui_entry.value.game_system.game_system_config.get_devices()
+            supported_device = not devices or current_device in devices
+            if supported_device:
+                filtered_roms.append(rom_info_ui_entry)
+
+        rom_list = filtered_roms
+
         return self._run_rom_selection_for_rom_list(page_name,rom_list)
 
     def get_additional_menu_options(self):
@@ -185,7 +201,7 @@ class RomsMenuCommon(ABC):
             if(Theme.skip_main_menu()):
                 accepted_inputs += [ControllerInput.L1, ControllerInput.R1]
             selected = view.get_selection(accepted_inputs)
-            if(selected is not None):
+            if(selected is not None and (selected.get_selection() is not None or ControllerInput.B == selected.get_input())):
                 if(ControllerInput.A == selected.get_input()):
                     PyUiState.set_last_game_selection(
                         page_name,
@@ -233,8 +249,11 @@ class RomsMenuCommon(ABC):
                         self.run_game(selected.get_selection().get_value())
                 elif(ControllerInput.X == selected.get_input() and not self.support_only_game_launching):
                     gen_additional_game_options = lambda selected=selected.get_selection().get_value(), rom_list=rom_list, self=self: self._get_menu_button_game_options(selected, rom_list)
-                    GameConfigMenu(selected.get_selection().get_value().game_system, 
-                                   selected.get_selection().get_value(), gen_additional_game_options).show_config(os.path.basename(selected.get_selection().get_value().rom_file_path))
+                    GameConfigMenu(
+                        selected.get_selection().get_value().game_system, 
+                        selected.get_selection().get_value(), 
+                        gen_additional_game_options
+                    ).show_config(os.path.basename(selected.get_selection().get_value().rom_file_path))
                     # Regenerate as game config menu might've changed something
                     rom_list = self._get_rom_list()
                 elif(ControllerInput.MENU == selected.get_input() and not self.support_only_game_launching):
@@ -302,7 +321,7 @@ class RomsMenuCommon(ABC):
         #recents is handled one level up to account for launched_via_special_case
         Display.deinit_display()
 
-        game_thread: subprocess.Popen = Device.run_game(game_path)
+        game_thread: subprocess.Popen = Device.get_device().run_game(game_path)
         if (game_thread is not None):
             self.in_game_menu_listener.game_launched(
                 game_thread, game_path)

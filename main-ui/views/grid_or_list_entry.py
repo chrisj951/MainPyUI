@@ -1,11 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
 import threading
-import time
 from typing import Callable, TypeVar
 
 from devices.device import Device
-from utils.logger import PyUiLogger
+from utils.cached_exists import CachedExists
 
 T = TypeVar('T')  # Generic input type
 
@@ -27,6 +26,7 @@ class GridOrListEntry:
         image_path_selected_searcher: Callable[[T], str] = None,
         icon_searcher: Callable[[T], str] = None,
         primary_text_long=None,
+        extra_data=None
     ):        
         self.primary_text = primary_text
         self.primary_text_long = primary_text_long
@@ -43,7 +43,7 @@ class GridOrListEntry:
         self._description = None
         self._description_func = None
         self._description_event = threading.Event()
-
+        self.extra_data = extra_data
         if callable(description):
             self._description_func = description
             # Submit to thread pool and get Future
@@ -104,7 +104,7 @@ class GridOrListEntry:
                 marker, os.path.sep + f"Imgs_{variant_name}" + os.path.sep
             )
 
-            if os.path.exists(variant_path):
+            if CachedExists.exists(variant_path):
                 return variant_path
 
         if("small" == variant_name):
@@ -125,8 +125,8 @@ class GridOrListEntry:
         return self.get_properly_sized_image(self.get_image_path_selected(), target_width, target_height)
 
     def get_properly_sized_image(self, image_path, target_width, target_height):
-        small_width, small_height = Device.get_boxart_small_resize_dimensions()
-        medium_width, medium_height = Device.get_boxart_medium_resize_dimensions()
+        small_width, small_height = Device.get_device().get_boxart_small_resize_dimensions()
+        medium_width, medium_height = Device.get_device().get_boxart_medium_resize_dimensions()
 
         if(target_width is not None and target_width <= small_width):
             #PyUiLogger.get_logger().info(f"Going with small due to width {target_width} <= {small_width}")
@@ -165,3 +165,6 @@ class GridOrListEntry:
         if not isinstance(other, GridOrListEntry):
             return NotImplemented
         return self.value == other.value
+
+    def get_extra_data(self):
+        return self.extra_data

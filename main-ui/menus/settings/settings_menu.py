@@ -1,6 +1,7 @@
 import sys
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
+from display.on_screen_keyboard import OnScreenKeyboard
 from utils.cfw_system_config import CfwSystemConfig
 from utils.logger import PyUiLogger
 from views.grid_or_list_entry import GridOrListEntry
@@ -12,7 +13,7 @@ from abc import ABC, abstractmethod
 
 class SettingsMenu(ABC):
     def __init__(self):
-        pass
+        self.on_screen_keyboard = OnScreenKeyboard()
 
     @abstractmethod
     def build_options_list(self):
@@ -59,6 +60,15 @@ class SettingsMenu(ABC):
         next_index = (current_index + direction) % len(all_entries)
         return all_entries[next_index]
 
+    def onscreen_keyboard_option(self, category, entry_name, input, current_value, update_value):
+        if(ControllerInput.A == input):
+            new_value = self.on_screen_keyboard.get_input(
+                title_text=entry_name,
+                starting_text=str(current_value)
+            )
+            PyUiLogger.get_logger().info(f"Updating {entry_name} to {new_value}")
+            update_value(category, entry_name, new_value)
+
 
     def change_indexed_array_option_for_menu_options_list(self, category, entry_name, input, all_options, current_value, update_value):
         try:
@@ -88,8 +98,9 @@ class SettingsMenu(ABC):
 
     def replace_dynamic_text_in_description(self, description):
         if(description):
-            description = description.format(ip_addr=Device.get_ip_addr_text())
+            description = description.format(ip_addr=Device.get_device().get_ip_addr_text())
         return description
+
 
     def build_options_list_from_config_menu_options(self, category):
         option_list = []
@@ -99,29 +110,72 @@ class SettingsMenu(ABC):
             display_name = option.get('display')
             description = self.replace_dynamic_text_in_description(option.get('description'))
             devices = option.get('devices')
-            supported_device = not devices or Device.get_device_name() in devices
+            supported_device = not devices or Device.get_device().get_device_name() in devices
             if(supported_device):
                 selected_value = CfwSystemConfig.get_selected_value(category,name)
-
-                option_list.append(
-                                GridOrListEntry(
-                                primary_text=display_name,
-                                value_text="<    " + selected_value + "    >",
-                                image_path=None,
-                                image_path_selected=None,
-                                description=description,
-                                icon=None,
-                                value=lambda 
-                                    input_value, 
-                                    entry_name=name, 
-                                    category=category,
-                                    all_options=option.get('options', []),
-                                    current_value=selected_value,update_value=CfwSystemConfig.set_menu_option
-                                    : self.change_indexed_array_option_for_menu_options_list(category, entry_name, input_value, all_options, current_value, update_value)
+                type = option.get('type')
+                if "freeText" == type:
+                    option_list.append(
+                        GridOrListEntry(
+                            primary_text=display_name,
+                            value_text=str(selected_value),
+                            image_path=None,
+                            image_path_selected=None,
+                            description=description,
+                            icon=None,
+                            value=lambda 
+                                input_value, 
+                                entry_name=name, 
+                                category=category,
+                                current_value=selected_value,
+                                update_value=CfwSystemConfig.set_menu_option
+                                : self.onscreen_keyboard_option(category, entry_name, input_value, current_value, update_value)
                         )
                     )
+                else:
+                    option_list.append(
+                                    GridOrListEntry(
+                                    primary_text=display_name,
+                                    value_text="<    " + selected_value + "    >",
+                                    image_path=None,
+                                    image_path_selected=None,
+                                    description=description,
+                                    icon=None,
+                                    value=lambda 
+                                        input_value, 
+                                        entry_name=name, 
+                                        category=category,
+                                        all_options=option.get('options', []),
+                                        current_value=selected_value,update_value=CfwSystemConfig.set_menu_option
+                                        : self.change_indexed_array_option_for_menu_options_list(category, entry_name, input_value, all_options, current_value, update_value)
+                            )
+                        )
         return option_list
 
+
+
+
+    def build_defined_list_entry(self, primary_text, all_options, get_value_func,set_value_func) -> GridOrListEntry:
+
+        current_value = get_value_func()
+
+        return GridOrListEntry(
+            primary_text=primary_text,
+            value_text="<    " + str(current_value) + "    >",
+            image_path=None,
+            image_path_selected=None,
+            description=None,
+            icon=None,
+            value=lambda 
+                input_value, 
+                entry_name=primary_text, 
+                category=None,
+                all_options=all_options,
+                current_value=current_value,
+                update_value= lambda category, entry_name, selected_value : set_value_func(selected_value)
+                : self.change_indexed_array_option_for_menu_options_list(category, entry_name, input_value, 
+                                                                         all_options, current_value, update_value)
+        )
 
     def build_enabled_disabled_entry(self, primary_text, get_value_func, set_value_func) -> GridOrListEntry:
 

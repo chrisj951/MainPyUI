@@ -12,7 +12,7 @@ class MiyooFlipPoller:
     def check_audio(self):
         
         try:
-            new_headphone_status = self.device.are_headphones_plugged_in()
+            new_headphone_status = self.device.get_device().are_headphones_plugged_in()
             if(new_headphone_status != self.headphone_status):
                 self.headphone_status = new_headphone_status
                 if(self.headphone_status):
@@ -25,15 +25,15 @@ class MiyooFlipPoller:
         if(time.time() - self.last_run_time > 3):
             time.sleep(1) #wait for full wake up
             PyUiLogger.get_logger().info("Running fixes for sleep sound bug")
-            self.device.fix_sleep_sound_bug()
+            self.device.get_device().fix_sleep_sound_bug()
         
     def check_lid(self):
         try:
-            if(self.device.is_lid_closed()):
-                self.device.sleep()
+            if(self.device.get_device().is_lid_closed()):
+                self.device.get_device().sleep()
                 time.sleep(1) #ensure sleep occurs
                 time.sleep(1) #give time on wakeup
-                self.device.fix_sleep_sound_bug()
+                self.device.get_device().fix_sleep_sound_bug()
 
         except:
             pass

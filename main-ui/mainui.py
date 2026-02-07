@@ -5,6 +5,7 @@ import signal
 import sys
 import threading
 from devices.device import Device
+from devices.miyoo.mini.miyoo_mini_flip_specific_model_variables import MIYOO_MINI_FLIP_VARIABLES, MIYOO_MINI_PLUS, MIYOO_MINI_V1_V2_V3_VARIABLES, MIYOO_MINI_V4_VARIABLES
 from menus.app.hidden_apps_manager import AppsManager
 from menus.games.utils.collections_manager import CollectionsManager
 from menus.games.utils.custom_gameswitcher_list_manager import CustomGameSwitcherListManager
@@ -26,6 +27,7 @@ from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 from utils.py_ui_state import PyUiState
 from utils.realtime_message_network_listener import RealtimeMessageNetworkListener
+from utils.time_logger import log_timing
 
 
 
@@ -42,6 +44,7 @@ def parse_arguments():
     parser.add_argument('-optionListFile', type=str, default=None, help='Runs in a mode to just display a list of options')
     parser.add_argument('-optionListTitle', type=str, default=None, help='Title to display if option list is provided')
     parser.add_argument('-buttonListenerMode', type=str, default=None, help='Just run and output button presses')
+    parser.add_argument('-startupInitOnly', type=str, default=None, help='Only run startup sequences for the device')
     return parser.parse_args()
 
 def log_renderer_info():
@@ -59,20 +62,41 @@ def initialize_device(device, main_ui_mode):
     if "MIYOO_FLIP" == device or "SPRUCE_MIYOO_FLIP" == device:
         from devices.miyoo.flip.miyoo_flip import MiyooFlip
         Device.init(MiyooFlip(device, main_ui_mode))
+    elif "MIYOO_MINI" == device:
+        from devices.miyoo.mini.miyoo_mini_common import MiyooMiniCommon
+        Device.init(MiyooMiniCommon(device,main_ui_mode,MIYOO_MINI_V1_V2_V3_VARIABLES))
+    elif "MIYOO_MINI_V4" == device:
+        from devices.miyoo.mini.miyoo_mini_common import MiyooMiniCommon
+        Device.init(MiyooMiniCommon(device,main_ui_mode,MIYOO_MINI_V4_VARIABLES))
+    elif "MIYOO_MINI_PLUS" == device:
+        from devices.miyoo.mini.miyoo_mini_common import MiyooMiniCommon
+        Device.init(MiyooMiniCommon(device,main_ui_mode,MIYOO_MINI_PLUS))
     elif "MIYOO_MINI_FLIP" == device:
-        from devices.miyoo.mini_flip.miyoo_mini_flip import MiyooMiniFlip
-        Device.init(MiyooMiniFlip(device,main_ui_mode))
+        from devices.miyoo.mini.miyoo_mini_common import MiyooMiniCommon
+        Device.init(MiyooMiniCommon(device,main_ui_mode,MIYOO_MINI_FLIP_VARIABLES))
+    elif "SPRIG_MIYOO_MINI" == device:
+        from devices.miyoo.mini.sprig_miyoo_mini_common import SprigMiyooMiniCommon
+        Device.init(SprigMiyooMiniCommon(device, main_ui_mode,MIYOO_MINI_V1_V2_V3_VARIABLES))
+    elif "SPRIG_MIYOO_MINI_V4" == device:
+        from devices.miyoo.mini.sprig_miyoo_mini_common import SprigMiyooMiniCommon
+        Device.init(SprigMiyooMiniCommon(device, main_ui_mode,MIYOO_MINI_V4_VARIABLES))
+    elif "SPRIG_MIYOO_MINI_PLUS" == device:
+        from devices.miyoo.mini.sprig_miyoo_mini_common import SprigMiyooMiniCommon
+        Device.init(SprigMiyooMiniCommon(device, main_ui_mode,MIYOO_MINI_PLUS))
     elif "SPRIG_MIYOO_MINI_FLIP" == device:
-        from devices.miyoo.mini_flip.sprig_miyoo_mini_flip import SprigMiyooMiniFlip
-        Device.init(SprigMiyooMiniFlip(device, main_ui_mode))
+        from devices.miyoo.mini.sprig_miyoo_mini_common import SprigMiyooMiniCommon
+        Device.init(SprigMiyooMiniCommon(device, main_ui_mode,MIYOO_MINI_FLIP_VARIABLES))
     elif "TRIMUI_BRICK" == device or "SPRUCE_TRIMUI_BRICK" == device:
         from devices.trimui.trim_ui_brick import TrimUIBrick
         Device.init(TrimUIBrick(device,main_ui_mode))
     elif "TRIMUI_SMART_PRO" == device or "SPRUCE_TRIMUI_SMART_PRO" == device:
         from devices.trimui.trim_ui_smart_pro import TrimUISmartPro
-        Device.init(TrimUISmartPro(device))
+        Device.init(TrimUISmartPro(device,main_ui_mode))
+    elif "TRIMUI_SMART_PRO_S" == device or "SPRUCE_TRIMUI_SMART_PRO_S" == device:
+        from devices.trimui.trim_ui_smart_pro_s import TrimUISmartProS
+        Device.init(TrimUISmartProS(device,main_ui_mode))
     elif "MIYOO_A30" == device or "SPRUCE_MIYOO_A30" == device:
-        from devices.miyoo.flip.miyoo_a30 import MiyooA30
+        from devices.miyoo.a30.miyoo_a30 import MiyooA30
         Device.init(MiyooA30(device, main_ui_mode))
     elif "ANBERNIC_RG34XXSP" == device:
         from devices.muos.muos_anbernic_rgxx import MuosAnbernicRGXX
@@ -82,20 +106,23 @@ def initialize_device(device, main_ui_mode):
         Device.init(MuosAnbernicRGXX(device))
     elif "ANBERNIC_MUOS" == device:
         from devices.muos.muos_anbernic_rgxx import MuosAnbernicRGXX
-        Device.init(MuosAnbernicRGXX(device))
+        Device.init(MuosAnbernicRGXX(device))        
+    elif "GKD_PIXEL2" == device:
+        from devices.gkd.gkd_pixel2 import GKDPixel2
+        Device.init(GKDPixel2(device, main_ui_mode))
     else:
         raise RuntimeError(f"{device} is not a supported device")
 
 
 def background_startup():
-    FavoritesManager.initialize(Device.get_favorites_path())
-    RecentsManager.initialize(Device.get_recents_path())
+    FavoritesManager.initialize(Device.get_device().get_favorites_path())
+    RecentsManager.initialize(Device.get_device().get_recents_path())
     CustomGameSwitcherListManager.initialize()
-    CollectionsManager.initialize(Device.get_collections_path())
-    AppsManager.initialize(Device.get_apps_config_path())
+    CollectionsManager.initialize(Device.get_device().get_collections_path())
+    AppsManager.initialize(Device.get_device().get_apps_config_path())
 
 def start_background_threads():
-    startup_thread = threading.Thread(target=Device.perform_startup_tasks)
+    startup_thread = threading.Thread(target=Device.get_device().perform_startup_tasks)
     startup_thread.start()
 
     # Background favorites/recents init thread
@@ -164,48 +191,65 @@ def check_for_button_listener_mode(args):
         print("Running in button listener mode")
         ButtonListener().start()
 
+def check_for_startup_init_only(args):
+    if(args.startupInitOnly):
+        print("Running in startup init only mode")
+        Device.get_device().startup_init(include_wifi=False)
+        sys.exit(0)
 
 def main():
     args = parse_arguments()
     PyUiLogger.init(args.logDir, "PyUI")
     PyUiLogger.get_logger().info(f"{args}")
-    #PyUiLogger.get_logger().info(f"logDir: {args.logDir}")
-    #PyUiLogger.get_logger().info(f"pyUiConfig: {args.pyUiConfig}")
-    #PyUiLogger.get_logger().info(f"device: {args.device}")
 
     #log_renderer_info()
 
-    verify_config_exists(args.pyUiConfig)
-    PyUiConfig.init(args.pyUiConfig)
-    CfwSystemConfig.init(args.cfwConfig)
+    with log_timing("Entire Startup initialization", PyUiLogger.get_logger()):    
 
-    main_ui_mode = True
+        with log_timing("Config initialization", PyUiLogger.get_logger()):    
+            verify_config_exists(args.pyUiConfig)
+            PyUiConfig.init(args.pyUiConfig)
+            CfwSystemConfig.init(args.cfwConfig)
 
-    if(args.msgDisplayRealtime or args.msgDisplay or args.msgDisplayRealtimePort or args.optionListFile or args.buttonListenerMode):
-        main_ui_mode = False
+        main_ui_mode = True
 
-    initialize_device(args.device, main_ui_mode)
-    PyUiState.init(Device.get_state_path())
+        if(args.msgDisplayRealtime or args.msgDisplay or args.msgDisplayRealtimePort or args.optionListFile or args.buttonListenerMode):
+            main_ui_mode = False
 
-    selected_theme = os.path.join(PyUiConfig.get("themeDir"), Device.get_system_config().get_theme())
-    check_for_button_listener_mode(args)
+        with log_timing("Device initialization", PyUiLogger.get_logger()):    
+            initialize_device(args.device, main_ui_mode)
 
-    Theme.init(selected_theme, Device.screen_width(), Device.screen_height())
-    Display.init()
-    #2nd init is just to allow scaling if needed
-    Theme.convert_theme_if_needed(selected_theme, Device.screen_width(), Device.screen_height())
-    Controller.init()
-    Language.init()
+        PyUiState.init(Device.get_device().get_state_path())
 
-    check_for_msg_display(args)
-    check_for_msg_display_realtime(args)
-    check_for_msg_display_socket_based(args)
-    check_for_option_list_file(args)
+        selected_theme = os.path.join(PyUiConfig.get("themeDir"), Device.get_device().get_system_config().get_theme())
+        check_for_button_listener_mode(args)
+        check_for_startup_init_only(args)
+
+        with log_timing("Theme initialization", PyUiLogger.get_logger()):    
+            Theme.init(selected_theme, Device.get_device().screen_width(), Device.get_device().screen_height())
+
+        with log_timing("Display initialization", PyUiLogger.get_logger()):    
+            Display.init()
+        with log_timing("Display Present", PyUiLogger.get_logger()):    
+            Display.present()
+        
+        #2nd init is just to allow scaling if needed
+        Theme.convert_theme_if_needed(selected_theme, Device.get_device().screen_width(), Device.get_device().screen_height())
+        Controller.init()
+        Language.init()
+
+        Device.get_device().perform_sdcard_ro_check()
+
+        check_for_msg_display(args)
+        check_for_msg_display_realtime(args)
+        check_for_msg_display_socket_based(args)
+        check_for_option_list_file(args)
 
     main_menu = MainMenu()
 
     start_background_threads()
     keep_running = True
+    PyUiLogger.get_logger().info("Entering main loop")
     while(keep_running):
         try:
             main_menu.run_main_menu_selection()

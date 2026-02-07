@@ -3,6 +3,8 @@ from logging.handlers import RotatingFileHandler
 import os
 import sys
 
+from utils.etension_preserving_rotating_file_handler import ExtensionPreservingRotatingFileHandler
+
 class StreamToLogger:
     """Redirect writes to a logger."""
     def __init__(self, logger, level, stream=None):
@@ -28,59 +30,97 @@ class PyUiLogger:
         if cls._logger is not None:
             return cls._logger
 
-        cls.rotate_logs(log_dir)  # Ensure logs are rotated before initializing logger
+        try:
+            cls.rotate_logs(log_dir)  # Ensure logs are rotated before initializing logger
 
-        logger = logging.getLogger(logger_name)
-        logger.setLevel(logging.DEBUG)
+            logger = logging.getLogger(logger_name)
+            logger.setLevel(logging.DEBUG)
 
-        if not logger.handlers:
-            formatter = logging.Formatter(
-                "%(asctime)s - %(filename)s:%(lineno)d - %(funcName)s - %(levelname)s - %(message)s"
-            )
+            if not logger.handlers:
+                formatter = logging.Formatter(
+                    "%(asctime)s - %(filename)s:%(lineno)d - %(funcName)s - %(levelname)s - %(message)s"
+                )
 
-            # Console handler
-            console_handler = logging.StreamHandler()
-            console_handler.setLevel(logging.DEBUG)
-            console_handler.setFormatter(formatter)
-            console_handler = logging.StreamHandler(sys.__stdout__)
+                # Console handler (explicit stdout)
+                console_handler = logging.StreamHandler(sys.__stdout__)
+                console_handler.setLevel(logging.DEBUG)
+                console_handler.setFormatter(formatter)
 
-            # File handler
-            file_handler = RotatingFileHandler(os.path.join(log_dir,"pyui.log"),
-                maxBytes=1024 * 1024,  # 1MB file size limit
-                backupCount=5               # Keep up to 5 backup files)
-            )
-            file_handler.setLevel(logging.DEBUG)
-            file_handler.setFormatter(formatter)
+                # File handler
+                file_handler = ExtensionPreservingRotatingFileHandler(
+                    os.path.join(log_dir, "pyui.log"),
+                    maxBytes=1024 * 1024,
+                    backupCount=5
+                )
+                file_handler.setLevel(logging.DEBUG)
+                file_handler.setFormatter(formatter)
 
-            logger.addHandler(console_handler)
-            logger.addHandler(file_handler)
-            
-        # Redirect stdout and stderr to logger
-        sys.stdout = StreamToLogger(logger, logging.INFO, sys.__stdout__)
-        sys.stderr = StreamToLogger(logger, logging.ERROR, sys.__stderr__)
+                logger.addHandler(console_handler)
+                logger.addHandler(file_handler)
 
-        cls._logger = logger
-        return cls._logger
-    
+            # Redirect stdout/stderr
+            sys.stdout = StreamToLogger(logger, logging.INFO, sys.__stdout__)
+            sys.stderr = StreamToLogger(logger, logging.ERROR, sys.__stderr__)
+
+            cls._logger = logger
+            return logger
+
+        except Exception as e:
+            # --- Fallback logger ---
+            fallback = logging.getLogger(f"{logger_name}_fallback")
+            fallback.setLevel(logging.DEBUG)
+
+            if not fallback.handlers:
+                formatter = logging.Formatter(
+                    "%(asctime)s - %(levelname)s - %(message)s"
+                )
+
+                out_handler = logging.StreamHandler(sys.__stdout__)
+                err_handler = logging.StreamHandler(sys.__stderr__)
+
+                out_handler.setLevel(logging.INFO)
+                err_handler.setLevel(logging.ERROR)
+
+                out_handler.setFormatter(formatter)
+                err_handler.setFormatter(formatter)
+
+                fallback.addHandler(out_handler)
+                fallback.addHandler(err_handler)
+
+            fallback.error("Logger initialization failed, using fallback logger", exc_info=True)
+
+            cls._logger = fallback
+            return fallback
+
     @staticmethod
     def rotate_logs(log_dir):
-        # Perform log rotation before initializing the logger
-        log_path = os.path.join(log_dir,"pyui.log")
-        backup_path = os.path.join(log_dir,"pyui.log.5")
+        try:
+            base = os.path.join(log_dir, "pyui")
+            ext = ".log"
+            max_backups = 5
 
-        # Rotate logs manually before starting
-        if os.path.exists(backup_path):
-            os.remove(backup_path)
-        for i in range(4, 0, -1):
-            src = f"{log_path}.{i}" if i > 1 else log_path
-            dest = f"{log_path}.{i + 1}"
-            if os.path.exists(src):
-                os.rename(src, dest)
+            # Remove oldest
+            oldest = "%s.%d%s" % (base, max_backups, ext)
+            if os.path.exists(oldest):
+                os.remove(oldest)
 
-        # Optionally, delete the pyui-5.log if it exists
-        if os.path.exists(f"{log_path}.5"):
-            os.remove(f"{log_path}.5")
-            
+            # Shift backups up
+            for i in range(max_backups - 1, 0, -1):
+                src = "%s.%d%s" % (base, i, ext)
+                dst = "%s.%d%s" % (base, i + 1, ext)
+                if os.path.exists(src):
+                    os.rename(src, dst)
+
+            # Rotate current log
+            current = "%s%s" % (base, ext)
+            first = "%s.1%s" % (base, ext)
+            if os.path.exists(current):
+                os.rename(current, first)
+
+        except Exception as e:
+            print("Error rotating logs (likely RO filesystem): %s" % e)
+
+
     @classmethod
     def get_logger(cls):
         return cls._logger
