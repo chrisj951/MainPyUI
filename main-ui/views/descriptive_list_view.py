@@ -84,10 +84,10 @@ class DescriptiveListView(ListView):
             if(iconPath is not None):
                 icon_w, icon_h = Display.render_image(iconPath, 
                                     row_offset_x + target_icon_w//2, 
-                                    row_offset_y + Theme.get_descriptive_list_icon_offset_y(),
-                                    render_mode = RenderMode.TOP_CENTER_ALIGNED, 
+                                    row_offset_y + self.each_entry_height//2,
+                                    render_mode = RenderMode.MIDDLE_CENTER_ALIGNED, 
                                     target_width=target_icon_w, 
-                                    target_height=int(self.each_entry_height*0.8))
+                                    target_height=int(self.each_entry_height*0.90))
                 
             icon_w = target_icon_w
 
