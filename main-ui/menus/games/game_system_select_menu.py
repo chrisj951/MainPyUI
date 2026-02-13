@@ -288,6 +288,8 @@ class GameSystemSelectMenu:
 
     def build_system_list(self):
         systems_list = []
+        self.add_extras_to_systems_list(systems_list)        
+
         active_systems = self.game_utils.get_active_systems()
 
         index = 0
@@ -308,7 +310,6 @@ class GameSystemSelectMenu:
                 )          
             systems_list.append(option)
 
-        self.add_extras_to_systems_list(systems_list)        
 
         for entry in systems_list:
             if(entry.get_primary_text() == PyUiState.get_last_system_selection()):
