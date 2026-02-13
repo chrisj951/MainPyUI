@@ -33,6 +33,7 @@ from utils.py_ui_config import PyUiConfig
 class MiyooFlip(MiyooDevice):
     OUTPUT_MIXER = 2
     SOUND_DISABLED = 0
+    HP_VOLUME_MAX = 15  # Headphone amp gain cap (0-63). Stock is 58 which is way too loud.
     MIYOO_STOCK_CONFIG_LOCATION = "/userdata/system.json"
 
     def __init__(self, device_name, main_ui_mode):
@@ -328,6 +329,11 @@ class MiyooFlip(MiyooDevice):
                 )
 
                 if(self.are_headphones_plugged_in()):
+                    hp_vol = volume * MiyooFlip.HP_VOLUME_MAX // 100
+                    ProcessRunner.run(
+                        ["amixer", "cset", "name='headphone volume'", str(hp_vol)],
+                        print=False
+                    )
                     ProcessRunner.run(["amixer","sset","Playback Path","HP"], print=False)
                 else:
                     ProcessRunner.run(["amixer","sset","Playback Path","SPK"], print=False)
@@ -397,6 +403,8 @@ class MiyooFlip(MiyooDevice):
         ProcessRunner.run(["amixer", "cset","numid=5", "0"])
         if(self.are_headphones_plugged_in()):
             ProcessRunner.run(["amixer", "cset","numid=2", "3"])
+            hp_vol = config_volume * MiyooFlip.HP_VOLUME_MAX // 100
+            ProcessRunner.run(["amixer", "cset", "name='headphone volume'", str(hp_vol)])
         elif(0 == config_volume):
             ProcessRunner.run(["amixer", "cset","numid=2", "0"])
         else:
