@@ -548,3 +548,7 @@ class DeviceCommon(AbstractDevice):
 
     def fix_sleep_sound_bug(self):
         pass
+
+    def uses_deinit_v2(self):
+        # Need to test 1 at a time to ensure it works
+        return False

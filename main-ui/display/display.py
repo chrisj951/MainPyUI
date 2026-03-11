@@ -239,6 +239,13 @@ class Display:
 
     @classmethod
     def deinit_display(cls):
+        if(Device.get_device().uses_deinit_v2()):
+            cls.deinit_display_v2()
+        else:
+            cls.deinit_display_v1()
+
+    @classmethod
+    def deinit_display_v1(cls):
         if cls.render_canvas:
             sdl2.SDL_DestroyTexture(cls.render_canvas)
             cls.render_canvas = None
@@ -256,6 +263,39 @@ class Display:
         cls._text_texture_cache.clear_cache()
         cls._image_texture_cache.clear_cache()
         sdl2.SDL_QuitSubSystem(sdl2.SDL_INIT_VIDEO)
+
+
+    @classmethod
+    def deinit_display_v2(cls):
+        if cls.render_canvas:
+            sdl2.SDL_DestroyTexture(cls.render_canvas)
+            cls.render_canvas = None
+
+        if cls.bg_canvas:
+            sdl2.SDL_DestroyTexture(cls.bg_canvas)
+            cls.bg_canvas = None
+
+        if cls.renderer:
+            cls.renderer.destroy()
+            cls.renderer = None
+
+        if cls.window:
+            cls.window.close()
+            cls.window = None
+
+        cls.deinit_fonts()
+        cls._unload_bg_texture()
+        cls._text_texture_cache.clear_cache()
+        cls._image_texture_cache.clear_cache()
+
+        sdl2.SDL_Quit()   # <-- Full teardown
+
+        import gc
+        gc.collect()
+
+        import time
+        time.sleep(0.1)
+        cls.bg_path = None
 
     @classmethod
     def clear_text_cache(cls):

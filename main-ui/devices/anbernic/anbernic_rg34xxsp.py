@@ -534,3 +534,5 @@ class AnbernicRG34xxSP(DeviceCommon):
     def enable_wifi(self):
         MiyooTrimCommon.enable_wifi(self)
 
+    def uses_deinit_v2(self):
+        return True
