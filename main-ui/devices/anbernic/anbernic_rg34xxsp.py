@@ -108,16 +108,6 @@ class AnbernicRG34xxSP(DeviceCommon):
 
     def get_volume(self):
         return self.system_config.get_volume()
-
-    def get_selected_emulator(self, menu_options: dict, device_name: str):
-        for key, option in menu_options.items():
-            if key.startswith("Emulator"):
-                devices = option.get("devices", [])
-                if device_name in devices:
-                    return option.get("selected")
-        if menu_options.get("Emulator"):
-            return menu_options["Emulator"].get("selected")
-        return None
     
     def run_game(self, rom_info: RomInfo):
         from controller.controller import Controller

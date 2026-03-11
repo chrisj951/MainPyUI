@@ -87,6 +87,8 @@ class Display:
     window = None
     background_texture = None
     top_bar_text = None
+    is_custom_theme_background = None
+
     _image_texture_cache = ImageTextureCache()
     _text_texture_cache = TextTextureCache()
     _problematic_images = set()  # Class-level set to track images that won't load properly
@@ -262,8 +264,10 @@ class Display:
         cls._unload_bg_texture()
         cls._text_texture_cache.clear_cache()
         cls._image_texture_cache.clear_cache()
-        sdl2.SDL_QuitSubSystem(sdl2.SDL_INIT_VIDEO)
+        cls.bg = None
 
+        sdl2.SDL_Quit()
+        os.sync()
 
     @classmethod
     def deinit_display_v2(cls):
@@ -288,7 +292,7 @@ class Display:
         cls._text_texture_cache.clear_cache()
         cls._image_texture_cache.clear_cache()
 
-        sdl2.SDL_Quit()   # <-- Full teardown
+        sdl2.SDL_Quit()
 
         import gc
         gc.collect()
@@ -344,7 +348,7 @@ class Display:
 
     @classmethod
     def set_new_bg(cls, bg_path, is_custom_theme_background, retry=True):
-        if(bg_path is not None and bg_path != cls.bg_path):
+        if(bg_path is not None and (bg_path != cls.bg_path or cls.background_texture is None)):
             cls._unload_bg_texture()
             cls.is_custom_theme_background = is_custom_theme_background
             cls.bg_path = bg_path
