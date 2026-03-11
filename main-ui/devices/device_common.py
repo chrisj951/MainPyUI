@@ -544,3 +544,7 @@ class DeviceCommon(AbstractDevice):
     def get_image_for_activity(self, activity):
         # Implement in child classes where possible
         return None
+    
+
+    def fix_sleep_sound_bug(self):
+        pass
