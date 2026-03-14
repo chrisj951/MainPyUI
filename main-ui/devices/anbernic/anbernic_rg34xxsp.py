@@ -34,6 +34,7 @@ from utils.py_ui_config import PyUiConfig
 
 from devices.device_common import DeviceCommon
 
+#/mnt/vendor/ctrl/dmenu_ln
 class AnbernicRG34xxSP(DeviceCommon):
     def __init__(self):
         self.device_name = "MIYOO_A30"
@@ -42,7 +43,6 @@ class AnbernicRG34xxSP(DeviceCommon):
         source = script_dir / 'anbernic-rg34xxsp-system.json'
         self._load_system_config("/mnt/SDCARD/Saves/anbernic-rg34xxsp-system.json", source)
         self.miyoo_games_file_parser = MiyooGamesFileParser()        
-        threading.Thread(target=self.monitor_wifi, daemon=True).start()
         self.hardware_poller = MiyooFlipPoller(self)
         threading.Thread(target=self.hardware_poller.continuously_monitor, daemon=True).start()
         self.game_utils = MiyooTrimGameSystemUtils()
@@ -90,11 +90,23 @@ class AnbernicRG34xxSP(DeviceCommon):
 
     def _set_brightness_to_config(self):
         pass
-
+                   
     def _set_lumination_to_config(self):
-        luminosity = self.map_backlight_from_10_to_full_255(self.system_config.backlight)
-        #TODO
-    
+        import fcntl
+        import struct
+        DEV = "/dev/disp"
+        IOCTL_SET_BRIGHTNESS = 0x102
+        val = self.map_backlight_from_10_to_full_255(self.system_config.backlight)
+
+        # 4 unsigned long values (ARM64 = 8 bytes each)
+        args = struct.pack("QQQQ", 0, val, 0, 0)
+
+        fd = os.open(DEV, os.O_RDWR)
+        try:
+            fcntl.ioctl(fd, IOCTL_SET_BRIGHTNESS, args)
+        finally:
+            os.close(fd)     
+            
     def _set_contrast_to_config(self):
         pass
     
@@ -192,25 +204,8 @@ class AnbernicRG34xxSP(DeviceCommon):
     def get_wifi_connection_quality_info(self) -> WiFiConnectionQualityInfo:
         return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
 
-
-    def set_wifi_power(self, value):
-        pass
-
-    def stop_wifi_services(self):
-        pass
-
-    def start_wpa_supplicant(self):
-        pass
-
     def is_wifi_enabled(self):
         return self.system_config.is_wifi_enabled()
-
-    def disable_wifi(self):
-        pass
-
-    def enable_wifi(self):
-        pass
-
 
     @throttle.limit_refresh(5)
     def get_charge_status(self):
@@ -410,6 +405,9 @@ class AnbernicRG34xxSP(DeviceCommon):
 
     @throttle.limit_refresh(5)
     def is_hdmi_connected(self):
+        # /sys/class/switch/hdmi/state
+        # HDMI=0
+        # HDMI=1
         return False
     
 
@@ -510,19 +508,19 @@ class AnbernicRG34xxSP(DeviceCommon):
         pass
 
     def stop_wifi_services(self):
-        MiyooTrimCommon.stop_wifi_services(self)
+        pass
 
     def start_wpa_supplicant(self):
-        MiyooTrimCommon.start_wpa_supplicant(self)
+        pass
 
     def is_wifi_enabled(self):
         return self.system_config.is_wifi_enabled()
 
     def disable_wifi(self):
-        MiyooTrimCommon.disable_wifi(self)
+        pass
 
     def enable_wifi(self):
-        MiyooTrimCommon.enable_wifi(self)
+        pass
 
     def uses_deinit_v2(self):
         return True
