@@ -47,7 +47,7 @@ class AnbernicRG34xxSP(DeviceCommon):
         threading.Thread(target=self.hardware_poller.continuously_monitor, daemon=True).start()
         self.game_utils = MiyooTrimGameSystemUtils()
 
-        #self._set_lumination_to_config()
+        self._set_lumination_to_config()
         #self._set_contrast_to_config()
         #self._set_saturation_to_config()
         #self._set_brightness_to_config()
