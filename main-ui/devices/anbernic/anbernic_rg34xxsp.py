@@ -106,7 +106,7 @@ class AnbernicRG34xxSP(DeviceCommon):
             fcntl.ioctl(fd, IOCTL_SET_BRIGHTNESS, args)
         finally:
             os.close(fd)     
-            
+
     def _set_contrast_to_config(self):
         pass
     
@@ -511,6 +511,12 @@ class AnbernicRG34xxSP(DeviceCommon):
         pass
 
     def start_wpa_supplicant(self):
+        pass
+
+    def start_udhcpc(self):
+        pass
+
+    def start_wifi_services(self):
         pass
 
     def is_wifi_enabled(self):
