@@ -96,7 +96,8 @@ class AnbernicRG34xxSP(DeviceCommon):
         import struct
         DEV = "/dev/disp"
         IOCTL_SET_BRIGHTNESS = 0x102
-        val = self.map_backlight_from_10_to_full_255(self.system_config.backlight)
+        #Is actually 128
+        val = self.map_backlight_from_10_to_full_255(self.system_config.backlight //2)
 
         # 4 unsigned long values (ARM64 = 8 bytes each)
         args = struct.pack("QQQQ", 0, val, 0, 0)
