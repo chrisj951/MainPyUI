@@ -123,33 +123,36 @@ class AnbernicRG34xxSP(DeviceCommon):
         return self.system_config.get_volume()
     
     def run_game(self, rom_info: RomInfo):
-        from controller.controller import Controller
-        menu_options = rom_info.game_system.game_system_config.get_menu_options()
-        selected_core = self.get_selected_emulator(menu_options, self.device_name)
-        if(selected_core is None):
-            Display.display_message("No core found", 2_000)
-            return
+        if(PyUiConfig.mimic_miyoo_mainui_mode()):
+            MiyooTrimCommon.run_game(self, rom_info)
+        else:
+            from controller.controller import Controller
+            menu_options = rom_info.game_system.game_system_config.get_menu_options()
+            selected_core = self.get_selected_emulator(menu_options, self.device_name)
+            if(selected_core is None):
+                Display.display_message("No core found", 2_000)
+                return
 
-        #selected_core = "/mnt/SDCARD/RetroArch/.retroarch/cores64/" + selected_core + "_libretro.so"
-        selected_core = "/mnt/SDCARD/RetroArch/.retroarch/cores/" + selected_core + "_libretro.so"
+            #selected_core = "/mnt/SDCARD/RetroArch/.retroarch/cores64/" + selected_core + "_libretro.so"
+            selected_core = "/mnt/SDCARD/RetroArch/.retroarch/cores/" + selected_core + "_libretro.so"
 
-        cmds = [
-                #"/mnt/SDCARD/RetroArch/ra64.universal",
-                "/mnt/vendor/deep/retro/retroarch",
-                "--config", "/mnt/SDCARD/RetroArch/platform/retroarch-AnbernicRG34XXSP.cfg",
-                "-v",
-                "--log-file","/mnt/SDCARD/Saves/spruce/retroarch.log",
-                "-L",selected_core,
-                rom_info.rom_file_path]
+            cmds = [
+                    #"/mnt/SDCARD/RetroArch/ra64.universal",
+                    "/mnt/vendor/deep/retro/retroarch",
+                    "--config", "/mnt/SDCARD/RetroArch/platform/retroarch-AnbernicRG34XXSP.cfg",
+                    "-v",
+                    "--log-file","/mnt/SDCARD/Saves/spruce/retroarch.log",
+                    "-L",selected_core,
+                    rom_info.rom_file_path]
 
-        #directory = "/mnt/SDCARD/RetroArch/"
-        directory = "/mnt/vendor/deep/retro/"
-        PyUiLogger.get_logger().debug(f"About to launch {cmds} from dir {directory}")
-        Display.deinit_display()
-        subprocess.run(cmds, cwd = directory)
-        Display.init()
+            #directory = "/mnt/SDCARD/RetroArch/"
+            directory = "/mnt/vendor/deep/retro/"
+            PyUiLogger.get_logger().debug(f"About to launch {cmds} from dir {directory}")
+            Display.deinit_display()
+            subprocess.run(cmds, cwd = directory)
+            Display.init()
 
-        Controller.clear_input_queue()
+            Controller.clear_input_queue()
 
     def run_cmd(self, args, dir = None):
         MiyooTrimCommon.run_cmd(self, args, dir)
