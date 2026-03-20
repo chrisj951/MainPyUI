@@ -322,7 +322,7 @@ class AnbernicXXCommon(DeviceCommon):
         return self.get_game_system_utils().get_save_state_image(rom_info)
 
     def get_wpa_supplicant_conf_path(self):
-        return None
+        return PyUiConfig.get_wpa_supplicant_conf_file_location("/mnt/SDCARD/Saves/spruce/wpa_supplicant.conf")
 
     def supports_brightness_calibration(self):
         return False
