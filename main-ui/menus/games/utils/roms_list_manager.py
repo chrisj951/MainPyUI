@@ -18,6 +18,17 @@ class RomsListEntry:
         self.game_system_name = game_system_name
         self.display_name = display_name
 
+    def get_sort_key(self):
+        text = self.display_name or os.path.basename(self.rom_file_path).lower() or ""
+        lower = text.lower()
+        if(Device.get_device().get_system_config().get_ignore_articles_when_sorting()):
+            for article in ("the ", "a ", "an "):
+                if lower.startswith(article):
+                    return (text[len(article):] + ", " + article.strip()).lower()
+        else:
+            return lower        
+
+
 class RomsListManager:
     def __init__(self, entries_file):
         self.entries_file = entries_file
@@ -115,7 +126,7 @@ class RomsListManager:
         return rom_info_list
 
     def sort_alphabetically(self):
-        self._entries.sort(key=lambda entry: (entry.display_name or os.path.basename(entry.rom_file_path)).lower())
+        self._entries.sort(key=lambda entry: (entry.get_sort_key()))
         # rebuild dict after sorting
         self._entries_dict = {
             self._entry_key(entry.rom_file_path, entry.game_system_name): entry

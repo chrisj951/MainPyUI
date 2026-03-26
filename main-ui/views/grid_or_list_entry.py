@@ -150,6 +150,17 @@ class GridOrListEntry:
     def get_primary_text_long(self):
         return self.primary_text_long or self.primary_text
     
+    def get_sort_key(self):
+        text = self.get_primary_text().strip() or ""
+        lower = text.lower()
+
+        if(Device.get_device().get_system_config().get_ignore_articles_when_sorting()):
+            for article in ("the ", "a ", "an "):
+                if lower.startswith(article):
+                    return (text[len(article):] + ", " + article.strip()).lower()
+        else:
+            return lower        
+
     def get_value_text(self):
         return self.value_text
     
