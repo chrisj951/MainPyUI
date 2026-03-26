@@ -410,7 +410,7 @@ class Language:
 
     @classmethod
     def ignore_articles_when_sorting(cls):
-        return cls._data.get("ignoreArticlesWhenSorting","Ignore articles (A/An/The) when sorting")
+        return cls._data.get("ignoreArticlesWhenSorting","Ignore articles when sorting")
 
     @classmethod
     def hold_menu_for_gameswitcher(cls):

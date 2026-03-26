@@ -159,8 +159,8 @@ class GridOrListEntry:
             for article in ("the ", "a ", "an "):
                 if lower.startswith(article):
                     return (text[len(article):] + ", " + article.strip()).lower()
-        else:
-            return lower        
+                    
+        return lower        
 
     def get_value_text(self):
         return self.value_text

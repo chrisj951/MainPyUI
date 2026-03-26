@@ -26,8 +26,8 @@ class RomsListEntry:
             for article in ("the ", "a ", "an "):
                 if lower.startswith(article):
                     return (text[len(article):] + ", " + article.strip()).lower()
-        else:
-            return lower        
+                
+        return lower        
 
 
 class RomsListManager:
