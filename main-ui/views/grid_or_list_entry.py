@@ -4,6 +4,7 @@ import threading
 from typing import Callable, TypeVar
 
 from devices.device import Device
+from devices.miyoo.user_config import UserConfig
 from utils.cached_exists import CachedExists
 
 T = TypeVar('T')  # Generic input type
@@ -154,7 +155,7 @@ class GridOrListEntry:
         text = self.get_primary_text().strip() or ""
         lower = text.lower()
 
-        if(Device.get_device().get_system_config().get_ignore_articles_when_sorting()):
+        if(UserConfig.get_ignore_articles_when_sorting()):
             for article in ("the ", "a ", "an "):
                 if lower.startswith(article):
                     return (text[len(article):] + ", " + article.strip()).lower()

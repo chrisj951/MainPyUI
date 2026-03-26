@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import List, Tuple
 from devices.device import Device
+from devices.miyoo.user_config import UserConfig
 from menus.games.utils.rom_info import RomInfo
 from utils.logger import PyUiLogger
 
@@ -21,7 +22,7 @@ class RomsListEntry:
     def get_sort_key(self):
         text = self.display_name or os.path.basename(self.rom_file_path).lower() or ""
         lower = text.lower()
-        if(Device.get_device().get_system_config().get_ignore_articles_when_sorting()):
+        if(UserConfig.get_ignore_articles_when_sorting()):
             for article in ("the ", "a ", "an "):
                 if lower.startswith(article):
                     return (text[len(article):] + ", " + article.strip()).lower()

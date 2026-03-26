@@ -1,6 +1,7 @@
 
 from controller.controller_inputs import ControllerInput
 from devices.device import Device
+from devices.miyoo.user_config import UserConfig
 from menus.settings import settings_menu
 from views.grid_or_list_entry import GridOrListEntry
 
@@ -34,8 +35,8 @@ class GameSelectSettingsMenu(settings_menu.SettingsMenu):
         option_list.append(
             self.build_enabled_disabled_entry(
                 primary_text=Language.ignore_articles_when_sorting(),
-                get_value_func=Device.get_device().get_system_config().get_ignore_articles_when_sorting,
-                set_value_func=Device.get_device().get_system_config().set_ignore_articles_when_sorting,
+                get_value_func=UserConfig.get_ignore_articles_when_sorting,
+                set_value_func=UserConfig.set_ignore_articles_when_sorting,
             )
         )
 

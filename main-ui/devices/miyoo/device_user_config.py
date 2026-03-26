@@ -373,10 +373,3 @@ class DeviceUserConfig:
     def set_input_rate_limit_ms(self, value):
         self.config["inputRateLimitMs"] = value
         self.save_config()
-    
-    def get_ignore_articles_when_sorting(self):
-        return self.config.get("ignoreArticlesWhenSorting", False)
-
-    def set_ignore_articles_when_sorting(self, value):
-        self.config["ignoreArticlesWhenSorting"] = value
-        self.save_config()
