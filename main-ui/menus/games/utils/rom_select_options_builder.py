@@ -277,10 +277,9 @@ class RomSelectOptionsBuilder:
         with log_timing("rom_utils.get_roms", PyUiLogger.get_logger()):    
             valid_files, valid_folders = self.rom_utils.get_roms(game_system, subfolder)
 
-
         miyoo_game_list = MiyooGameList(self.rom_utils.get_miyoo_games_file(game_system.folder_name))
         
-        with log_timing("for rom_file_path in valid_files", PyUiLogger.get_logger()):    
+        with log_timing("for rom_file_path in valid_files", PyUiLogger.get_logger(), log_enabled=False):    
             append = file_rom_list.append
             get_by_file_path = miyoo_game_list.get_by_file_path
             get_name_no_ext = RomFileNameUtils.get_rom_name_without_extensions
