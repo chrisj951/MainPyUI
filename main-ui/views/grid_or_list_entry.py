@@ -66,7 +66,7 @@ class GridOrListEntry:
         if callable(description):
             self._description_func = description
             # Submit to thread pool and get Future
-            self._description_future = self._desc_executor.submit(self._load_description_func)
+            #self._description_future = self._desc_executor.submit(self._load_description_func)
         else:
             self._description_future = None
             self._description = description
