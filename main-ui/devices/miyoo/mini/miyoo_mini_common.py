@@ -366,7 +366,7 @@ class MiyooMiniCommon(MiyooDevice):
                         "-c", self.get_wpa_supplicant_conf_path()
                     ], timeout=20)
                     if(foreground_call):
-                        Display.display_message("Starting ip address assignment")
+                        Display.display_message("Starting ip address assignment process")
                     ProcessRunner.run(["udhcpc", "-i", "wlan0", "-s", "/etc/init.d/udhcpc.script", "-b"], timeout=20, print=True)
                     time.sleep(3)
                     os.system("clear")
@@ -378,7 +378,7 @@ class MiyooMiniCommon(MiyooDevice):
     def set_wifi_power(self, value):
         if(self.miyoo_mini_specific_model_variables.supports_wifi):
             if(0 == value):
-                ProcessRunner.run(["ifconfig", "wlan0", "down"])
+                ProcessRunner.run(["ifconfig", "wlan0", "down"], timeout=5)
 
     def get_bluetooth_scanner(self):
         return None

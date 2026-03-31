@@ -287,7 +287,7 @@ class DeviceCommon(AbstractDevice):
             subprocess.Popen([
                 'udhcpc',
                 '-i', 'wlan0'
-            ])
+            ], timeout=20)
             time.sleep(0.5)  # Wait for it to initialize
             PyUiLogger.get_logger().info("udhcpc started.")
         except Exception as e:
@@ -296,9 +296,16 @@ class DeviceCommon(AbstractDevice):
     def start_wifi_services(self, foreground_call=False):
         if not self.connection_seems_up():
             PyUiLogger.get_logger().info("Starting WiFi Services")
+            if(foreground_call):
+                Display.display_message("Turning on WiFi Power")
+                
             self.set_wifi_power(1)
             time.sleep(1)  
+            if(foreground_call):
+                Display.display_message("Starting WiFi process")
             self.start_wpa_supplicant()
+            if(foreground_call):
+                Display.display_message("Starting ip address assignment process")
             self.start_udhcpc()
 
 
