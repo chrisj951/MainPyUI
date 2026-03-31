@@ -260,9 +260,24 @@ class MiyooMiniCommon(MiyooDevice):
             os.replace(tmp_path, path)
 
         except Exception:
-            # Silently ignore all failures
-            pass
+            try:
+                import subprocess
 
+                # Escape key for safety (basic)
+                safe_key = key.replace('"', r'\"')
+
+                # sed regex:
+                # ("key"\s*:\s*)   -> capture key + colon + any whitespace
+                # [^,}]*           -> match existing value (until , or })
+                # replace with new value
+                sed_expr = rf's/("{safe_key}"[[:space:]]*:[[:space:]]*)[^,}}]*/\1{value}/'
+
+                ProcessRunner.run(
+                    ["sed", "-i", "-r", sed_expr, path],
+                    check=False,print=True
+                )
+            except Exception:
+                pass
     def _set_lumination_to_config(self):
         # Miyoo internally has lumination but it does not work
         self._update_stock_config("brightness", self.system_config.backlight)
@@ -344,20 +359,20 @@ class MiyooMiniCommon(MiyooDevice):
                 if not ip:
                     PyUiLogger.get_logger().info("Wifi is disabled - trying to enable it...")
                     if(foreground_call):
-                        Display.display_message("Loading WiFi driver")
+                        Display.display_message("Loading WiFi driver\n(May take up to 5s)")
                     ProcessRunner.run(["insmod", "/mnt/SDCARD/8188fu.ko"], timeout=5, print=True)
                     if(foreground_call):
-                        Display.display_message("Starting network loopback interface")
+                        Display.display_message("Starting network loopback interface\n(May take up to 5s)")
                     ProcessRunner.run(["ifconfig", "lo", "up"], timeout=5, print=True)
                     if(foreground_call):
-                        Display.display_message("Running miyoo-mini custom wifion script")
+                        Display.display_message("Running miyoo-mini custom wifion script\n(May take up to 10s)")
                     ProcessRunner.run(["/customer/app/axp_test", "wifion"], timeout=10, print=True)
                     time.sleep(2)
                     if(foreground_call):
-                        Display.display_message("Starting wlan0")
+                        Display.display_message("Starting wlan0\n(May take up to 3s)")
                     ProcessRunner.run(["ifconfig", "wlan0", "up"], timeout=3, print=True)
                     if(foreground_call):
-                        Display.display_message("Starting WiFi process")
+                        Display.display_message("Starting WiFi process\n(May take up to 20s)")
                     ProcessRunner.run([
                         "wpa_supplicant",
                         "-B",
@@ -366,7 +381,7 @@ class MiyooMiniCommon(MiyooDevice):
                         "-c", self.get_wpa_supplicant_conf_path()
                     ], timeout=20)
                     if(foreground_call):
-                        Display.display_message("Starting ip address assignment process")
+                        Display.display_message("Starting ip address assignment process\n(May take up to 20s)")
                     ProcessRunner.run(["udhcpc", "-i", "wlan0", "-s", "/etc/init.d/udhcpc.script", "-b"], timeout=20, print=True)
                     time.sleep(3)
                     os.system("clear")
