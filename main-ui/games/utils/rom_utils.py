@@ -115,5 +115,4 @@ class RomUtils:
         if Device.get_device().supports_caching_rom_lists():
             self._get_roms_cache[cache_key] = (valid_files, valid_folders)
 
-        PyUiLogger.get_logger().info(f"{game_system.display_name} {directory} : valid_files = {valid_files}, valid_folders = {valid_folders}")
         return valid_files, valid_folders
