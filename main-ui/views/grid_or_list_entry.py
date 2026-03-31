@@ -30,7 +30,7 @@ class GridOrListEntry:
     )
         
     # Shared ThreadPoolExecutor for all instances 
-    _desc_executor = ThreadPoolExecutor(max_workers=1)
+    _desc_executor = ThreadPoolExecutor(max_workers=4)
 
     def __init__(
         self,
