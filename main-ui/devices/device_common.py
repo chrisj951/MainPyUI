@@ -218,7 +218,7 @@ class DeviceCommon(AbstractDevice):
                     PyUiLogger.get_logger().error("Detected wlan0 disappeared, restarting wifi services")
                     PyUiLogger.get_logger().info("Restarting WiFi services")
                     self.stop_wifi_services()
-                    self.start_wifi_services()
+                    self.start_wifi_services(foreground_call=False)
                 else:
                     if time.time() - self.last_successful_ping_time > 30:
                         if(self.connection_seems_up()):
@@ -293,7 +293,7 @@ class DeviceCommon(AbstractDevice):
         except Exception as e:
             PyUiLogger.get_logger().error(f"Error starting udhcpc: {e}")
 
-    def start_wifi_services(self):
+    def start_wifi_services(self, foreground_call=False):
         if not self.connection_seems_up():
             PyUiLogger.get_logger().info("Starting WiFi Services")
             self.set_wifi_power(1)
