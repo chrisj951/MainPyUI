@@ -344,7 +344,7 @@ class MiyooMiniCommon(MiyooDevice):
                 if not ip:
                     PyUiLogger.get_logger().info("Wifi is disabled - trying to enable it...")
 
-                    subprocess.run(["insmod", "/mnt/SDCARD/8188fu.ko"])
+                    subprocess.run(["insmod", "/mnt/SDCARD/spruce/miyoomini/drivers/8188fu.ko"])
                     subprocess.run(["ifconfig", "lo", "up"])
                     subprocess.run(["/customer/app/axp_test", "wifion"])
                     time.sleep(2)
