@@ -10,7 +10,25 @@ from utils.cached_exists import CachedExists
 T = TypeVar('T')  # Generic input type
 
 class GridOrListEntry:
-    
+    __slots__ = (
+        "primary_text",
+        "primary_text_long",
+        "value_text",
+        "image_path",
+        "image_path_selected",
+        "description",
+        "_description",
+        "_description_func",
+        "_description_event",
+        "_description_future",
+        "icon",
+        "value",
+        "image_path_searcher",
+        "image_path_selected_searcher",
+        "icon_searcher",
+        "extra_data",
+    )
+        
     # Shared ThreadPoolExecutor for all instances 
     _desc_executor = ThreadPoolExecutor(max_workers=1)
 
