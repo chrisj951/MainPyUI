@@ -1,35 +1,27 @@
 import json
-from pathlib import Path
-import shutil
 import subprocess
-import sys
-from apps.muos.muos_app_finder import MuosAppFinder
+from apps.miyoo.miyoo_app_finder import MiyooAppFinder
 from controller.controller_inputs import ControllerInput
 from devices.charge.charge_status import ChargeStatus
 import os
 from devices.device_common import DeviceCommon
-from devices.miyoo.device_user_config import DeviceUserConfig
-from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
 from display.display import Display
-from games.utils.device_specific.muos_game_system_utils import MuosGameSystemUtils
+from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
 from games.utils.game_entry import GameEntry
 from menus.games.utils.rom_info import RomInfo
 from menus.settings.button_remapper import ButtonRemapper
 from utils import throttle
-from utils.config_copier import ConfigCopier
 from utils.logger import PyUiLogger
 
 from devices.device_common import DeviceCommon
-from views.grid_or_list_entry import GridOrListEntry
 
-
-from menus.language.language import Language
 
 class RocknixDevice(DeviceCommon):
     def __init__(self):
         self.button_remapper = ButtonRemapper(self.system_config)
         self.muos_systems = self.load_assign_json()
+        self.game_utils = MiyooTrimGameSystemUtils(roms_path="/storage/roms/",emu_path="/storage/Emu")
 
     def sleep(self):
         pass
@@ -75,11 +67,31 @@ class RocknixDevice(DeviceCommon):
         return self.system_config.get_volume()
 
     def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
-        launch_path = os.path.join(rom_info.game_system.game_system_config.get_emu_folder(),rom_info.game_system.game_system_config.get_launch())
-        PyUiLogger.get_logger().info(f"About to launch {launch_path} with rom {rom_info.rom_file_path}")
+        from controller.controller import Controller
+        menu_options = rom_info.game_system.game_system_config.get_menu_options()
+        selected_core = self.get_selected_emulator(menu_options, self.device_name)
+        if(selected_core is None):
+            Display.display_message("No core found", 2_000)
+            return
+
+        selected_core = "/storage/RetroArch/.retroarch/cores64/" + selected_core + "_libretro.so"
+
+        #shutil.copyfile("/mnt/SDCARD/RetroArch/platform/retroarch-AnbernicRG_XX-universal.cfg", "/mnt/SDCARD/RetroArch/retroarch.cfg")
+        cmds = [
+                "/usr/bin/retroarch",
+                "-v",
+                "--config", "/storage/.config/retroarch/retroarch.cfg",
+                "--log-file","/storage/Saves/spruce/retroarch.log",
+                "-L",selected_core,
+                rom_info.rom_file_path]
+
+        directory = "/storage/RetroArch/"
+        PyUiLogger.get_logger().debug(f"About to launch {cmds} from dir {directory}")
         Display.deinit_display()
-        return subprocess.Popen([launch_path,rom_info.rom_file_path], stdin=subprocess.DEVNULL,
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(cmds, cwd = directory)
+        Display.init()
+
+        Controller.clear_input_queue()
 
     def run_cmd(self, args, dir = None, is_power_cmd = False):
         PyUiLogger.get_logger().debug(f"About to launch app {args} from dir {dir}")
@@ -164,7 +176,7 @@ class RocknixDevice(DeviceCommon):
         return 0
 
     def get_app_finder(self):
-        return MuosAppFinder()
+        return MiyooAppFinder(app_dir="/storage/App")
     
     def parse_favorites(self) -> list[GameEntry]:
         return self.miyoo_games_file_parser.parse_favorites()
@@ -244,7 +256,7 @@ class RocknixDevice(DeviceCommon):
             return 1
         
     def get_game_system_utils(self):
-        return MuosGameSystemUtils(self.muos_systems)
+        return self.game_utils
     
     
     def load_assign_json(self, uppercase_keys: bool = True) -> dict:
@@ -301,4 +313,4 @@ class RocknixDevice(DeviceCommon):
         return False
 
     def perform_sdcard_ro_check(self):
-        PyUiLogger.get_logger().info("MUOS Device does not check for read-only SD card status.")
+        PyUiLogger.get_logger().info("Rocknix Device does not check for read-only SD card status.")
