@@ -102,10 +102,12 @@ class RomSelectOptionsBuilder:
         # Path pieces after the system folder (subfolders + filename)
         relative_parts = parts[system_index + 1 : -1]
 
+        images_folder_name = Device.get_device().get_game_images_folder_name()
+
         # Build mirrored Imgs path
         mirrored_path_base = os.path.join(
             os.sep.join(parts[:system_index + 1]),  # Folder/Roms/MD
-            "Imgs",
+            images_folder_name,
             *relative_parts,
             base_name
         )
@@ -116,7 +118,7 @@ class RomSelectOptionsBuilder:
             return mirrored_qoi_path
 
         # ---- Fallback to old behavior (top-level image) ----
-        flat_root = os.path.join(os.sep.join(parts[:system_index + 1]), "Imgs", base_name)
+        flat_root = os.path.join(os.sep.join(parts[:system_index + 1]), images_folder_name, base_name)
         flat_qoi_path = flat_root+ ".qoi"
 
         if CachedExists.exists(flat_qoi_path) and Device.get_device().supports_qoi():
@@ -176,7 +178,7 @@ class RomSelectOptionsBuilder:
         
         # Attempt to construct alternate path by replacing "Roms" with "Imgs"
         imgs_older_equal_to_roms_parts = parts.copy()
-        imgs_older_equal_to_roms_parts[roms_index] = "Imgs"
+        imgs_older_equal_to_roms_parts[roms_index] = images_folder_name
 
         # Imgs folder equal to roms path
         path = self.first_existing(
@@ -218,14 +220,15 @@ class RomSelectOptionsBuilder:
 
         # ES format
         path = self.first_existing(
-            os.path.join(root_dir, "Imgs", base_name + "-image")
+            os.path.join(root_dir, images_folder_name, base_name + "-image")
         )
         if path:
+            PyUiLogger.get_logger().debug(f"Image path is {path}")
             return path
 
         # ES format 2
         path = self.first_existing(
-            os.path.join(root_dir, "Imgs", base_name + "-thumb")
+            os.path.join(root_dir, images_folder_name, base_name + "-thumb")
         )
         if path:
             return path
