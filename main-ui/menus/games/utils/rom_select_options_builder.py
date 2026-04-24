@@ -21,6 +21,7 @@ from utils.cached_exists import CachedExists
 from utils.logger import PyUiLogger
 from utils.time_logger import log_timing
 from views.grid_or_list_entry import GridOrListEntry
+from views.rom_grid_or_list_entry import RomGridOrListEntry
 from views.util.icon_searcher import IconSearcher
 from views.util.image_searcher import ImageSearcher
 
@@ -306,16 +307,15 @@ class RomSelectOptionsBuilder:
 
                 rom_info = RomInfo(game_system, rom_file_path, display_name)
 
-                img_search = ImageSearcher(rom_info, game_entry, prefer_savestate_screenshot, get_image_path)
-
                 append_file(
-                    GridOrListEntry(
-                        primary_text=display_name,
-                        description=folder_name,
-                        value=rom_info,
-                        image_path_searcher=img_search,
-                        image_path_selected_searcher=img_search,
-                        icon_searcher=IconSearcher(rom_info,get_favorite_icon)
+                    RomGridOrListEntry(
+                        display_name=display_name,
+                        folder_name=folder_name,
+                        rom_info=rom_info,
+                        game_entry=game_entry,
+                        prefer_savestate_screenshot=prefer_savestate_screenshot,
+                        get_image_path_fn=get_image_path,
+                        get_favorite_icon=get_favorite_icon
                     )
                 )
 
@@ -330,17 +330,15 @@ class RomSelectOptionsBuilder:
 
                 rom_info = RomInfo(game_system, rom_file_path, display_name)
 
-                # Pre-bind parameters to lambdas
-                img_search = lambda _, ri=rom_info, ge=game_entry: get_image_path(ri, ge, prefer_savestate_screenshot)
-
                 append_folder(
-                    GridOrListEntry(
-                        primary_text=display_name,
-                        description=folder_name,
-                        value=rom_info,
-                        image_path_searcher=img_search,
-                        image_path_selected_searcher=img_search,
-                        icon_searcher=lambda _, ri=rom_info: get_favorite_icon(ri)
+                    RomGridOrListEntry(
+                        display_name=display_name,
+                        folder_name=folder_name,
+                        rom_info=rom_info,
+                        game_entry=game_entry,
+                        prefer_savestate_screenshot=prefer_savestate_screenshot,
+                        get_image_path_fn=get_image_path,
+                        get_favorite_icon=get_favorite_icon
                     )
                 )
 
