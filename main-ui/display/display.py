@@ -87,6 +87,8 @@ class Display:
     window = None
     background_texture = None
     top_bar_text = None
+    bottom_bar_text = None
+    _add_index_last_args = None
     is_custom_theme_background = None
 
     _image_texture_cache = ImageTextureCache()
@@ -452,6 +454,7 @@ class Display:
         if not Theme.render_top_and_bottom_bar_last() or force_top_and_bottom_bar:
             cls.top_bar.render_top_bar(cls.top_bar_text,hide_top_bar_icons)
             cls.bottom_bar.render_bottom_bar(bottom_bar_text, render_bottom_bar_icons_and_images=render_bottom_bar_icons_and_images)
+        cls.bottom_bar_text = bottom_bar_text
 
     @classmethod
     def _log(cls, msg):
@@ -1001,7 +1004,11 @@ class Display:
     def present(cls, fade=False):
         if Theme.render_top_and_bottom_bar_last():
             cls.top_bar.render_top_bar(cls.top_bar_text)
-            cls.bottom_bar.render_bottom_bar()
+            cls.bottom_bar.render_bottom_bar(cls.bottom_bar_text)
+            if cls._add_index_last_args is not None:
+                cls.add_index_text(*cls._add_index_last_args)
+                cls._add_index_last_args = None
+            cls.bottom_bar_text = None
 
         sdl2.SDL_SetRenderTarget(cls.renderer.renderer, None)
 
@@ -1072,8 +1079,10 @@ class Display:
         sdl2.sdlttf.TTF_SizeUTF8(cls.fonts[purpose].font, text.encode('utf-8'), w, h)
         return int(w.value * Device.get_device().get_text_width_measurement_multiplier()), h.value
     
+
     @classmethod
     def add_index_text(cls, index, total, force_include_index = False, letter = None):
+        cls._add_index_last_args = (index, total, force_include_index, letter)
         if(force_include_index or Theme.show_index_text()):
             y_padding = max(5, cls.get_bottom_bar_height() // 4)
             y_value = Device.get_device().screen_height() - y_padding

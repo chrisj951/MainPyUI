@@ -118,6 +118,9 @@ class RomsMenuCommon(ABC):
     def get_game_select_carousel_col_count(self):
         return Theme.get_game_select_carousel_col_count()
     
+    def get_game_select_use_vertical_carousel(self):
+        return Theme.get_game_select_use_vertical_carousel()
+
     def get_image_resize_height_multiplier(self):
         return None
     
@@ -147,7 +150,9 @@ class RomsMenuCommon(ABC):
                         allow_scrolling_text=True, # roms select is allowed to scroll
                         full_screen_grid_resize_type=self.full_screen_grid_resize_type(),
                         image_resize_height_multiplier=self.get_image_resize_height_multiplier(),
-                        icon_and_desc_use_image_in_place_of_icon=True)
+                        icon_and_desc_use_image_in_place_of_icon=True,
+                        veritcal_carousel=self.get_game_select_use_vertical_carousel(),
+                        )
 
     def _run_rom_selection(self, page_name, verify_system=True):
         rom_list = self._get_rom_list()

@@ -114,6 +114,11 @@ class ThemeSettingsSystemSelectMenu(ThemeSettingsMenuCommon):
                     set_value_func=Theme.set_carousel_system_use_percentage_mode
                 )
             )
+            option_list.append(
+                self.build_enabled_disabled_entry("Vertical Carousel", 
+                        Theme.get_system_select_use_vertical_carousel, 
+                        Theme.set_system_select_use_vertical_carousel)
+            )
             if(Theme.get_carousel_system_use_percentage_mode()):
                 option_list.append(
                     self.build_percent_entry(
@@ -140,15 +145,16 @@ class ThemeSettingsSystemSelectMenu(ThemeSettingsMenuCommon):
                     )
             else:
                 option_list.append(
-                    self.build_numeric_entry("Width", 
+                    self.build_numeric_entry("Height" if Theme.get_system_select_use_vertical_carousel() else "Width", 
                                             Theme.get_carousel_system_fixed_width, 
                                             Theme.set_carousel_system_fixed_width)
                 )
                 option_list.append(
-                    self.build_numeric_entry("Selected Width", 
+                    self.build_numeric_entry("Selected Height" if Theme.get_system_select_use_vertical_carousel() else "Selected Width", 
                                             Theme.get_carousel_system_fixed_selected_width, 
                                             Theme.set_carousel_system_fixed_selected_width)
                 )
+                
             # Should restrict NONE if in use percentage mode but oh well                
             option_list.append(
                 self.build_enum_entry(

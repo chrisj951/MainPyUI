@@ -60,7 +60,8 @@ class ViewCreator:
                     carousel_use_selected_image_in_animation=None,
                     carousel_resize_type=None,
                     grid_view_wrap_around_single_row=None,
-                    icon_and_desc_use_image_in_place_of_icon=None) -> object:
+                    icon_and_desc_use_image_in_place_of_icon=None,
+                    veritcal_carousel=None) -> object:
         
         if(len(options) == 0):
             return EmptyView()
@@ -244,7 +245,8 @@ class ViewCreator:
                     additional_y_offset=carousel_additional_y_offset,
                     selected_offset=carousel_selected_offset,
                     use_selected_image_in_animation=carousel_use_selected_image_in_animation,
-                    resize_type=carousel_resize_type
+                    resize_type=carousel_resize_type,
+                    veritcal_carousel=veritcal_carousel
                 )
 
             case _:
