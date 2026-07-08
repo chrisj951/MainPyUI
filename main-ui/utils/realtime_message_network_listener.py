@@ -7,6 +7,7 @@ from pathlib import Path
 from devices.device import Device
 from display.display import Display
 from display.font_purpose import FontPurpose
+from display.on_screen_keyboard import OnScreenKeyboard
 from display.render_mode import RenderMode
 from menus.common.top_bar import TopBar
 from option_select_ui import OptionSelectUI
@@ -212,6 +213,17 @@ class RealtimeMessageNetworkListener:
                     OptionSelectUI.display_option_list("", file_path, False)
                 else:
                     self.logger.error("OPTION_LIST missing args")
+
+            elif cmd == "INPUT":
+                if args:
+                    prompt = args[0]
+                    output_path = args[1] if len(args) > 1 else "/mnt/SDCARD/App/PyUI/selection.txt"
+                    self.logger.info(f"Input prompt: {prompt}, output file: {output_path}")
+                    input_value = OnScreenKeyboard().get_input(prompt)
+                    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+                    Path(output_path).write_text(input_value or "", encoding="utf-8")
+                else:
+                    self.logger.error("INPUT missing args")
 
             elif cmd == "MESSAGE":
                 if args:
