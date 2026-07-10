@@ -58,7 +58,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
     def launch_animation_settings(self,input):
         if(ControllerInput.A == input):
             AnimationSettingsMenu().show_menu()
-            
+
     def launch_gammeswitcher_settings(self,input):
         if(ControllerInput.A == input):
             GameSwitcherSettingsMenu().show_menu()
@@ -77,7 +77,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
     def resize_boxart(self, input):
         if (ControllerInput.A == input):
             BoxArtResizer.patch_boxart()
-            
+
 
     def launch_settings_for_category(self,input, category):
         if(ControllerInput.A == input):
@@ -93,7 +93,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
 
     def build_options_list(self):
         option_list = []
-        
+
         option_list.append(
                 GridOrListEntry(
                         primary_text=Language.display_settings(),
@@ -128,7 +128,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                         value=self.launch_time_settings
                     )
             )
-        
+
         option_list.append(
                 GridOrListEntry(
                         primary_text=Language.game_system_select_settings(),
@@ -140,7 +140,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                         value=self.launch_game_system_select_settings
                     )
             )
-        
+
         option_list.append(
                 GridOrListEntry(
                         primary_text=Language.game_select_settings(),
@@ -152,7 +152,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                         value=self.launch_game_select_settings
                     )
             )
-        
+
         if(PyUiConfig.allow_pyui_game_switcher()):
             option_list.append(
                     GridOrListEntry(
@@ -198,9 +198,9 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                 icon=None,
                 value=self.change_language_setting
             )
-        )        
+        )
 
-                    
+
         if(PyUiConfig.include_stock_os_launch_option()):
             option_list.append(
                     GridOrListEntry(
@@ -214,7 +214,7 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                         )
                 )
 
-        
+
         for category in CfwSystemConfig.get_categories():
             menu_options = CfwSystemConfig.get_menu_options(category=category)
             contains_entry_for_device = False
@@ -234,12 +234,12 @@ class ExtraSettingsMenu(settings_menu.SettingsMenu):
                                 image_path_selected=None,
                                 description=None,
                                 icon=None,
-                                value=lambda 
-                                    input_value, 
+                                value=lambda
+                                    input_value,
                                     category=category: self.launch_settings_for_category(input_value, category)
                             )
                     )
 
-      
+
 
         return option_list

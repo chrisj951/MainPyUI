@@ -99,8 +99,8 @@ class Controller:
         if len(h) < plen:
             return False
 
-        return h[-plen:] == p     
-       
+        return h[-plen:] == p
+
     @staticmethod
     def set_last_input(last_input):
         if(last_input == ControllerInput.LEFT_STICK_UP):
@@ -259,7 +259,7 @@ class Controller:
         #    PyUiLogger.get_logger().info(f"Returning last input: {Controller.last_controller_input}")
         return Controller.last_controller_input
 
-    @staticmethod 
+    @staticmethod
     def add_button_watcher(button_watcher):
         Controller.additional_button_watchers.append(button_watcher)
 
@@ -278,9 +278,9 @@ class Controller:
             if(Controller.get_input(timeout=0.05, called_from_check_for_hotkey=True)):
                 Controller.perform_hotkey(Controller.last_input())
                 time.sleep(0.1)
-                was_hotkey = True 
+                was_hotkey = True
             elif(Controller.non_sdl_input is not None):
-                was_hotkey = True 
+                was_hotkey = True
                 Controller.perform_hotkey(Controller.non_sdl_input)
                 time.sleep(0.1)
 
@@ -289,7 +289,7 @@ class Controller:
         Controller.controller_interface.restore_cached_event()
         Controller.is_check_for_hotkey = False
         return was_hotkey
-    
+
     @staticmethod
     def perform_hotkey(controller_input):
         PyUiLogger.get_logger().info(f"Performing hotkey for {controller_input}")
@@ -298,7 +298,7 @@ class Controller:
             Device.get_device().raise_lumination()
         elif(ControllerInput.VOLUME_DOWN == controller_input):
             Device.get_device().lower_lumination()
-        
+
     @staticmethod
     def non_sdl_input_event(controller_input, is_down):
         TRIGGER_TIME_FOR_HOLD_BUTTONS = 2
@@ -306,7 +306,7 @@ class Controller:
         if(is_down):
             if(controller_input in Controller.hold_buttons):
                 if controller_input not in Controller.last_press_time_map:
-                    Controller.last_press_time_map[controller_input] = time.time()   
+                    Controller.last_press_time_map[controller_input] = time.time()
                 else:
                     last_press_time_length = time.time() - Controller.last_press_time_map[controller_input]
                     if(last_press_time_length > TRIGGER_TIME_FOR_HOLD_BUTTONS):
