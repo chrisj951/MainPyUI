@@ -18,7 +18,7 @@ from views.view import View
 class GridView(View):
     def __init__(self, top_bar_text, options: List[GridOrListEntry], cols: int, rows: int, selected_bg: str = None,
                  selected_index=0, show_grid_text=True, resized_width=None, resized_height=None,
-                 set_top_bar_text_to_selection=False, set_bottom_bar_text_to_selection=False, resize_type=None, 
+                 set_top_bar_text_to_selection=False, set_bottom_bar_text_to_selection=False, resize_type=None,
                  unselected_bg = None, grid_img_y_offset=None, missing_image_path=None,
                  wrap_around_single_row=None):
         super().__init__()
@@ -81,7 +81,7 @@ class GridView(View):
         else:
             # wrapped window case, e.g. left=28 right=2
             return self.selected >= self.current_left or self.selected < self.current_right
-        
+
     def correct_selected_for_off_list(self):
         while (self.selected < 0):
             self.selected = len(self.options) + self.selected
@@ -127,13 +127,13 @@ class GridView(View):
 
     def _render_primary_image(self,
                               image_path: str,
-                              x: int, 
-                              y: int, 
-                              render_mode=RenderMode.TOP_LEFT_ALIGNED, 
-                              target_width=None, 
-                              target_height=None, 
+                              x: int,
+                              y: int,
+                              render_mode=RenderMode.TOP_LEFT_ALIGNED,
+                              target_width=None,
+                              target_height=None,
                               resize_type=None):
-        
+
         w,h = Display.render_image(image_path=image_path,
                                    x=x,
                                    y=y,
@@ -141,7 +141,7 @@ class GridView(View):
                                    target_width=target_width,
                                    target_height=target_height,
                                    resize_type=resize_type)
-        
+
         if(w == 0):
             w,h = Display.render_image(image_path=self.missing_image_path,
                                    x=x,
@@ -170,7 +170,7 @@ class GridView(View):
         elif(YRenderOption.BOTTOM == render_mode.y_mode):
             cell_y = bottom_row_y
             offset_divisor = 1
-        
+
 
         bg_width = self.resized_width
         bg_height = self.resized_height
@@ -178,12 +178,12 @@ class GridView(View):
             text_height = Display.get_line_height(self.font_purpose)
         else:
             text_height = 0
-        
+
         if(self.rows == 1):
             img_offset = self.img_offset if self.img_offset is not None else 0
         else:
             img_offset = Theme.get_grid_multi_row_img_y_offset(text_height)
-            
+
         bg_offset = 0
         if (self.resized_width is not None):
             # TODO not fixed values
@@ -195,7 +195,7 @@ class GridView(View):
                 else:
                     bg_offset = 0
             elif(YRenderOption.BOTTOM == render_mode.y_mode):
-                bg_offset = Theme.get_grid_multi_row_sel_bg_resize_pad_height() //2    
+                bg_offset = Theme.get_grid_multi_row_sel_bg_resize_pad_height() //2
 
         if (actual_index == self.selected):
             if (self.selected_bg is not None):
@@ -224,11 +224,11 @@ class GridView(View):
             self.font_purpose) if actual_index == self.selected else Theme.text_color(self.font_purpose)
 
         if (self.show_grid_text):
-            if(self.rows == 1) : 
+            if(self.rows == 1) :
                 y_text = int(Device.get_device().screen_height() * 310/480) + Theme.single_row_grid_text_y_offset()
             else:
                 y_text = bottom_row_y - text_height + Theme.multi_row_grid_text_y_offset()
-                
+
             Display.render_text(imageTextPair.get_primary_text(),
                                  x_offset,
                                  y_text,
@@ -255,7 +255,7 @@ class GridView(View):
             else:
                 # Wrapped window: take end → wrap → beginning
                 visible_options = (
-                    self.options[self.current_left:] + 
+                    self.options[self.current_left:] +
                     self.options[:self.current_right]
                 )
 
@@ -368,16 +368,16 @@ class GridView(View):
 
                     new_x_offset = start_x_offset + (end_x_offset - start_x_offset) * t
                     new_width = start_width + (end_width - start_width) * t
-                    frame_x_offset.append(new_x_offset)         
+                    frame_x_offset.append(new_x_offset)
                     frame_widths.append(new_width)
 
                 for visible_index, imageTextPair in enumerate(self.prev_visible_options):
                     x_offset = frame_x_offset[visible_index]
 
                     y_image_offset = Display.get_center_of_usable_screen_height()
-                    
-                    self._render_image(imageTextPair.get_image_path_ideal(frame_widths[visible_index], Display.get_usable_screen_height()), 
-                                            x_offset, 
+
+                    self._render_image(imageTextPair.get_image_path_ideal(frame_widths[visible_index], Display.get_usable_screen_height()),
+                                            x_offset,
                                             y_image_offset,
                                             render_mode,
                                             target_width=frame_widths[visible_index],
@@ -396,5 +396,5 @@ class GridView(View):
                                            letter)
                 Display.present()
                 last_frame_time = time.time()
-        
+
         self.animated_count += 1

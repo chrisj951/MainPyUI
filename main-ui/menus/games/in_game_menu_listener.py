@@ -17,7 +17,7 @@ class InGameMenuListener:
     def __init__(self):
         self.popup_menu = InGameMenuPopup()
         self.ra_popup_menu = RetroarchInGameMenuPopup()
-            
+
     def send_signal(self, proc: subprocess.Popen, sig, timeout: float = 3.0):
         try:
             import psutil
@@ -38,7 +38,7 @@ class InGameMenuListener:
                     if not ps_proc.is_running() and all(not child.is_running() for child in children):
                         return  # All terminated gracefully
                     time.sleep(0.1)
-            
+
                 # If still running, force kill
                 for child in children:
                     if child.is_running():
@@ -50,7 +50,7 @@ class InGameMenuListener:
 
         except Exception as e:
             PyUiLogger.get_logger().error(f"Error in send_signal: {e}")
-    
+
     def game_launched(self, game_process: subprocess.Popen, game: RomInfo):
         support_menu_button_in_game = game.game_system.game_system_config.run_in_game_menu()
         uses_retroarch = game.game_system.game_system_config.uses_retroarch()
@@ -59,7 +59,7 @@ class InGameMenuListener:
                 if (ControllerInput.MENU == Controller.last_input() and support_menu_button_in_game):
                     held_down = True
                     hold_start = time.time()
-                    while(held_down and time.time() - hold_start < 0.3):   
+                    while(held_down and time.time() - hold_start < 0.3):
                         held_down = Controller.still_held_down() and Controller.last_input() == ControllerInput.MENU
                         time.sleep(0.05)
 
@@ -76,7 +76,7 @@ class InGameMenuListener:
                         PyUiLogger.get_logger().info(f"Finished Taking snapshot before in-game menu")
                         Device.get_device().capture_framebuffer()
                         Display.reinitialize(snapshot)
-                        
+
                         PyUiLogger.get_logger().debug(f"In game menu opened")
                         if(uses_retroarch):
                             continue_running = self.ra_popup_menu.run_in_game_menu()
@@ -93,5 +93,5 @@ class InGameMenuListener:
                             time.sleep(0.1)
                             self.send_signal(game_process, signal.SIGTERM)
 
-        
+
         PyUiLogger.get_logger().debug(f"Game exit code was {game_process.poll()}")

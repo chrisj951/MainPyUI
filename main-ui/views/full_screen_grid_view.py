@@ -18,7 +18,7 @@ from views.view import View
 class FullScreenGridView(View):
     def __init__(self, top_bar_text, options: List[GridOrListEntry], selected_bg: str = None,
                  selected_index=0, show_grid_text=True,
-                 set_top_bar_text_to_selection=False, 
+                 set_top_bar_text_to_selection=False,
                  unselected_bg = None, missing_image_path=None,
                  resize_type = ResizeType.ZOOM,
                  render_text_overlay = True,
@@ -96,7 +96,7 @@ class FullScreenGridView(View):
 
     def _render_shadowed_text(self, primary_text, y_offset_base, backdrop_font, front_font, x_offset, alpha=None):
         if(self.render_text_overlay):
-            #TODO hardcoded values of 25        
+            #TODO hardcoded values of 25
             shadow_color =  Theme.text_color(backdrop_font)
             # Render black text surfaces at offsets for the "outline"
             shift_amt = 5
@@ -146,13 +146,13 @@ class FullScreenGridView(View):
 
     def _render_primary_image(self,
                               image_path: str,
-                              x: int, 
-                              y: int, 
-                              render_mode=RenderMode.TOP_LEFT_ALIGNED, 
-                              target_width=None, 
-                              target_height=None, 
+                              x: int,
+                              y: int,
+                              render_mode=RenderMode.TOP_LEFT_ALIGNED,
+                              target_width=None,
+                              target_height=None,
                               resize_type=None):
-        
+
         w,h = Display.render_image(image_path=image_path,
                                    x=x,
                                    y=y,
@@ -160,7 +160,7 @@ class FullScreenGridView(View):
                                    target_width=target_width,
                                    target_height=target_height,
                                    resize_type=resize_type,)
-        
+
         if(w == 0):
             w,h = Display.render_image(image_path=self.missing_image_path,
                                    x=x,
@@ -180,9 +180,9 @@ class FullScreenGridView(View):
 
     def _render_image(self, index=None, x_offset=0, y_add_offset=0, render_text_overlay=True, text_alpha=None):
         imageTextPair = self.options[index]
-        image_path = imageTextPair.get_image_path_selected_ideal(self.resized_width, self.resized_height) 
+        image_path = imageTextPair.get_image_path_selected_ideal(self.resized_width, self.resized_height)
         primary_text = imageTextPair.get_primary_text_long()
-        secondary_text = imageTextPair.get_description()  
+        secondary_text = imageTextPair.get_description()
         y_offset = self.get_top_bar_height()
         if(self.resize_type is ResizeType.FIT):
             render_mode = RenderMode.TOP_CENTER_ALIGNED
@@ -201,7 +201,7 @@ class FullScreenGridView(View):
                 render_mode = RenderMode.MIDDLE_CENTER_ALIGNED
                 x_offset += Device.get_device().screen_width() // 2
                 y_offset = Display.get_top_bar_height(False) + (Display.get_usable_screen_height(False))//2
-        
+
         y_offset += y_add_offset
         self._render_primary_image( image_path,
                                     x_offset,
@@ -210,11 +210,11 @@ class FullScreenGridView(View):
                                     target_width=self.resized_width,
                                     target_height=self.resized_height,
                                     resize_type=self.resize_type)
-        
+
         if(render_text_overlay and (not self.set_top_bar_text_to_selection or self.image_resize_height_multiplier == 1.0)):
             self._render_shadowed_text(primary_text, Device.get_device().screen_height() * 0.68, FontPurpose.SHADOWED_BACKDROP, FontPurpose.SHADOWED, 25,text_alpha)
             self._render_shadowed_text(secondary_text, Device.get_device().screen_height() * 0.78, FontPurpose.SHADOWED_BACKDROP_SMALL, FontPurpose.SHADOWED_SMALL, 27,text_alpha)
-        
+
     def calculate_start_index(self):
         start_index = self.selected + 1 if self.selected != len(self.options) -1 else self.selected
         current_width = self.option_text_widths[start_index] + self.x_text_pad
@@ -227,7 +227,7 @@ class FullScreenGridView(View):
             start_index = i
 
         return start_index
-        
+
     def _render_bottom_bar_text(self):
         if(self.render_bottom_bar_text_enabled):
             start_index = self.calculate_start_index()
@@ -318,7 +318,7 @@ class FullScreenGridView(View):
                 self.adjust_selected(+5, skip_by_letter=True if not Theme.skip_main_menu() else Device.get_device().get_system_config().get_skip_by_letter())
 
         return Selection(self.get_selected_option(), None, self.selected)
-    
+
     def adjust_selected(self, amount, skip_by_letter):
         amount = self.calculate_amount_to_move_by(amount, skip_by_letter)
         self.selected += amount
@@ -330,10 +330,10 @@ class FullScreenGridView(View):
 
         animation_duration = 0.30 / Device.get_device().animation_divisor() - self.animated_count *0.04  # seconds
         start_time = time.time()
-                
+
         if(self.y_rotate_instead):
             total_shift = Device.get_device().screen_height()
-        else:            
+        else:
             total_shift = Device.get_device().screen_width()
 
         last_frame_time = 0
@@ -365,13 +365,13 @@ class FullScreenGridView(View):
                 new_y_offset = new_frame_offset
             else:
                 old_x_offset = old_frame_offset
-                new_x_offset = new_frame_offset 
+                new_x_offset = new_frame_offset
 
             if(t < 1.0):
                 self._render_image(self.last_selected, old_x_offset, old_y_offset,render_text_overlay=False, text_alpha=int(256 * (1.0-t)//1.0))
             else:
                 self._render_image(self.last_selected, old_x_offset, old_y_offset,render_text_overlay=False)
-    
+
 
             self._render_image(self.selected, new_x_offset, new_y_offset,render_text_overlay=True, text_alpha=256)
 

@@ -154,7 +154,7 @@ class PyUiConfig:
     @classmethod
     def game_system_sort_year_priority(cls):
         return cls.get("gameSystemSortYearPrio",3)
-    
+
     @classmethod
     def set_game_system_sort_year_priority(cls, value):
         cls._data["gameSystemSortYearPrio"] = value
@@ -163,7 +163,7 @@ class PyUiConfig:
     @classmethod
     def game_system_sort_name_priority(cls):
         return cls.get("gameSystemSortNamePrio",4)
-    
+
     @classmethod
     def set_game_system_sort_name_priority(cls, value):
         cls._data["gameSystemSortNamePrio"] = value
@@ -209,15 +209,15 @@ class PyUiConfig:
     @classmethod
     def get_activity_log_path(cls):
         return cls.get("activityLogPath",None)
-    
+
     @classmethod
     def get_about_entries(cls):
         return cls.get("aboutEntries",[])
-    
+
     @classmethod
     def get_poweroff_cmd(cls):
         return cls.get("poweroffCmd",None)
-    
+
     @classmethod
     def get_reboot_cmd(cls):
         return cls.get("rebootCmd",None)

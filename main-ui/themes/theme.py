@@ -182,8 +182,8 @@ class Theme():
         PyUiLogger.get_logger().info(f"Wrote Theme : {cls._data.get('description', 'UNKNOWN')}")
         from display.display import Display
         Display.clear_cache()
-    
-        
+
+
     @classmethod
     def _resolve_png_path(cls, base_folder, parts):
         path = os.path.join(cls._path, base_folder, *parts)
@@ -193,13 +193,13 @@ class Theme():
             return png_path
 
         return path
-        
+
     @classmethod
     def _resolve_file(cls, base_folder, parts, cache_missing=True):
         """
         Shared resolver:
         - Checks full path
-        - If missing and ends in .qoi, tries .png 
+        - If missing and ends in .qoi, tries .png
         - Caches results
         """
         key = (base_folder, parts)
@@ -236,7 +236,7 @@ class Theme():
     @classmethod
     def _icon(cls, *parts):
         return cls._resolve_file(cls._icon_folder, parts)
-    
+
     @classmethod
     def background(cls, page = None):
         if(page is None):
@@ -247,125 +247,125 @@ class Theme():
 
     @classmethod
     def favorite(cls): return cls._asset("ic-favorite-n.qoi")
-    
+
     @classmethod
     def favorite_selected(cls): return cls._asset("ic-favorite-f.qoi")
-    
+
     @classmethod
     def recent(cls): return cls._asset("ic-recent-n.qoi")
-    
+
     @classmethod
     def recent_selected(cls): return cls._asset("ic-recent-f.qoi")
 
     @classmethod
     def collection(cls): return cls._asset("ic-collection-n.qoi")
-    
+
     @classmethod
     def collection_selected(cls): return cls._asset("ic-collection-f.qoi")
-    
+
     @classmethod
     def game(cls): return cls._asset("ic-game-n.qoi")
-    
+
     @classmethod
     def game_selected(cls): return cls._asset("ic-game-f.qoi")
-    
+
     @classmethod
     def app(cls): return cls._asset("ic-app-n.qoi")
-    
+
     @classmethod
     def app_selected(cls): return cls._asset("ic-app-f.qoi")
-    
+
     @classmethod
     def settings(cls): return cls._asset("ic-setting-n.qoi")
-    
+
     @classmethod
     def settings_selected(cls): return cls._asset("ic-setting-f.qoi")
-    
+
     @classmethod
     def get_title_bar_bg(cls): return cls._asset("bg-title.qoi")
-    
+
     @classmethod
     def bottom_bar_bg(cls): return cls._asset("tips-bar-bg.qoi")
-    
+
     @classmethod
     def confirm_icon(cls): return cls._asset("icon-A-54.qoi")
-    
+
     @classmethod
     def back_icon(cls): return cls._asset("icon-B-54.qoi")
-    
+
     @classmethod
     def start_icon(cls): return cls._asset("icon-START.qoi")
-    
+
     @classmethod
     def show_bottom_bar(cls): return cls._data.get("showBottomBar", True) is not False
-    
+
     @classmethod
     def ignore_top_and_bottom_bar_for_layout(cls): return cls._data.get("ignoreTopAndBottomBarForLayout", False)
-    
+
     @classmethod
     def show_top_bar_text(cls): return cls._data.get("showTopBarText", True)
-    
+
     @classmethod
-    def render_top_and_bottom_bar_last(cls): 
+    def render_top_and_bottom_bar_last(cls):
         return cls._data.get("renderTopAndBottomBarLast", False)
-    
+
     @classmethod
-    def set_render_top_and_bottom_bar_last(cls, value): 
+    def set_render_top_and_bottom_bar_last(cls, value):
         cls._data["renderTopAndBottomBarLast"] = value
         cls.save_changes()
-    
+
     @classmethod
     def confirm_text(cls): return cls._data.get("confirmText", "Okay")
-    
+
     @classmethod
     def back_text(cls): return cls._data.get("backText", "Back")
-    
+
     @classmethod
     def favorite_icon(cls): return cls._asset("ic-favorite-mark.qoi")
-    
+
     @classmethod
     def get_list_large_selected_bg(cls): return cls._asset("bg-list-l.qoi")
-   
+
     @classmethod
-    def menu_popup_bg_large(cls): 
+    def menu_popup_bg_large(cls):
         menu_selected_bg = cls._asset("bg-pop-menu-4.qoi", cache_missing=False)
         if(menu_selected_bg is None):
             cls.create_bg_pop_menu_4()
         return cls._asset("bg-pop-menu-4.qoi")
 
     @classmethod
-    def create_bg_pop_menu_4(cls):  
+    def create_bg_pop_menu_4(cls):
         #Background isn't the best but its the only one that often doesnt have transparency on the bottom
         input_image = cls._resolve_png_path(cls._skin_folder,["background.png"])
         output_image = cls._resolve_png_path(cls._skin_folder,["bg-pop-menu-4.png"])
-        PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")      
+        PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")
         Device.get_device().get_image_utils().resize_image(input_image,
                                               output_image,
                                               320,
                                               240,
                                               preserve_aspect_ratio=False)
- 
+
     @classmethod
-    def keyboard_bg(cls): 
+    def keyboard_bg(cls):
         return cls._asset("bg-grid-s.qoi")
-    
+
     @classmethod
     def keyboard_entry_bg(cls): return cls._asset("bg-list-l.qoi")
-    
+
     @classmethod
     def key_bg(cls): return cls._asset("bg-btn-01-n.qoi")
-    
+
     @classmethod
     def key_selected_bg(cls): return cls._asset("bg-btn-01-f.qoi")
-    
+
     @classmethod
     def get_list_small_selected_bg(cls): return cls._asset("bg-list-s.qoi")
-    
+
     @classmethod
-    def create_bg_list_s2(cls):  
+    def create_bg_list_s2(cls):
         input_image = cls._resolve_png_path(cls._skin_folder,["bg-list-s.png"])
         output_image = cls._resolve_png_path(cls._skin_folder,["bg-list-s2.png"])
-        PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")      
+        PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")
         Device.get_device().get_image_utils().resize_image(input_image,
                                               output_image,
                                               320,
@@ -373,15 +373,15 @@ class Theme():
                                               preserve_aspect_ratio=False)
 
     @classmethod
-    def get_popup_menu_selected_bg(cls): 
+    def get_popup_menu_selected_bg(cls):
         menu_selected_bg = cls._asset("bg-list-s2.qoi", cache_missing=False)
         if(menu_selected_bg is None):
             cls.create_bg_list_s2()
         return cls._asset("bg-list-s2.qoi")
-    
+
     @classmethod
     def get_missing_image_path(cls): return cls._asset("missing_image.qoi")
-    
+
     @classmethod
     def get_battery_icon(cls, charging, battery_percent):
         if ChargeStatus.CHARGING == charging:
@@ -406,7 +406,7 @@ class Theme():
                 return cls._asset("power-20%-icon.qoi")
             else:
                 return cls._asset("power-0%-icon.qoi")
-            
+
     @classmethod
     def get_wifi_icon(cls, status):
         if status == WifiStatus.OFF:
@@ -430,7 +430,7 @@ class Theme():
     @classmethod
     def _grid_multi_row_selected_bg(cls):
         return cls._asset("bg-game-item-f.qoi")
-    
+
     @classmethod
     def _grid_multi_row_unselected_bg(cls):
         return cls._asset("bg-game-item-n.qoi")
@@ -459,7 +459,7 @@ class Theme():
         if(cls._daijisho_theme_index is not None):
             return cls._daijisho_theme_index.get_default_filename()
         else:
-            return None   
+            return None
 
     @classmethod
     def get_system_icon_selected(cls, system):
@@ -477,36 +477,36 @@ class Theme():
         try:
             match font_purpose:
                 case FontPurpose.TOP_BAR_TEXT:
-                    font = os.path.join(cls._path,cls._data["list"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["list"]["font"])
                 case FontPurpose.BATTERY_PERCENT:
-                    font = os.path.join(cls._path,cls._data["list"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["list"]["font"])
                 case FontPurpose.ON_SCREEN_KEYBOARD:
-                    font = os.path.join(cls._path,cls._data["list"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["list"]["font"])
                 case FontPurpose.GRID_ONE_ROW:
-                    font = os.path.join(cls._path,cls._data["grid"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["grid"]["font"])
                 case FontPurpose.GRID_MULTI_ROW:
-                    font = os.path.join(cls._path,cls._data["grid"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["grid"]["font"])
                 case FontPurpose.LIST:
-                    font = os.path.join(cls._path,cls._data["list"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["list"]["font"])
                 case FontPurpose.DESCRIPTIVE_LIST_TITLE:
-                    font = os.path.join(cls._path,cls._data["list"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["list"]["font"])
                 case FontPurpose.MESSAGE:
-                    font = os.path.join(cls._path,cls._data["list"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["list"]["font"])
                 case FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION:
-                    font = os.path.join(cls._path,cls._data["list"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["list"]["font"])
                 case FontPurpose.SHADOWED:
-                    font = os.path.join(cls._path,cls._data["shadowed"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["shadowed"]["font"])
                 case FontPurpose.SHADOWED_BACKDROP:
-                    font = os.path.join(cls._path,cls._data["shadowed"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["shadowed"]["font"])
                 case FontPurpose.SHADOWED_SMALL:
-                    font = os.path.join(cls._path,cls._data["shadowed"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["shadowed"]["font"])
                 case FontPurpose.SHADOWED_BACKDROP_SMALL:
-                    font = os.path.join(cls._path,cls._data["shadowed"]["font"]) 
+                    font = os.path.join(cls._path,cls._data["shadowed"]["font"])
                 case _:
-                    font = os.path.join(cls._path,cls._data["list"]["font"]) 
-                
+                    font = os.path.join(cls._path,cls._data["list"]["font"])
+
             if os.path.exists(font):
-                return font 
+                return font
             else:
                 return Theme.get_fallback_font()
         except Exception as e:
@@ -549,7 +549,7 @@ class Theme():
                     return cls._data.get("indexTotalSize",cls._data["list"].get("size", int(20*cls._default_multiplier)))
                 case FontPurpose.SHADOWED:
                     try:
-                        return cls._data["shadowed"]["shadowedFontSize"] 
+                        return cls._data["shadowed"]["shadowedFontSize"]
                     except Exception as e:
                         #PyUiLogger.get_logger().warning(f"Theme is missing [\"shadowed\"][\"shadowedFontSize\"] ")
                         return int(40 * cls._default_multiplier)
@@ -561,7 +561,7 @@ class Theme():
                         return int(40 * cls._default_multiplier)
                 case FontPurpose.SHADOWED_SMALL:
                     try:
-                        return cls._data["shadowed"]["shadowedFontSmallSize"] 
+                        return cls._data["shadowed"]["shadowedFontSmallSize"]
                     except Exception as e:
                         #PyUiLogger.get_logger().warning(f"Theme is missing [\"shadowed\"][\"shadowedFontSmallSize\"] ")
                         return int(26 * cls._default_multiplier)
@@ -620,7 +620,7 @@ class Theme():
                 case _:
                     PyUiLogger.get_logger().error(
                         f"set_font_size: Unknown font purpose {font_purpose}")
-                
+
             cls.save_changes()
         except Exception as e:
             PyUiLogger.get_logger().error(f"set_font_size error occurred: {e}")
@@ -686,7 +686,7 @@ class Theme():
         except Exception as e:
             PyUiLogger.get_logger().error(f"text_color error occurred: {e}")
             return cls.hex_to_color("#808080")
-            
+
     @classmethod
     def text_color_selected(cls, font_purpose : FontPurpose):
         try:
@@ -698,7 +698,7 @@ class Theme():
                 case FontPurpose.LIST | FontPurpose.DESCRIPTIVE_LIST_TITLE | FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION:
                     if(cls._data.get("list") and cls._data.get("list").get("selectedcolor")):
                         color = cls.hex_to_color(cls._data.get("list").get("selectedcolor"))
-                        #PyUiLogger.get_logger().error(f"list selected color is {color}")                        
+                        #PyUiLogger.get_logger().error(f"list selected color is {color}")
                         return color
                     else:
                         #PyUiLogger.get_logger().error(f"list selectedcolor not found, using grid")
@@ -758,7 +758,7 @@ class Theme():
     @classmethod
     def get_system_select_show_sel_bg_grid_mode(cls):
         return cls._data.get("systemSelectShowSelectedBgGridMode", True)
-    
+
     @classmethod
     def set_system_select_show_sel_bg_grid_mode(cls, value):
         cls._data["systemSelectShowSelectedBgGridMode"] = value
@@ -767,7 +767,7 @@ class Theme():
     @classmethod
     def get_system_selection_set_top_bar_text(cls):
         return cls._data.get("systemSelectionSetTopBarText", False)
-    
+
     @classmethod
     def set_system_selection_set_top_bar_text(cls, value):
         cls._data["systemSelectionSetTopBarText"] = value
@@ -776,7 +776,7 @@ class Theme():
     @classmethod
     def get_system_selection_set_bottom_bar_text(cls):
         return cls._data.get("systemSelectionSetBottomBarText", False)
-    
+
     @classmethod
     def set_system_selection_set_bottom_bar_text(cls, value):
         cls._data["systemSelectionSetBottomBarText"] = value
@@ -785,7 +785,7 @@ class Theme():
     @classmethod
     def get_system_select_show_text_grid_mode(cls):
         return cls._data.get("systemSelectShowTextGridMode", True)
-        
+
     @classmethod
     def set_system_select_show_text_grid_mode(cls, value):
         cls._data["systemSelectShowTextGridMode"] = value
@@ -794,7 +794,7 @@ class Theme():
     @classmethod
     def get_system_select_render_full_screen_grid_text_overlay(cls):
         return cls._data.get("systemSelectFullScreenGridTextOverlay", True)
-    
+
     @classmethod
     def set_system_select_render_full_screen_grid_text_overlay(cls, value):
         cls._data["systemSelectFullScreenGridTextOverlay"] = value
@@ -812,7 +812,7 @@ class Theme():
     @classmethod
     def get_game_select_show_sel_bg_grid_mode(cls):
         return cls._data.get("gameSelectShowSelectedBgGridMode", True)
-    
+
     @classmethod
     def set_game_select_show_sel_bg_grid_mode(cls, value):
         cls._data["gameSelectShowSelectedBgGridMode"] = value
@@ -821,7 +821,7 @@ class Theme():
     @classmethod
     def get_main_menu_show_text_grid_mode(cls):
         return cls._data.get("mainMenuShowTextGridMode", True)
-    
+
     @classmethod
     def set_main_menu_show_text_grid_mode(cls, value):
         cls._data["mainMenuShowTextGridMode"] = value
@@ -840,7 +840,7 @@ class Theme():
                 return cls._grid_multi_row_selected_bg()
             else:
                 return None
-                        
+
     @classmethod
     def get_grid_bg_unselected(cls, rows, cols, use_multi_row_select_as_backup = False):
         # TODO better handle this dynamically
@@ -934,7 +934,7 @@ class Theme():
     def set_carousel_system_additional_y_offset(cls, value):
         cls._data["carouselSystemAdditionalYOffset"] = value
         cls.save_changes()
-        
+
     @classmethod
     def get_carousel_system_resize_type(cls):
         view_type_str = cls._data.get("carouselSystemResizeType", "FIT")
@@ -953,7 +953,7 @@ class Theme():
     def set_carousel_system_selected_offset(cls, value):
         cls._data["carouselSystemSelectedOffset"] = value
         cls.save_changes()
-        
+
     @classmethod
     def get_carousel_use_selected_image_in_animation(cls):
         return cls._data.get("carouselSystemUseSelectedImageInAnimation", True)
@@ -962,7 +962,7 @@ class Theme():
     def set_carousel_use_selected_image_in_animation(cls, value):
         cls._data["carouselSystemUseSelectedImageInAnimation"] = value
         cls.save_changes()
-        
+
     @classmethod
     def get_carousel_system_external_x_offset(cls):
         return cls._data.get("carouselSystemExternalXPad", 0)
@@ -1019,8 +1019,8 @@ class Theme():
 
     @classmethod
     def get_game_system_select_row_count(cls):
-        return cls._data.get("gameSystemSelectRowCount", int(2 * cls.height_multiplier)) 
-    
+        return cls._data.get("gameSystemSelectRowCount", int(2 * cls.height_multiplier))
+
     @classmethod
     def set_game_system_select_col_count(cls, count):
         cls._data["gameSystemSelectColCount"] = count
@@ -1030,7 +1030,7 @@ class Theme():
     @classmethod
     def get_game_system_select_carousel_col_count(cls):
         return cls._data.get("gameSystemSelectCarouselColCount", cls.get_game_system_select_col_count())
-    
+
     @classmethod
     def set_game_system_select_carousel_col_count(cls, count):
         cls._data["gameSystemSelectCarouselColCount"] = count
@@ -1040,7 +1040,7 @@ class Theme():
     def set_game_system_select_row_count(cls, count):
         cls._data["gameSystemSelectRowCount"] = count
         cls.save_changes()
-    
+
     @classmethod
     def pop_menu_x_offset(cls):
         return cls._data.get("popupMenuXOffsetPercent", 0) / 100
@@ -1131,7 +1131,7 @@ class Theme():
     def set_favorites_enabled(cls, value):
         cls._data["favoritesEnabled"] = value
         cls.save_changes()
-    
+
     @classmethod
     def get_apps_enabled(cls):
         return cls._data.get("appsEnabled", True)
@@ -1156,7 +1156,7 @@ class Theme():
 
     @classmethod
     def get_game_select_row_count(cls):
-        return cls._data.get("gameSelectRowCount", int(2 * cls.height_multiplier)) 
+        return cls._data.get("gameSelectRowCount", int(2 * cls.height_multiplier))
 
     @classmethod
     def set_game_select_row_count(cls, value):
@@ -1167,7 +1167,7 @@ class Theme():
     def get_game_select_col_count(cls, default_value=None):
         if default_value is not None:
             return cls._data.get("gameSelectColCount", default_value)
-        return cls._data.get("gameSelectColCount", int(4*cls.width_multiplier)) 
+        return cls._data.get("gameSelectColCount", int(4*cls.width_multiplier))
 
     @classmethod
     def set_game_select_col_count(cls, value):
@@ -1176,7 +1176,7 @@ class Theme():
 
     @classmethod
     def get_game_select_carousel_col_count(cls):
-        return cls._data.get("gameSelectCarouselColCount", cls.get_game_select_col_count(int(3*cls.width_multiplier))) 
+        return cls._data.get("gameSelectCarouselColCount", cls.get_game_select_col_count(int(3*cls.width_multiplier)))
 
     @classmethod
     def set_game_select_carousel_col_count(cls, value):
@@ -1186,7 +1186,7 @@ class Theme():
     @classmethod
     def get_game_select_img_width(cls):
         return cls._data.get("gameSelectImgWidth", int(320 * cls._default_multiplier))
-    
+
     @classmethod
     def set_game_select_img_width(cls, value):
         cls._data["gameSelectImgWidth"] = value
@@ -1195,7 +1195,7 @@ class Theme():
     @classmethod
     def get_grid_game_select_img_width(cls):
         return cls._data.get("gridGameSelectImgWidth", int(cls._grid_game_default_size * cls._default_multiplier))
-    
+
     @classmethod
     def set_grid_game_select_img_width(cls, value):
         cls._data["gridGameSelectImgWidth"] = value
@@ -1204,7 +1204,7 @@ class Theme():
     @classmethod
     def get_list_game_select_img_width(cls):
         return cls._data.get("listGameSelectImgWidth", cls.get_game_select_img_width())
-    
+
     @classmethod
     def set_list_game_select_img_width(cls, value):
         cls._data["listGameSelectImgWidth"] = value
@@ -1213,7 +1213,7 @@ class Theme():
     @classmethod
     def get_grid_system_select_img_width(cls):
         return cls._data.get("gridSystemSelectImgWidth", int(cls._grid_game_default_size * cls._default_multiplier))
-    
+
     @classmethod
     def set_grid_system_select_img_width(cls, value):
         cls._data["gridSystemSelectImgWidth"] = value
@@ -1222,7 +1222,7 @@ class Theme():
     @classmethod
     def get_list_system_select_img_width(cls):
         return cls._data.get("listSystemSelectImgWidth", cls.get_game_select_img_width())
-    
+
     @classmethod
     def set_list_system_select_img_width(cls, value):
         cls._data["listSystemSelectImgWidth"] = value
@@ -1231,7 +1231,7 @@ class Theme():
     @classmethod
     def get_grid_main_menu_img_width(cls):
         return cls._data.get("gridMainMenuImgWidth", 0)
-    
+
     @classmethod
     def set_grid_main_menu_img_width(cls, value):
         cls._data["gridMainMenuImgWidth"] = value
@@ -1240,7 +1240,7 @@ class Theme():
     @classmethod
     def get_grid_main_menu_img_height(cls):
         return cls._data.get("gridMainMenuImgHeight", 0)
-    
+
     @classmethod
     def set_grid_main_menu_img_height(cls, value):
         cls._data["gridMainMenuImgHeight"] = value
@@ -1249,7 +1249,7 @@ class Theme():
     @classmethod
     def get_carousel_game_select_primary_img_width(cls):
         return cls._data.get("carouselGameSelectPrimaryImgWidth", 50)
-    
+
     @classmethod
     def set_carousel_game_select_primary_img_width(cls, value):
         cls._data["carouselGameSelectPrimaryImgWidth"] = value
@@ -1258,7 +1258,7 @@ class Theme():
     @classmethod
     def get_carousel_system_select_primary_img_width(cls):
         return cls._data.get("carouselSystemSelectPrimaryImgWidth", 40)
-    
+
     @classmethod
     def set_carousel_system_select_primary_img_width(cls, value):
         cls._data["carouselSystemSelectPrimaryImgWidth"] = value
@@ -1267,7 +1267,7 @@ class Theme():
     @classmethod
     def get_carousel_game_select_shrink_further_away(cls):
         return cls._data.get("carouselGameSelectShrinkFurtherAway", False)
-    
+
     @classmethod
     def set_carousel_game_select_shrink_further_away(cls, value):
         cls._data["carouselGameSelectShrinkFurtherAway"] = value
@@ -1276,7 +1276,7 @@ class Theme():
     @classmethod
     def get_carousel_system_select_shrink_further_away(cls):
         return cls._data.get("carouselSystemSelectShrinkFurtherAway", False)
-    
+
     @classmethod
     def set_carousel_system_select_shrink_further_away(cls, value):
         cls._data["carouselSystemSelectShrinkFurtherAway"] = value
@@ -1289,7 +1289,7 @@ class Theme():
     @classmethod
     def set_carousel_game_select_sides_hang_off(cls, value):
         cls._data["carouselGameSelectSidesHangOff"] = value
-        cls.save_changes()   
+        cls.save_changes()
 
     @classmethod
     def get_carousel_system_select_sides_hang_off(cls):
@@ -1298,12 +1298,12 @@ class Theme():
     @classmethod
     def set_carousel_system_select_sides_hang_off(cls, value):
         cls._data["carouselSystemSelectSidesHangOff"] = value
-        cls.save_changes()    
+        cls.save_changes()
 
     @classmethod
     def get_game_select_img_height(cls):
         return cls._data.get("gameSelectImgHeight", int(300 * cls._default_multiplier))
-    
+
     @classmethod
     def set_game_select_img_height(cls, value):
         cls._data["gameSelectImgHeight"] = value
@@ -1312,7 +1312,7 @@ class Theme():
     @classmethod
     def get_grid_game_select_img_height(cls):
         return cls._data.get("gridGameSelectImgHeight", int(cls._grid_game_default_size * cls._default_multiplier))
-    
+
     @classmethod
     def set_grid_game_select_img_height(cls, value):
         cls._data["grid_gameSelectImgHeight"] = value
@@ -1321,7 +1321,7 @@ class Theme():
     @classmethod
     def get_list_game_select_img_height(cls):
         return cls._data.get("listGameSelectImgHeight", cls.get_game_select_img_height())
-    
+
     @classmethod
     def set_list_game_select_img_height(cls, value):
         cls._data["listGameSelectImgHeight"] = value
@@ -1330,7 +1330,7 @@ class Theme():
     @classmethod
     def get_grid_system_select_img_height(cls):
         return cls._data.get("gridSystemSelectImgHeight", int(cls._grid_game_default_size * cls._default_multiplier))
-    
+
     @classmethod
     def set_grid_system_select_img_height(cls, value):
         cls._data["gridSystemSelectImgHeight"] = value
@@ -1339,7 +1339,7 @@ class Theme():
     @classmethod
     def get_list_system_select_img_height(cls):
         return cls._data.get("listSystemSelectImgHeight", cls.get_game_select_img_height())
-    
+
     @classmethod
     def set_list_system_select_img_height(cls, value):
         cls._data["listSystemSelectImgHeight"] = value
@@ -1348,7 +1348,7 @@ class Theme():
     @classmethod
     def get_set_top_bar_text_to_game_selection(cls):
         return cls._data.get("setTopBarTextToGameSelection", False)
-    
+
     @classmethod
     def set_set_top_bar_text_to_game_selection(cls, value):
         cls._data["setTopBarTextToGameSelection"] = value
@@ -1357,7 +1357,7 @@ class Theme():
     @classmethod
     def get_game_switcher_use_vertical_carousel(cls):
         return cls._data.get("gameSwitcherUseVerticalCarousel", False)
-    
+
     @classmethod
     def set_game_switcher_use_vertical_carousel(cls, value):
         cls._data["gameSwitcherUseVerticalCarousel"] = value
@@ -1366,7 +1366,7 @@ class Theme():
     @classmethod
     def get_game_select_use_vertical_carousel(cls):
         return cls._data.get("gameSelectUseVerticalCarousel", False)
-    
+
     @classmethod
     def set_game_select_use_vertical_carousel(cls, value):
         cls._data["gameSelectUseVerticalCarousel"] = value
@@ -1375,12 +1375,12 @@ class Theme():
     @classmethod
     def get_system_select_grid_wrap_around_single_row(cls):
         return cls._data.get("systemSelectGridWrapAroundSingleRow", True)
-    
+
     @classmethod
     def set_system_select_grid_wrap_around_single_row(cls, value):
         cls._data["systemSelectGridWrapAroundSingleRow"] = value
         cls.save_changes()
-        
+
     @classmethod
     def set_set_top_bar_text_to_game_selection(cls, value):
         cls._data["setTopBarTextToGameSelection"] = value
@@ -1389,7 +1389,7 @@ class Theme():
     @classmethod
     def get_main_menu_grid_wrap_around_single_row(cls):
         return cls._data.get("mainMenuGridWrapAroundSingleRow", False)
-    
+
     @classmethod
     def set_main_menu_grid_wrap_around_single_row(cls, value):
         cls._data["mainMenuGridWrapAroundSingleRow"] = value
@@ -1425,7 +1425,7 @@ class Theme():
     @classmethod
     def get_grid_multi_row_sel_bg_resize_pad_width(cls):
         return cls._data.get("gridMultiRowSelBgResizePadWidth", int(20*cls._default_multiplier))
-    
+
     @classmethod
     def set_grid_multi_row_sel_bg_resize_pad_width(cls, value):
         cls._data["gridMultiRowSelBgResizePadWidth"] = value
@@ -1434,7 +1434,7 @@ class Theme():
     @classmethod
     def get_grid_multi_row_sel_bg_resize_pad_height(cls):
         return cls._data.get("gridMultiRowSelBgResizePadHeight", int(20*cls._default_multiplier))
-    
+
     @classmethod
     def set_grid_multi_row_sel_bg_resize_pad_height(cls, value):
         cls._data["gridMultiRowSelBgResizePadHeight"] = value
@@ -1448,12 +1448,12 @@ class Theme():
     def set_top_bar_initial_x_offset(cls, value):
         cls._data["topBarInitialXOffset"] = value
         cls.save_changes()
-    
+
     @classmethod
     def get_grid_multi_row_img_y_offset(cls, text_height):
         default_height = -25
         if(0 != text_height):
-            default_height = -1 * text_height        
+            default_height = -1 * text_height
 
         return default_height + cls._data.get("gridMultiRowImageYOffset", 0)
 
@@ -1498,7 +1498,7 @@ class Theme():
     @classmethod
     def get_full_screen_grid_game_menu_resize_type(cls):
         view_type_str = cls._data.get("fullScreenGridGameMenuResizeType", "ZOOM")
-        return getattr(ResizeType, view_type_str, ResizeType.ZOOM)    
+        return getattr(ResizeType, view_type_str, ResizeType.ZOOM)
 
     @classmethod
     def set_full_screen_grid_game_menu_resize_type(cls, resize_type):
@@ -1520,7 +1520,7 @@ class Theme():
     @classmethod
     def get_set_top_bar_text_to_game_selection_for_game_switcher(cls):
         return cls._data.get("gameSwitcherSetTopBarTextToGameSelection", True)
-    
+
     @classmethod
     def set_set_top_bar_text_to_game_selection_for_game_switcher(cls, value):
         cls._data["gameSwitcherSetTopBarTextToGameSelection"] = value
@@ -1529,7 +1529,7 @@ class Theme():
     @classmethod
     def true_full_screen_game_switcher(cls):
         return cls._data.get("gameSwitcherTrueFullScreen", True)
-    
+
     @classmethod
     def set_true_full_screen_game_switcher(cls, value):
         cls._data["gameSwitcherTrueFullScreen"] = value
@@ -1538,7 +1538,7 @@ class Theme():
     @classmethod
     def display_battery_percent(cls):
         return cls._data.get("displayBatteryPercent", True)
-    
+
     @classmethod
     def set_display_battery_percent(cls, value):
         cls._data["displayBatteryPercent"] = value
@@ -1547,7 +1547,7 @@ class Theme():
     @classmethod
     def display_battery_icon(cls):
         return cls._data.get("displayBatteryIcon", True)
-    
+
     @classmethod
     def set_display_battery_icon(cls, value):
         cls._data["displayBatteryIcon"] = value
@@ -1556,7 +1556,7 @@ class Theme():
     @classmethod
     def display_volume_numbers(cls):
         return cls._data.get("displayVolumeNumbers", False)
-        
+
     @classmethod
     def set_display_volume_numbers(cls, value):
         cls._data["displayVolumeNumbers"] = value
@@ -1565,7 +1565,7 @@ class Theme():
     @classmethod
     def show_bottom_bar_buttons(cls):
         return cls._data.get("showBottomBarButtons", True)
-        
+
     @classmethod
     def set_show_bottom_bar_buttons(cls, value):
         cls._data["showBottomBarButtons"] = value
@@ -1574,7 +1574,7 @@ class Theme():
     @classmethod
     def get_main_menu_title(cls):
         return cls._data.get("mainMenuTitle", PyUiConfig.get_main_menu_title())
-    
+
     @classmethod
     def set_main_menu_title(cls, value):
         cls._data["mainMenuTitle"] = value
@@ -1619,7 +1619,7 @@ class Theme():
     @classmethod
     def check_and_create_asset(cls, output_image, input_image, target_width, target_height, target_alpha_channel):
         if(not os.path.exists(output_image)):
-            PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")      
+            PyUiLogger.get_logger().info(f"Creating resized {output_image} from {input_image}")
             Device.get_device().get_image_utils().resize_image(input_image,
                                                   output_image,
                                                   target_width,
@@ -1628,7 +1628,7 @@ class Theme():
                                                   target_alpha_channel=target_alpha_channel)
 
     @classmethod
-    def check_and_create_ra_assets(cls):  
+    def check_and_create_ra_assets(cls):
         cls.check_and_create_asset( cls._resolve_png_path(cls._skin_folder,["menu-6line-bg.png"]),
                                     cls._resolve_png_path(cls._skin_folder,["background.png"]),
                                     320,
@@ -1651,10 +1651,10 @@ class Theme():
             return None
         else:
             cfw_theme_path = os.path.join(PyUiConfig.get("themeDir"),cfw_theme)
-            path = os.path.join(cfw_theme_path, 
-                                cls._get_asset_folder(cfw_theme_path, "icons", 
-                                                      Device.get_device().screen_width(), 
-                                                      Device.get_device().screen_height()), 
+            path = os.path.join(cfw_theme_path,
+                                cls._get_asset_folder(cfw_theme_path, "icons",
+                                                      Device.get_device().screen_width(),
+                                                      Device.get_device().screen_height()),
                                 "app",icon_name)
 
             if os.path.exists(path):
@@ -1667,10 +1667,10 @@ class Theme():
                     return png_path
 
             return None
-        
+
 
     @classmethod
-    def get_relative_img(cls, img_path, folder):    
+    def get_relative_img(cls, img_path, folder):
         if not img_path:
             return None
         p = Path(img_path)
@@ -1688,7 +1688,7 @@ class Theme():
     @classmethod
     def get_bg_for_img(cls, img_path):
         return cls.get_relative_img(img_path, "bg")
-    
+
     @classmethod
     def get_overlay_for_img(cls, img_path):
         return cls.get_relative_img(img_path, "overlay")
