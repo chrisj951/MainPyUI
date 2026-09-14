@@ -39,13 +39,40 @@ from utils.py_ui_config import PyUiConfig
 
 from devices.device_common import DeviceCommon
 
-#/mnt/vendor/ctrl/dmenu_ln
+# Family token every Anbernic RG XX model answers to in addition to its own
+# model name. The XX line is one hardware platform in every way that decides
+# whether an app or a setting is offered - same H700 SoC, same controls, same
+# userland - so app and emulator configs name this rather than listing each
+# model. Models still differ in panel and layout; that stays with the per-model
+# classes below (screen_width/screen_height/screen_rotation) and the per-model
+# platform cfgs on the shell side.
+ANBERNIC_XX_FAMILY = "ANBERNIC_RGXX"
+
+
 class AnbernicXXCommon(DeviceCommon):
-    def __init__(self, main_ui_mode): 
-        self.device_name = "ANBERNIC_RG34XXSP"
+    def __init__(self, main_ui_mode):
+        # device_name is set by the subclass before it calls up here. This used
+        # to assign a model name unconditionally, which ran *after* the subclass
+        # and so made every XX model report itself as that one model - no config
+        # "devices" list could tell the models apart.
         script_dir = Path(__file__).resolve().parent
-        default_cfg_path = script_dir / 'anbernic-rg34xxsp-system.json'
-        system_cfg_path = "/mnt/SDCARD/Saves/anbernic-rg34xxsp-system.json"
+        default_cfg_path = script_dir / 'anbernic-rg-xx-system.json'
+        # Shared by the whole XX line on purpose. spruce is built around one card
+        # in many devices, so these settings should follow the card rather than
+        # stay behind on the device they were set on. The panels differ, so
+        # calibration tuned on one is only approximate on another - that is the
+        # accepted trade for settings that travel.
+        system_cfg_path = "/mnt/SDCARD/Saves/anbernic-rg-xx-system.json"
+
+        # This file was called anbernic-rg34xxsp-system.json until the rename, so
+        # on an existing card the new name does not exist yet. Seed it from the
+        # old one rather than from the shipped default: that default carries
+        # "vol": 0 and set_volume_to_config applies a literal zero, so seeding
+        # from it would leave every XX device silent after the update.
+        legacy_cfg_path = Path("/mnt/SDCARD/Saves/anbernic-rg34xxsp-system.json")
+        if not self._is_usable_config(system_cfg_path) and self._is_usable_config(legacy_cfg_path):
+            default_cfg_path = legacy_cfg_path
+
         self._load_system_config(system_cfg_path, default_cfg_path)
         self.miyoo_games_file_parser = MiyooGamesFileParser()        
         self.game_utils = MiyooTrimGameSystemUtils()
@@ -81,6 +108,16 @@ class AnbernicXXCommon(DeviceCommon):
             self.config_watcher_thread, self.config_watcher_thread_stop_event = FileWatcher().start_file_watcher(
                 system_cfg_path, self.on_system_config_changed, interval=0.2, repeat_trigger_for_mtime_granularity_issues=True)
 
+    @staticmethod
+    def _is_usable_config(path):
+        # Same test ConfigCopier.ensure_config applies before deciding a config
+        # needs seeding, so the two agree about what counts as "already there".
+        try:
+            path = Path(path)
+            return path.exists() and path.stat().st_size > 0
+        except OSError:
+            return False
+
     def on_system_config_changed(self):
         old_volume = self.system_config.get_volume()
         self.system_config.reload_config()
@@ -90,9 +127,6 @@ class AnbernicXXCommon(DeviceCommon):
 
     def sleep(self):
         pass #TODO
-
-    def ensure_wpa_supplicant_conf(self):
-        pass
 
     def should_scale_screen(self):
         return self.is_hdmi_connected()
@@ -140,49 +174,13 @@ class AnbernicXXCommon(DeviceCommon):
         return self.system_config.get_volume()
     
     def run_game(self, rom_info: RomInfo):
-        if(PyUiConfig.mimic_miyoo_mainui_mode()):
-            MiyooTrimCommon.run_game(self, rom_info)
-        else:
-            from controller.controller import Controller
-            menu_options = rom_info.game_system.game_system_config.get_menu_options()
-            selected_core = self.get_selected_emulator(menu_options, self.device_name)
-            if(selected_core is None):
-                Display.display_message("No core found", 2_000)
-                return
-
-            selected_core = "/mnt/SDCARD/RetroArch/.retroarch/cores64/" + selected_core + "_libretro.so"
-
-            shutil.copyfile("/mnt/SDCARD/RetroArch/platform/retroarch-AnbernicRG_XX-universal.cfg", "/mnt/SDCARD/RetroArch/retroarch.cfg")
-            cmds = [
-                    "/mnt/SDCARD/RetroArch/ra64.universal",
-                    "-v",
-                    "--config", "/mnt/SDCARD/RetroArch/retroarch.cfg",
-                    "--log-file","/mnt/SDCARD/Saves/spruce/retroarch.log",
-                    "-L",selected_core,
-                    rom_info.rom_file_path]
-
-            directory = "/mnt/SDCARD/RetroArch/"
-            PyUiLogger.get_logger().debug(f"About to launch {cmds} from dir {directory}")
-            Display.deinit_display()
-            subprocess.run(cmds, cwd = directory)
-            Display.init()
-
-            Controller.clear_input_queue()
+        MiyooTrimCommon.run_game(self, rom_info)
 
     def run_cmd(self, args, dir = None, is_power_cmd = False):
         MiyooTrimCommon.run_cmd(self, args, dir, is_power_cmd)
             
     def run_app(self, folder,launch):
-        if(PyUiConfig.mimic_miyoo_mainui_mode()):
-            MiyooTrimCommon.run_app(self, folder,launch)
-        else:
-            from controller.controller import Controller
-            directory = os.path.dirname(launch)
-            Display.deinit_display()
-            PyUiLogger.get_logger().debug(f"About to launch app {launch} from dir {directory}")
-            subprocess.run([launch], cwd = directory)
-            Display.init()
-            Controller.clear_input_queue()
+        MiyooTrimCommon.run_app(self, folder,launch)
     
     def map_digital_input(self, sdl_input):
         return None
@@ -290,7 +288,13 @@ class AnbernicXXCommon(DeviceCommon):
         return True
     
     def get_roms_dir(self):
-        return "/mnt/union/ROMS/"
+        # /mnt/SDCARD/Roms/, as on every other spruce device. This used to return
+        # muOS's "/mnt/union/ROMS/", which is MuosDevice's path and does not exist
+        # under spruce - nothing mounts /mnt/union here. Everything keyed off this
+        # therefore looked in a directory that was not there: get_miyoo_games_file
+        # found no miyoogamelist.xml, so every name fell back to the raw filename,
+        # and the box art scraper and library searched the same empty path.
+        return "/mnt/SDCARD/Roms/"
     
     def output_screen_width(self):
         if(self.should_scale_screen()):
@@ -320,8 +324,16 @@ class AnbernicXXCommon(DeviceCommon):
     def get_save_state_image(self, rom_info: RomInfo):
         return self.get_game_system_utils().get_save_state_image(rom_info)
 
-    def get_wpa_supplicant_conf_path(self):
-        return PyUiConfig.get_wpa_supplicant_conf_file_location("/mnt/SDCARD/Saves/spruce/wpa_supplicant.conf")
+    # Same key resolution as get_selected_emulator, which the launcher mirrors, plus the per-game override
+    def get_core_for_game(self, game_system_config, rom_file_path):
+        for key, option in game_system_config.get_menu_options().items():
+            if key.startswith("Emulator") and any(name in (option.get("devices") or []) for name in self.get_device_names()):
+                return game_system_config.get_effective_menu_selection(key, rom_file_path)
+        return game_system_config.get_effective_menu_selection("Emulator", rom_file_path)
+
+    # Same suffixed state folder names the TrimUI and Miyoo classes check; a missing one is just a failed exists()
+    def get_core_name_overrides(self, core_name):
+        return [core_name, core_name + "-64", core_name + "-32"]
 
     def supports_brightness_calibration(self):
         return False
@@ -425,55 +437,89 @@ class AnbernicXXCommon(DeviceCommon):
 
     def get_device_name(self):
         return self.device_name
-    
+
+    def get_device_names(self):
+        # Model name first so anything reading the first entry still gets the
+        # specific device; the family token is what configs are written against.
+        return [self.device_name, ANBERNIC_XX_FAMILY]
+
     def check_for_button_remap(self, input):
         return self.button_remapper.get_mappping(input)
 
-    @throttle.limit_refresh(5)
+    @throttle.limit_refresh(5, fast_seconds=1, fast_while="_wifi_settle_until")
     def get_wifi_connection_quality_info(self) -> WiFiConnectionQualityInfo:
         if(not self.is_wifi_enabled()):
-            return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
+            return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
 
+        # Signal comes from wpa_cli, not `iw`. BaseOS ships neither `iw` nor
+        # /proc/net/wireless - the two sources every other device uses - so this
+        # threw "[Errno 2] No such file or directory: 'iw'" on every poll and
+        # returned zeroes, meaning the signal indicator has never worked on any
+        # XX device. wpa_supplicant is already running and wpa_cli is already a
+        # dependency of the scanner, so signal_poll costs nothing new. It reports:
+        #     RSSI=-43
+        #     LINKSPEED=434
+        #     NOISE=9999
+        #     FREQUENCY=5220
+        # NOISE is 9999 when the driver does not report it, which is the case
+        # here, so it is treated as unavailable rather than passed through.
         try:
-            result = subprocess.run(
-                ["iw", "dev", "wlan0", "link"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
+            result = ProcessRunner.run(
+                ["wpa_cli", "-i", "wlan0", "signal_poll"],
+                timeout=3,
+                print=False,
             )
-            output = result.stdout.strip()
+            output = result.stdout or ""
 
-            if "Not connected." in output or result.returncode != 0:
-                return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
+            if result.returncode != 0 or "FAIL" in output:
+                return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
 
             signal_level = 0
-            link_quality = 0  # This won't be available directly via iw, unless you derive it
+            noise_level = 0
+            have_signal = False
+            for line in output.splitlines():
+                line = line.strip()
+                if line.startswith("RSSI="):
+                    try:
+                        signal_level = int(line.split("=", 1)[1])
+                        have_signal = True
+                    except ValueError:
+                        pass
+                elif line.startswith("NOISE="):
+                    try:
+                        noise = int(line.split("=", 1)[1])
+                    except ValueError:
+                        noise = 9999
+                    # 9999 is wpa_supplicant's "not reported" sentinel.
+                    if noise != 9999:
+                        noise_level = noise
 
-            # Extract signal level (in dBm)
-            signal_match = re.search(r"signal:\s*(-?\d+)\s*dBm", output)
-            if signal_match:
-                signal_level = int(signal_match.group(1))
+            # No usable RSSI means unknown, not excellent. Falling through with
+            # signal_level still 0 would map to the top of the scale below, so a
+            # reading we could not parse would show as a full-strength signal.
+            if not have_signal:
+                return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
 
-            # Optional: derive link quality heuristically (e.g., map signal strength to 0–70 or 0–100)
-            # Example rough mapping:
+            # Same dBm -> 0..70 mapping the other devices use, so the status bar
+            # thresholds behave identically across the fleet.
             if signal_level <= -100:
                 link_quality = 0
             elif signal_level >= -50:
                 link_quality = 70
             else:
-                link_quality = int((signal_level + 100) * 1.4)  # Maps -100..-50 dBm to 0..70
+                link_quality = int((signal_level + 100) * 1.4)
 
             return WiFiConnectionQualityInfo(
-                noise_level=0,  # Not available via `iw`
+                noise_level=noise_level,
                 signal_level=signal_level,
                 link_quality=link_quality
             )
 
         except Exception as e:
             PyUiLogger.get_logger().error(f"An error occurred {e}")
-            return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
+            return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
 
-    @throttle.limit_refresh(10)
+    @throttle.limit_refresh(10, fast_seconds=1, fast_while="_wifi_settle_until")
     def _get_ip_addr_text(self):
         import socket
         import fcntl
@@ -489,7 +535,9 @@ class AnbernicXXCommon(DeviceCommon):
             )[20:24]
             return socket.inet_ntoa(ip)
         except OSError:
-            return "Connecting"
+            # No address yet: "Connecting" if a network is saved, otherwise
+            # "No network selected" so the fix (open the list) is obvious.
+            return self.wifi_pending_text()
         except Exception:
             return "Error"
         
@@ -498,66 +546,5 @@ class AnbernicXXCommon(DeviceCommon):
             return "Off"
         return self._get_ip_addr_text()
              
-    def set_wifi_power(self, value):
-        pass
-
-    def stop_wifi_services(self):
-        pass
-
-    def start_wpa_supplicant(self):
-        pass
-
-    def start_udhcpc(self):
-        pass
-
-    def start_wifi_services(self):
-        pass
-
-    def is_wifi_enabled(self):
-        return self.system_config.is_wifi_enabled()
-
-    def disable_wifi(self):
-        self.system_config.set_wifi(0)
-        self.system_config.save_config()
-        PyUiLogger.get_logger().info("Stopping WiFi Services")
-        ProcessRunner.run(['killall', '-15', 'wpa_supplicant'])
-        time.sleep(0.1)  
-        ProcessRunner.run(['killall', '-9', 'wpa_supplicant'])
-        time.sleep(0.1)  
-        ProcessRunner.run(['killall', '-15', 'dhclient'])
-        time.sleep(0.1)  
-        ProcessRunner.run(['killall', '-9', 'dhclient'])
-        time.sleep(0.1)  
-         
-    def enable_wifi(self):
-        self.system_config.set_wifi(1)
-        self.system_config.save_config()
-        try:
-            # Check if wpa_supplicant is running using ps -f
-            result = self.get_running_processes()
-            if 'wpa_supplicant' in result.stdout:
-                return
-
-            # If not running, start it in the background
-            subprocess.Popen([
-                'wpa_supplicant',
-                '-B',
-                '-D', 'nl80211',
-                '-i', 'wlan0',
-                '-c', self.get_wpa_supplicant_conf_path()
-            ])
-            time.sleep(0.5)  # Wait for it to initialize
-            PyUiLogger.get_logger().info("wpa_supplicant started.")
-
-            subprocess.Popen([
-                'dhclient',
-                'wlan0'
-            ])
-            time.sleep(0.5)  # Wait for it to initialize
-            PyUiLogger.get_logger().info("dhclient started")
-
-        except Exception as e:
-            PyUiLogger.get_logger().error(f"Error starting wpa_supplicant: {e}")
-
     def uses_deinit_v2(self):
         return True

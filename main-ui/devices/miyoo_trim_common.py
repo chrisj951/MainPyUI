@@ -106,81 +106,9 @@ class MiyooTrimCommon():
             MiyooTrimCommon.write_cmd_to_run(f'cd "{folder}"; chmod a+x "{launch}"; {run_prefix}"{launch}"''')
         Device.get_device().exit_pyui()
 
-    @staticmethod
-    def stop_wifi_services(device):
-        PyUiLogger.get_logger().info("Stopping WiFi Services")
-        ProcessRunner.run(['killall', '-15', 'wpa_supplicant'])
-        time.sleep(0.1)  
-        ProcessRunner.run(['killall', '-9', 'wpa_supplicant'])
-        time.sleep(0.1)  
-        ProcessRunner.run(['killall', '-15', 'udhcpc'])
-        time.sleep(0.1)  
-        ProcessRunner.run(['killall', '-9', 'udhcpc'])
-        time.sleep(0.1)  
-        Device.get_device().set_wifi_power(0)
-
-
-    @staticmethod
-    def start_wpa_supplicant(device):
-        try:
-            # Check if wpa_supplicant is running using ps -f
-            result = Device.get_device().get_running_processes()
-            if 'wpa_supplicant' in result.stdout:
-                return
-
-            # If not running, start it in the background
-            subprocess.Popen([
-                'wpa_supplicant',
-                '-B',
-                '-D', 'nl80211',
-                '-i', 'wlan0',
-                '-c', Device.get_device().get_wpa_supplicant_conf_path()
-            ])
-            time.sleep(0.5)  # Wait for it to initialize
-            PyUiLogger.get_logger().info("wpa_supplicant started.")
-        except Exception as e:
-            PyUiLogger.get_logger().error(f"Error starting wpa_supplicant: {e}")
-
-    @staticmethod
-    def ensure_wpa_supplicant_conf(wpa_supplicant_path):
-        try:
-            conf_path = Path(wpa_supplicant_path)
-            
-            if not conf_path.exists():
-                conf_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure /userdata/cfg exists
-                conf_content = (
-                    "ctrl_interface=/var/run/wpa_supplicant\n"
-                    "update_config=1\n\n"
-                )
-                with conf_path.open("w") as f:
-                    f.write(conf_content)
-                PyUiLogger.get_logger().info("Created missing wpa_supplicant.conf.")
-        except Exception as e:
-            PyUiLogger.get_logger().error(f"Error creating {wpa_supplicant_path}: {e}")
-
     def should_scale_screen(self):
         return self.is_hdmi_connected()
     
-    @staticmethod
-    def disable_wifi(device):
-        Device.get_device().system_config.reload_config()
-        Device.get_device().system_config.set_wifi(0)
-        Device.get_device().system_config.save_config()
-        ProcessRunner.run(["ifconfig","wlan0","down"])
-        Device.get_device().stop_wifi_services()
-        Device.get_device().get_wifi_status.force_refresh()
-        Device.get_device().get_ip_addr_text.force_refresh()
-
-    @staticmethod
-    def enable_wifi(device):
-        Device.get_device().system_config.reload_config()
-        Device.get_device().system_config.set_wifi(1)
-        Device.get_device().system_config.save_config()
-        ProcessRunner.run(["ifconfig","wlan0","up"])
-        Device.get_device().start_wifi_services(foreground_call=True)
-        Device.get_device().get_wifi_status.force_refresh()
-        Device.get_device().get_ip_addr_text.force_refresh()
-
     @staticmethod
     def run_analog_stick_calibration(device, stick_name, joystick, file_path, leftOrRight):
         from display.display import Display

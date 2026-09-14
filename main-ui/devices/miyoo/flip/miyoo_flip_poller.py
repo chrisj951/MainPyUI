@@ -1,16 +1,14 @@
 
 import time
-from devices.utils.process_runner import ProcessRunner
 from utils.logger import PyUiLogger
-
+from devices.utils.process_runner import ProcessRunner
 
 class MiyooFlipPoller:
     def __init__(self, device):
-        self.headphone_status = None
         self.device = device
+        self.headphone_status = None
 
     def check_audio(self):
-        
         try:
             new_headphone_status = self.device.get_device().are_headphones_plugged_in()
             if(new_headphone_status != self.headphone_status):
@@ -21,11 +19,6 @@ class MiyooFlipPoller:
                     ProcessRunner.run(["amixer","sset","Playback Path","SPK"])
         except:
             pass
-
-        if(time.time() - self.last_run_time > 3):
-            time.sleep(1) #wait for full wake up
-            PyUiLogger.get_logger().info("Running fixes for sleep sound bug")
-            self.device.get_device().fix_sleep_sound_bug()
         
     def check_lid(self):
         try:

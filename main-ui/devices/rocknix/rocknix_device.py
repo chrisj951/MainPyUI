@@ -27,9 +27,6 @@ class RocknixDevice(DeviceCommon):
     def sleep(self):
         pass
 
-    def ensure_wpa_supplicant_conf(self):
-        pass
-
     def should_scale_screen(self):
         return self.is_hdmi_connected()
 
@@ -70,7 +67,7 @@ class RocknixDevice(DeviceCommon):
     def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
         from controller.controller import Controller
         menu_options = rom_info.game_system.game_system_config.get_menu_options()
-        selected_core = self.get_selected_emulator(menu_options, self.device_name)
+        selected_core = self.get_selected_emulator(menu_options)
         if(selected_core is None):
             Display.display_message("No core found", 2_000)
             return
@@ -150,15 +147,6 @@ class RocknixDevice(DeviceCommon):
     def get_wifi_connection_quality_info(self) -> WiFiConnectionQualityInfo:
         return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
 
-
-    def set_wifi_power(self, value):
-        pass
-
-    def stop_wifi_services(self):
-        pass
-
-    def start_wpa_supplicant(self):
-        pass
 
     def is_wifi_enabled(self):
         return self.system_config.is_wifi_enabled()

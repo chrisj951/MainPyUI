@@ -1,7 +1,7 @@
 
 
 import os
-import socket
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -48,7 +48,7 @@ class DeviceCommon(AbstractDevice):
             if(Controller.get_input()):
                 if(Controller.last_input() == ControllerInput.A):
                     self.power_off()
-                elif(Controller.last_input() == ControllerInput.X and self.reboot_cmd is not None):
+                elif(Controller.last_input() == ControllerInput.X and self.reboot_cmd() is not None):
                     self.reboot()
                 elif(Controller.last_input() == ControllerInput.B):
                     return
@@ -110,6 +110,41 @@ class DeviceCommon(AbstractDevice):
             self.system_config.set_backlight(self.system_config.backlight + 1)
             self.system_config.save_config()
             self._set_lumination_to_config()
+
+    # Screensaver backlight. The panel is the largest single load on a handheld
+    # (measured on the Flip: ~400 mW between backlight level 1 and 10), and a
+    # screensaver drawing a dark frame at full backlight saves nothing. Level 1
+    # keeps the screen faintly visible so a lit device still reads as "on".
+    #
+    # Dimming changes only the in-memory level; the user's level is remembered
+    # here and written back on restore. Written back, not just re-read: the
+    # shell brightness hotkeys (buttons_watchdog) derive the level from the raw
+    # backlight value, so a key pressed while dimmed would save a level computed
+    # from the dimmed value. Restore wins over that.
+    SCREENSAVER_BACKLIGHT_LEVEL = 1
+    _screensaver_saved_backlight = None
+
+    def dim_backlight_for_screensaver(self):
+        if not hasattr(self, "_set_lumination_to_config"):
+            return False
+        self.system_config.reload_config()
+        level = self.system_config.backlight
+        if level <= self.SCREENSAVER_BACKLIGHT_LEVEL:
+            return False
+        self._screensaver_saved_backlight = level
+        self.system_config.set_backlight(self.SCREENSAVER_BACKLIGHT_LEVEL)
+        self._set_lumination_to_config()
+        return True
+
+    def restore_backlight_after_screensaver(self):
+        saved = self._screensaver_saved_backlight
+        self._screensaver_saved_backlight = None
+        # Fresh copy first so a volume change made meanwhile is not clobbered.
+        self.system_config.reload_config()
+        if saved is not None:
+            self.system_config.set_backlight(saved)
+            self.system_config.save_config()
+        self._set_lumination_to_config()
 
     def lower_contrast(self):
         self.system_config.reload_config()
@@ -190,61 +225,7 @@ class DeviceCommon(AbstractDevice):
     def get_display_volume(self):
         return self.get_volume()
             
-    def is_wifi_up(self):
-        result = ProcessRunner.run(["ip", "link", "show", "wlan0"], print=False)
-        return "UP" in result.stdout
-
-    def wifi_error_detected(self):
-        self.wifi_error = True
-        
-    def connection_seems_up(self):
-        try:
-            result = ProcessRunner.run(
-                ["ping", "-c", "1", "1.1.1.1"],
-                timeout=1,
-                print=False)
-            
-            return not ("Network is unreachable") in result.stderr
-
-        except subprocess.TimeoutExpired:
-            return False
-    
-    def monitor_wifi(self):
-        self.wifi_error = False
-        self.last_successful_ping_time = time.time()
-        fail_count = 0
-        restart_count = 0
-        while True:
-            if self.is_wifi_enabled():
-                if self.wifi_error or not self.is_wifi_up():
-                    self.wifi_error = False
-                    fail_count = 0
-                    PyUiLogger.get_logger().error("Detected wlan0 disappeared, restarting wifi services")
-                    PyUiLogger.get_logger().info("Restarting WiFi services")
-                    self.stop_wifi_services()
-                    self.start_wifi_services(foreground_call=False)
-                else:
-                    if time.time() - self.last_successful_ping_time > 30:
-                        if(self.connection_seems_up()):
-                            self.last_successful_ping_time = time.time()
-                            fail_count = 0
-                            restart_count = 0
-                        else:
-                            PyUiLogger.get_logger().error("WiFi connection looks to be down")
-                            fail_count+=1
-                            if(fail_count > 3):
-                                if(restart_count > 5):
-                                    PyUiLogger.get_logger().error("Cannot get WiFi connection so disabling WiFi")
-                                    self.disable_wifi()
-                                else:
-                                    PyUiLogger.get_logger().error("Going to reinitialize WiFi")
-                                    restart_count += 1
-                                    self.wifi_error = True
-
-
-            time.sleep(10)
-
-    @throttle.limit_refresh(15)
+    @throttle.limit_refresh(15, fast_seconds=1, fast_while="_wifi_settle_until")
     def get_wifi_status(self):
         if not self.is_wifi_enabled():
             return WifiStatus.OFF
@@ -253,6 +234,7 @@ class DeviceCommon(AbstractDevice):
             Language.label("wifiStatusOff", "Off"),
             Language.label("wifiStatusError", "Error"),
             Language.label("wifiStatusConnecting", "Connecting"),
+            Language.label("wifiStatusNoNetwork", "No network selected"),
         ]:
             return WifiStatus.OFF
 
@@ -284,40 +266,101 @@ class DeviceCommon(AbstractDevice):
         return subprocess.run(['ps', '-f'], capture_output=True, text=True)
 
 
-    def start_udhcpc(self):
+
+    # Saved networks live on the card, not on the handheld, so a password
+    # entered on one device is enough for every device the card is moved to.
+    # This is the path the shell has always used - see WPA_SUPPLICANT_FILE in
+    # helperFunctions.sh - and PyUI used to disagree with it, writing to
+    # internal flash while the device booted its supplicant from the card.
+    #
+    # Saves/spruce is untracked, so an update never extracts a default over it.
+    # Hosts that manage WiFi another way override this and return None.
+    WPA_SUPPLICANT_CONF = "/mnt/SDCARD/Saves/spruce/wpa_supplicant.conf"
+
+    def get_wpa_supplicant_conf_path(self):
+        return PyUiConfig.get_wpa_supplicant_conf_file_location(
+            DeviceCommon.WPA_SUPPLICANT_CONF
+        )
+
+    # Every radio change goes through spruce's `wifi` command, which runs them one
+    # at a time; PyUI only saves the setting and hands over.
+    WIFI_COMMAND = "wifi"
+
+    def _run_wifi_script(self, *args, stdin_text=None):
+        if shutil.which(self.WIFI_COMMAND) is None:
+            return
         try:
-            # Check if wpa_supplicant is running using ps -f
-            result = self.get_running_processes()
-            if 'udhcpc' in result.stdout:
-                return
-
-            # If not running, start it in the background
-            subprocess.Popen([
-                'udhcpc',
-                '-i', 'wlan0'
-            ])
-            time.sleep(0.5)  # Wait for it to initialize
-            PyUiLogger.get_logger().info("udhcpc started.")
+            # Returns at once: wifi does the work in a detached copy of itself
+            run_args = dict(stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
+            if stdin_text is None:
+                run_args["stdin"] = subprocess.DEVNULL
+            else:
+                run_args["input"] = stdin_text.encode()
+            subprocess.run([self.WIFI_COMMAND, *args], **run_args)
         except Exception as e:
-            PyUiLogger.get_logger().error(f"Error starting udhcpc: {e}")
+            PyUiLogger.get_logger().error(f"wifi {args[0]} failed: {e}")
 
-    def start_wifi_services(self, foreground_call=False):
-        if not self.connection_seems_up():
-            PyUiLogger.get_logger().info("Starting WiFi Services")
-            if(foreground_call):
-                Display.display_message(Language.label("turningOnWifiPower", "Turning on WiFi Power"))
-                
-            self.set_wifi_power(1)
-            time.sleep(1)  
-            if(foreground_call):
-                Display.display_message(Language.label("startingWifiProcess", "Starting WiFi process"))
-            self.start_wpa_supplicant()
-            if(foreground_call):
-                Display.display_message(Language.label("startingIpAssignment", "Starting ip address assignment process"))
-            self.start_udhcpc()
+    def _save_wifi_setting(self, value):
+        self.system_config.reload_config()
+        self.system_config.set_wifi(value)
+        self.system_config.save_config()
 
+    def enable_wifi(self):
+        self._save_wifi_setting(1)
+        self._run_wifi_script("apply")
 
-    @throttle.limit_refresh(10)
+    def disable_wifi(self):
+        self._save_wifi_setting(0)
+        self._run_wifi_script("apply")
+
+    def wifi_connect(self, ssid: str, password):
+        """Apply a network selection. password is None for an open network.
+
+        The network goes to wifi.sh on stdin, never on a command line; how the
+        shell carries it to its worker is the shell's business.
+        """
+        self._run_wifi_script("connect", stdin_text=f"{ssid}\n{password or ''}\n")
+
+    # Deadline (time.time()) until which the WiFi status caches refresh every
+    # second instead of every 10-15 s; see utils/throttle.limit_refresh.
+    _wifi_settle_until = 0.0
+
+    def note_wifi_change(self, settle_seconds=60):
+        """The user just toggled WiFi or picked a network: drop the throttled
+        status caches now and keep them fast while the join settles, so the
+        Settings row and the top-bar icon follow the link within a second."""
+        self._wifi_settle_until = time.time() + settle_seconds
+        for name in ("get_wifi_status", "get_ip_addr_text", "_get_ip_addr_text", "get_wifi_connection_quality_info"):
+            for cls in type(self).__mro__:
+                fn = cls.__dict__.get(name)
+                force = getattr(fn, "force_refresh", None)
+                if force:
+                    force()
+
+    def wifi_has_saved_network(self):
+        """True when the device's wpa_supplicant.conf holds at least one network block.
+
+        A read error answers True: never claim "no network" on a guess.
+        """
+        try:
+            with open(self.get_wpa_supplicant_conf_path()) as f:
+                return any(line.strip().startswith("network=") for line in f)
+        except Exception:
+            return True
+
+    def wifi_pending_text(self):
+        """Status for a radio that is on but has no address.
+
+        "Connecting" used to cover two very different states: joining a saved
+        network, and having no network to join at all (a fresh card, a cleared
+        conf). The second is the one people can act on - open the network list -
+        so say so instead of implying a join that will never finish.
+        """
+        if not self.wifi_has_saved_network():
+            return Language.label("wifiStatusNoNetwork", "No network selected")
+        return Language.label("wifiStatusConnecting", "Connecting")
+
+    @throttle.limit_refresh(10, fast_seconds=1, fast_while="_wifi_settle_until")
     def get_ip_addr_text(self):
         import subprocess
 
@@ -340,7 +383,7 @@ class DeviceCommon(AbstractDevice):
                 if line.startswith("inet "):
                     return line.split()[1].split("/")[0]
 
-            return Language.label("wifiStatusConnecting", "Connecting")
+            return self.wifi_pending_text()
 
         except Exception:
             return Language.label("wifiStatusError", "Error")    
@@ -375,11 +418,111 @@ class DeviceCommon(AbstractDevice):
     def supports_popup_menu(self):
         return True
     
+    # spruce ships its own copy of the tz database. The Miyoo Mini has none at
+    # all and a read-only squashfs root, so there is nowhere to install one, and
+    # the devices that do have a firmware copy disagree about which zones they
+    # carry. Shipping it means every device offers the same list.
+    SPRUCE_ZONEINFO_DIR = "/mnt/SDCARD/spruce/zoneinfo"
+
+    def get_zoneinfo_dir(self):
+        return DeviceCommon.SPRUCE_ZONEINFO_DIR
+
     def supports_timezone_setting(self):
-        return False
+        return os.path.isdir(self.get_zoneinfo_dir())
+
+    def supports_automatic_timezone(self):
+        """
+        Whether timeFunctions.sh may pick the zone from the network location
+        and this class will apply it from the shared config. False on a device
+        whose timezone lives in its own system layer (the Pixel 2).
+        """
+        return self.supports_timezone_setting() and self.supports_wifi()
 
     def apply_timezone(self, timezone):
-        pass
+        """
+        Point this process at the chosen zone and make it take effect now.
+
+        glibc reads a tz file from any absolute path when TZ starts with a
+        colon, which is what lets this work with the database on the SD card
+        rather than in /etc. tzset() republishes it to the C library, so the
+        clock is right immediately instead of after a reboot, and anything
+        launched from here inherits TZ through the environment.
+        """
+        zone_file = os.path.join(self.get_zoneinfo_dir(), timezone)
+
+        if not os.path.isfile(zone_file):
+            PyUiLogger.get_logger().error(f"No tz file for {timezone} at {zone_file}")
+            return False
+
+        os.environ["TZ"] = f":{zone_file}"
+        time.tzset()
+        self._applied_timezone = timezone
+        PyUiLogger.get_logger().info(f"Applied timezone {timezone} from {zone_file}")
+        return True
+
+    def _watch_shared_timezone(self):
+        """
+        timeFunctions.sh writes an automatically detected zone into the
+        shared config once the network is up, from outside this process. TZ
+        lives only in our environment, so watch the file and re-apply. Cheap:
+        one stat every few seconds. The file is created empty first so the
+        watcher has something to stat; an empty file still means "no zone".
+        """
+        try:
+            from devices.utils.file_watcher import FileWatcher
+            system_config = self.get_system_config()
+            path = getattr(system_config, "SHARED_CONFIG_PATH", None)
+            if not path:
+                return
+            if not os.path.isfile(path):
+                system_config._write_shared(system_config._read_shared())
+            FileWatcher().start_file_watcher(path, self._on_shared_timezone_changed, interval=3.0)
+        except Exception as e:
+            PyUiLogger.get_logger().warning(f"Could not watch shared config for timezone changes: {e}")
+
+    def _on_shared_timezone_changed(self):
+        try:
+            system_config = self.get_system_config()
+            if not getattr(system_config, "has_timezone", lambda: False)():
+                return
+            timezone = system_config.get_timezone()
+            if timezone and timezone != getattr(self, "_applied_timezone", None):
+                DeviceCommon.apply_timezone(self, timezone)
+        except Exception as e:
+            PyUiLogger.get_logger().warning(f"Could not re-apply timezone: {e}")
+
+    def restore_saved_timezone(self):
+        """
+        Re-apply the saved zone at start up. TZ lives in this process's
+        environment and nowhere else, so it has to be set again every launch.
+        Quiet when nothing is saved yet -- that is a normal first boot.
+
+        This deliberately calls the shared implementation rather than whatever
+        the device overrode apply_timezone with. Those overrides write files the
+        rest of the system reads, and that work belongs to the moment the user
+        picks a zone, not to every launch -- on the Pixel 2 the override even
+        restarts a service. All that is needed here is TZ.
+        """
+        if not os.path.isdir(self.get_zoneinfo_dir()):
+            return
+
+        if self.supports_automatic_timezone():
+            self._watch_shared_timezone()
+
+        try:
+            system_config = self.get_system_config()
+            # Only a zone the user actually chose. get_timezone() falls back to
+            # America/New_York, and applying that to a device whose owner never
+            # touched the setting would drag a correct clock hours off.
+            if not getattr(system_config, "has_timezone", lambda: False)():
+                return
+            timezone = system_config.get_timezone()
+        except Exception as e:
+            PyUiLogger.get_logger().warning(f"Could not read saved timezone: {e}")
+            return
+
+        if timezone:
+            DeviceCommon.apply_timezone(self, timezone)
 
     def set_theme(self, theme_path):
         pass
@@ -391,8 +534,21 @@ class DeviceCommon(AbstractDevice):
         return None
 
     def prompt_timezone_update(self):
-        #Unsupported by default
-        pass
+        from menus.settings.timezone_menu import TimezoneMenu
+
+        if not self.supports_timezone_setting():
+            PyUiLogger.get_logger().warning(
+                f"No timezone database at {self.get_zoneinfo_dir()}")
+            return
+
+        timezone_menu = TimezoneMenu()
+        tz = timezone_menu.ask_user_for_timezone(
+            timezone_menu.list_timezone_files(self.get_zoneinfo_dir(),
+                                              verify_via_datetime=True))
+
+        if tz is not None:
+            self.get_system_config().set_timezone(tz)
+            self.apply_timezone(tz)
 
     def supports_caching_rom_lists(self):
         return True
@@ -529,7 +685,35 @@ class DeviceCommon(AbstractDevice):
                 check=True
             )
         except Exception as e:
-            PyUiLogger.get_logger.error(f"Failed to run hwclock: {e}")
+            PyUiLogger.get_logger().error(f"Failed to run hwclock: {e}")
+
+    SPRUCE_HELPER_FUNCTIONS = "/mnt/SDCARD/spruce/scripts/helperFunctions.sh"
+
+    def _apply_spruce_cpu_mode(self, shell_function):
+        """
+        Hand off to the shell's CPU mode functions, which already know each
+        platform's cores and frequencies. Devices without them fall back to
+        set_smart via platform/device.sh, so this is safe everywhere.
+        """
+        if not os.path.exists(self.SPRUCE_HELPER_FUNCTIONS):
+            return
+
+        try:
+            subprocess.run(
+                ["/bin/sh", "-c", f". {self.SPRUCE_HELPER_FUNCTIONS} && {shell_function}"],
+                check=False,
+                timeout=10
+            )
+        except Exception as e:
+            PyUiLogger.get_logger().warning(f"Could not apply CPU mode {shell_function}: {e}")
+
+    def set_cpu_low_power(self):
+        """Drop to the platform's powersave profile while the device sits idle."""
+        self._apply_spruce_cpu_mode("set_powersave")
+
+    def set_cpu_normal(self):
+        """Back to the mode the menu normally runs in."""
+        self._apply_spruce_cpu_mode("set_smart")
 
     def animation_divisor(self):
         return self.get_system_config().animation_speed(1)
@@ -579,12 +763,40 @@ class DeviceCommon(AbstractDevice):
     def uses_deinit_v2(self):
         # Need to test 1 at a time to ensure it works
         return False
+
+    def wants_gles_context(self):
+        """
+        Ask SDL for an OpenGL ES EGL config rather than a desktop GL one.
+
+        On KMSDRM, SDL picks the EGL config for its window from
+        gl_config.profile_mask. Left at the default it asks for
+        EGL_OPENGL_BIT, and a GPU that only does GLES advertises no such
+        config - so eglChooseConfig matches nothing and window creation fails
+        with "Can't window GBM/EGL surfaces", naming neither GL nor the
+        config as the cause.
+
+        Almost certainly right for every device here, since they are all
+        GLES-only ARM parts, but left off by default: the ones that already
+        work are not worth risking to tidy this up, and it can be widened per
+        device as each is actually tested.
+        """
+        return False
     
-    def get_selected_emulator(self, menu_options: dict, device_name: str):
+    def get_device_names(self):
+        """Every name this device answers to in a config "devices" list.
+
+        Almost every device answers to exactly one - its model name. A
+        family whose models share a hardware platform overrides this to
+        report a family token alongside the model name, so a single config
+        entry covers the whole line and a new model needs no config edits.
+        """
+        return [self.get_device_name()]
+
+    def get_selected_emulator(self, menu_options: dict):
         for key, option in menu_options.items():
             if key.startswith("Emulator"):
                 devices = option.get("devices", [])
-                if device_name in devices:
+                if any(name in devices for name in self.get_device_names()):
                     return option.get("selected")
         if menu_options.get("Emulator"):
             return menu_options["Emulator"].get("selected")

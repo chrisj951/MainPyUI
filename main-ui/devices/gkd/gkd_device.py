@@ -140,25 +140,19 @@ class GKDDevice(DeviceCommon):
                     link_quality=link_quality
                 )
             else:
-                return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
+                return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
 
         except Exception as e:
             PyUiLogger.get_logger().error(f"An error occurred {e}")
-            return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
+            return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
 
     def get_wpa_supplicant_conf_path(self):
         return None
 
-    def start_wifi_services(self):
-        pass
-
-    def stop_wifi_services(self):
-        pass
-
     def is_wifi_enabled(self):
         return self.system_config.is_wifi_enabled()
 
-    @throttle.limit_refresh(10)
+    @throttle.limit_refresh(10, fast_seconds=1, fast_while="_wifi_settle_until")
     def get_ip_addr_text(self):
         import psutil
         if self.is_wifi_enabled():
@@ -177,9 +171,9 @@ class GKDDevice(DeviceCommon):
                     for addr in addrs:
                         if addr.family == socket.AF_INET:
                             return addr.address
-                    return "Connecting"
+                    return self.wifi_pending_text()
                 else:
-                    return "Connecting"
+                    return self.wifi_pending_text()
             except Exception:
                 return "Error"
 

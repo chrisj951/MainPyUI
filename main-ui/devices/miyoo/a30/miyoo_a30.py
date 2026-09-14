@@ -41,11 +41,9 @@ class MiyooA30(MiyooDevice):
 
         if(main_ui_mode):
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
-            self.ensure_wpa_supplicant_conf()
             miyoo_stock_json_file = script_dir.parent / 'stock/a30.json'
             ConfigCopier.ensure_config(MiyooA30.MIYOO_STOCK_CONFIG_LOCATION, miyoo_stock_json_file)
 
-            threading.Thread(target=self.monitor_wifi, daemon=True).start()
             #self.hardware_poller = MiyooFlipPoller(self)
             #threading.Thread(target=self.hardware_poller.continuously_monitor, daemon=True).start()
             threading.Thread(target=self.startup_init, daemon=True).start()
@@ -208,7 +206,7 @@ class MiyooA30(MiyooDevice):
     def take_snapshot(self, path):
         return None
     
-    @throttle.limit_refresh(15)
+    @throttle.limit_refresh(15, fast_seconds=1, fast_while="_wifi_settle_until")
     def get_ip_addr_text(self):
         if self.is_wifi_enabled():
             try:
@@ -252,19 +250,12 @@ class MiyooA30(MiyooDevice):
             return int(f.read().strip()) 
         return 0
     
-    def set_wifi_power(self, value):
-        # Not implemented on A30
-        pass
-
     def get_bluetooth_scanner(self):
         return None
         
 
     def reboot_cmd(self):
         return None
-
-    def get_wpa_supplicant_conf_path(self):
-        return PyUiConfig.get_wpa_supplicant_conf_file_location("/config/wpa_supplicant.conf")
 
     def get_volume(self):
         return self.system_config.get_volume()
