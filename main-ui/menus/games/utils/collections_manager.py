@@ -37,7 +37,7 @@ class CollectionsManager:
     @classmethod
     def convert_to_rom_list_entry(cls, rom_info):
         cls._wait_for_init()
-        return RomsListEntry(rom_info.rom_file_path, rom_info.game_system.folder_name)
+        return RomsListEntry(rom_info.rom_file_path, rom_info.game_system.system_name)
 
     @classmethod
     def load_entries_as_rom_info(cls, game_list) -> List['RomInfo']:
@@ -108,8 +108,12 @@ class CollectionsManager:
         ]
 
         try:
-            with open(file_path, 'w') as f:
+            tmp_path = f"{file_path}.tmp"
+            with open(tmp_path, 'w') as f:
                 json.dump(data, f, indent=4)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_path, file_path)
         except Exception as e:
             PyUiLogger.get_logger().error(f"Failed to save collections file: {e}")
 

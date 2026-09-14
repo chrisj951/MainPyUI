@@ -32,7 +32,6 @@ class GKDPixel2(GKDDevice):
 
         if(main_ui_mode):
             self.miyoo_games_file_parser = MiyooGamesFileParser()        
-            threading.Thread(target=self.monitor_wifi, daemon=True).start()
             threading.Thread(target=self.startup_init, daemon=True).start()
             self.config_watcher_thread, self.config_watcher_thread_stop_event = FileWatcher().start_file_watcher(
                 "/mnt/SDCARD/Saves/gkd-pixel2-system.json", self.on_system_config_changed, interval=0.2, repeat_trigger_for_mtime_granularity_issues=True)
@@ -152,6 +151,11 @@ class GKDPixel2(GKDDevice):
     
     def supports_timezone_setting(self):
         return True
+
+    def supports_automatic_timezone(self):
+        # The zone here lives in /storage/.cache and tz-data.service, which the
+        # shared-config path does not write. Left alone on purpose.
+        return False
 
     def prompt_timezone_update(self):
         timezone_menu = TimezoneMenu()

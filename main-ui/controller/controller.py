@@ -11,8 +11,12 @@ class Controller:
     index = None
     name = None
     mapping = None
+    # Every clock reading in here measures how long something has been going on,
+    # never what time of day it is, so they all use time.monotonic(). time.time()
+    # jumps when the user sets the clock in settings, and a jump forward used to
+    # look like a long idle and kick the screensaver on mid-edit.
     last_input_time = 0
-    screensaver_input_tracking_time = time.time()
+    screensaver_input_tracking_time = time.monotonic()
     hold_delay = 0
     additional_button_watchers = []
     is_check_for_hotkey = False
@@ -189,7 +193,7 @@ class Controller:
                     continue
                 ms = int(POLL_INTERVAL_SECONDS * 1000)
                 inp = Controller.controller_interface.get_input(ms)
-                if inp is not None and time.time() < Controller._screensaver_ignore_input_until:
+                if inp is not None and time.monotonic() < Controller._screensaver_ignore_input_until:
                     Controller.controller_interface.clear_input_queue()
                     continue
                 if inp is not None:
@@ -197,8 +201,8 @@ class Controller:
                     Controller.controller_interface.clear_input_queue()
                     ScreenSaver.clear_cache()
                     Display.restore_from_blank()
-                    Controller.last_input_time = time.time()
-                    Controller.screensaver_input_tracking_time = time.time()
+                    Controller.last_input_time = time.monotonic()
+                    Controller.screensaver_input_tracking_time = time.monotonic()
                     Controller._screensaver_active = False
                     Controller.last_controller_input = None
                     return False
@@ -218,7 +222,7 @@ class Controller:
         if timeout == DEFAULT_TIMEOUT_FLAG:
             timeout = Device.get_device().input_timeout_default()
 
-        now = time.time()
+        now = time.monotonic()
         time_since_last_input = now - Controller.last_input_time
 
         # Clear stale events if enough time has passed
@@ -228,10 +232,10 @@ class Controller:
                 Controller.clear_input_queue()
 
         Controller.controller_interface.force_refresh()
-        start_time = time.time()
+        start_time = time.monotonic()
 
         # Wait if the input is being held down (anti-repeat logic)
-        while Controller.still_held_down() and (time.time() - start_time < Controller.hold_delay):
+        while Controller.still_held_down() and (time.monotonic() - start_time < Controller.hold_delay):
             Controller.controller_interface.force_refresh()
             time.sleep(POLL_INTERVAL_SECONDS)
 
@@ -244,12 +248,12 @@ class Controller:
             Controller.hold_delay = PyUiConfig.get_turbo_delay_ms()
 
             # Blocking wait for event until timeout
-            elapsed = time.time() - start_time
+            elapsed = time.monotonic() - start_time
             remaining_time = timeout - elapsed
             remaining_time = max(remaining_time, 0.001)
             screensaver_timeout = Theme.get_screensaver_timeout_sec()
             if not called_from_check_for_hotkey and not Controller._game_running and screensaver_timeout > 0:
-                idle_remaining = screensaver_timeout - (time.time() - Controller.screensaver_input_tracking_time)
+                idle_remaining = screensaver_timeout - (time.monotonic() - Controller.screensaver_input_tracking_time)
                 remaining_time = min(remaining_time, max(idle_remaining, 0.001))
             while True:
 
@@ -273,12 +277,21 @@ class Controller:
                             was_hotkey = True
                             while Controller.still_held_down() and not called_from_check_for_hotkey:
                                 Controller.check_for_hotkey()
+                    elif (Controller.last_controller_input in (ControllerInput.VOLUME_UP, ControllerInput.VOLUME_DOWN)
+                          and not called_from_check_for_hotkey):
+                        # Pads that carry the volume keys on the gamepad node (Miniloong)
+                        # deliver them here instead of through a KeyWatcher; give them the
+                        # watcher's treatment (device.special_input -> step + indicator +
+                        # save). Inside check_for_hotkey they stay inputs, so the Menu + Vol
+                        # brightness chord keeps working.
+                        Device.get_device().special_input(Controller.last_controller_input, 0)
+                        Controller.clear_last_input()
                     else:
                         break  # Valid non-hotkey input
-                elapsed = time.time() - start_time
+                elapsed = time.monotonic() - start_time
                 remaining_time = timeout - elapsed
                 if not called_from_check_for_hotkey and not Controller._game_running and screensaver_timeout > 0:
-                    idle_remaining = screensaver_timeout - (time.time() - Controller.last_input_time)
+                    idle_remaining = screensaver_timeout - (time.monotonic() - Controller.last_input_time)
                     remaining_time = min(remaining_time, idle_remaining)
                 if remaining_time <= 0:
                     if not called_from_check_for_hotkey:
@@ -288,13 +301,24 @@ class Controller:
 
         #TODO i think this loop is in the wrong place
         # Wait if the input is being held down (anti-repeat logic)
-        while started_held_down and Controller.still_held_down() and (time.time() - start_time < Controller.hold_delay):
+        while started_held_down and Controller.still_held_down() and (time.monotonic() - start_time < Controller.hold_delay):
             Controller.controller_interface.force_refresh()
             time.sleep(POLL_INTERVAL_SECONDS)
 
         if Controller.still_held_down():
             if(ControllerInput.MENU == Controller.last_input()):
                 was_hotkey = called_from_check_for_hotkey or Controller.check_for_hotkey()
+                if(not was_hotkey and not called_from_check_for_hotkey
+                        and not Controller.gs_triggered and not Controller.allow_pyui_game_switcher()
+                        and Controller.menu_vol_brightness_enabled()):
+                    # Nothing else claims a held MENU here, so keep watching for
+                    # a Menu + Vol brightness chord for as long as MENU is held
+                    # instead of falling through and firing MENU's own action
+                    # (the main menu popup) out from under a vol press that
+                    # lands after check_for_hotkey's 300ms window closed.
+                    while Controller.still_held_down():
+                        if(Controller.check_for_hotkey()):
+                            was_hotkey = True
                 if(not was_hotkey and not Controller.gs_triggered and Controller.allow_pyui_game_switcher()):
                     Controller.gs_triggered = True
                     Controller.first_check_after_gs_triggered = True
@@ -309,9 +333,9 @@ class Controller:
                 #    PyUiLogger.get_logger().info(f"Controller input held down but isn't menu")
                 Controller.hold_delay = Device.get_device().get_system_config().get_input_rate_limit_ms() / 1000
 
-        Controller.last_input_time = time.time()
+        Controller.last_input_time = time.monotonic()
         if Controller.last_controller_input is not None:
-            Controller.screensaver_input_tracking_time = time.time()
+            Controller.screensaver_input_tracking_time = time.monotonic()
         #if(Controller.last_controller_input is not None):
         #    PyUiLogger.get_logger().info(f"returning last_controller_input as: {Controller.last_controller_input}")
 
@@ -326,14 +350,14 @@ class Controller:
         if screensaver_timeout <= 0:
             return False
 
-        if time.time() - Controller.screensaver_input_tracking_time < screensaver_timeout:
+        if time.monotonic() - Controller.screensaver_input_tracking_time < screensaver_timeout:
             return False
 
         Controller.controller_interface.clear_input_queue()
         Display.blank_screen()
         Controller._screensaver_active = True
-        Controller._screensaver_ignore_input_until = time.time() + 0.5
-        Controller.screensaver_input_tracking_time = time.time()
+        Controller._screensaver_ignore_input_until = time.monotonic() + 0.5
+        Controller.screensaver_input_tracking_time = time.monotonic()
         return True
 
     @staticmethod
@@ -354,18 +378,34 @@ class Controller:
     def add_button_watcher(button_watcher):
         Controller.additional_button_watchers.append(button_watcher)
 
+    # Button Settings > Brightness hotkey. The shell watchdogs read the same
+    # setting; this is the PyUI half of it, so turning the chord off in settings
+    # turns it off in the UI too instead of only in game. A config that predates
+    # the setting has no key at all - treat that as on, which is what PyUI did
+    # before the setting existed.
+    @staticmethod
+    def menu_vol_brightness_enabled():
+        from utils.cfw_system_config import CfwSystemConfig
+        selected = CfwSystemConfig.get_selected_value("Button Settings", "brightnessHotkey")
+        return selected is None or selected in ("Menu + Vol", "Both")
+
     #return TRUE if it was a hotkey press, FALSE otherwise
     @staticmethod
     def check_for_hotkey():
+        # Bail before swallowing anything: with the chord off, MENU has to reach
+        # the view as a plain press and the volume keys have to stay volume keys.
+        if(not Controller.menu_vol_brightness_enabled()):
+            return False
+
         Controller.is_check_for_hotkey = True
         cached_event = Controller.last_controller_input
         Controller.controller_interface.cache_last_event()
         Controller.clear_last_input()
 
         was_hotkey = False
-        start_time = time.time()
+        start_time = time.monotonic()
 
-        while(not was_hotkey and time.time() - start_time < 0.3):
+        while(not was_hotkey and time.monotonic() - start_time < 0.3):
             if(Controller.get_input(timeout=0.05, called_from_check_for_hotkey=True)):
                 Controller.perform_hotkey(Controller.last_input())
                 time.sleep(0.1)
@@ -397,9 +437,9 @@ class Controller:
         if(is_down):
             if(controller_input in Controller.hold_buttons):
                 if controller_input not in Controller.last_press_time_map:
-                    Controller.last_press_time_map[controller_input] = time.time()   
+                    Controller.last_press_time_map[controller_input] = time.monotonic()   
                 else:
-                    last_press_time_length = time.time() - Controller.last_press_time_map[controller_input]
+                    last_press_time_length = time.monotonic() - Controller.last_press_time_map[controller_input]
                     if(last_press_time_length > TRIGGER_TIME_FOR_HOLD_BUTTONS):
                         PyUiLogger.get_logger().info(f"Starting special non sdl event : {controller_input}")
                         Controller.special_non_sdl_event = True
@@ -416,7 +456,7 @@ class Controller:
         elif(not is_down):
             Controller.non_sdl_input = None
             if(controller_input in Controller.hold_buttons):
-                last_press_time_length = time.time() - Controller.last_press_time_map[controller_input]
+                last_press_time_length = time.monotonic() - Controller.last_press_time_map[controller_input]
                 if(last_press_time_length < TRIGGER_TIME_FOR_HOLD_BUTTONS):
                     Device.get_device().special_input(controller_input, 0)
 

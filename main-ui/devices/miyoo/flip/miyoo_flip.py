@@ -1,4 +1,3 @@
-import inspect
 from pathlib import Path
 import re
 import shutil
@@ -25,7 +24,6 @@ from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_status import WifiStatus
 from display.display import Display
 from menus.games.utils.rom_info import RomInfo
-from menus.settings.timezone_menu import TimezoneMenu
 import sdl2
 from utils import throttle
 from utils.config_copier import ConfigCopier
@@ -127,17 +125,7 @@ class MiyooFlip(MiyooDevice):
         self._set_saturation_to_config()
         self._set_brightness_to_config()
         self._set_hue_to_config()
-        self.ensure_wpa_supplicant_conf()
         self.init_gpio()
-
-        if(PyUiConfig.enable_wifi_monitor() and include_wifi):
-            PyUiLogger.get_logger().info(f"Starting wifi monitor")
-            threading.Thread(target=self.monitor_wifi, daemon=True).start()
-            if(self.is_wifi_enabled()):
-                if(not self.connection_seems_up()):
-                    self.stop_wifi_services()
-                self.start_wifi_services(foreground_call=False)
-
         self.init_bluetooth()
 
     def init_bluetooth(self):
@@ -292,14 +280,6 @@ class MiyooFlip(MiyooDevice):
             return int(f.read().strip()) 
         return 0
     
-    def set_wifi_power(self, value):
-        caller = inspect.stack()[1].function
-        PyUiLogger.get_logger().info(
-            f"Called from {caller}: Setting /sys/class/rkwifi/wifi_power to {str(value)}"
-        )
-        with open('/sys/class/rkwifi/wifi_power', 'w') as f:
-            f.write(str(value))
-
     def get_bluetooth_scanner(self):
         return BluetoothScanner()
     
@@ -307,22 +287,27 @@ class MiyooFlip(MiyooDevice):
     def reboot_cmd(self):
         return "reboot"
 
-    def get_wpa_supplicant_conf_path(self):
-        return PyUiConfig.get_wpa_supplicant_conf_file_location("/userdata/cfg/wpa_supplicant.conf")
-
     def get_volume(self):
         return self.system_config.get_volume()
 
     def fix_sleep_sound_bug(self):
         # When running in MainUI mode we do not want to mess with the volume 
-        if(not PyUiConfig.mimic_miyoo_mainui_mode()):
-            config_volume = self.system_config.get_volume()
-            if(config_volume == 20):
-                self.volume_down()
-                self.volume_up()
-            else:
-                self.volume_up()
-                self.volume_down()
+        if(PyUiConfig.mimic_miyoo_mainui_mode()):
+            return
+        # One implementation: the shell's fix_sleep_sound_bug (Flip.sh), skipped while
+        # sleep_helper owns the volume (its own wake path runs it).
+        if not os.path.exists(self.SPRUCE_HELPER_FUNCTIONS):
+            return
+        try:
+            subprocess.run(
+                ["/bin/sh", "-c", f". {self.SPRUCE_HELPER_FUNCTIONS} && {{ [ -e /tmp/sleep_helper_started ] || fix_sleep_sound_bug; }}"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+                timeout=10,
+            )
+        except Exception as e:
+            PyUiLogger.get_logger().warning(f"Could not run the shell fix_sleep_sound_bug: {e}")
 
     def run_game(self, rom_info: RomInfo) -> subprocess.Popen:
         return MiyooTrimCommon.run_game(self,rom_info)
@@ -351,28 +336,25 @@ class MiyooFlip(MiyooDevice):
     def get_device_name(self):
         return self.device_name
     
-    def supports_timezone_setting(self):
-        return True
-
-    def prompt_timezone_update(self):
-        timezone_menu = TimezoneMenu()
-        tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/usr/share/zoneinfo', verify_via_datetime=True))
-
-        if (tz is not None):
-            self.system_config.set_timezone(tz)
-            self.apply_timezone(tz)
-
+    # supports_timezone_setting and prompt_timezone_update come from
+    # DeviceCommon now, so the Flip offers the same zone list as every other
+    # device instead of whatever its firmware happens to carry.
 
     def apply_timezone(self, timezone):
-        zoneinfo_path = f"/usr/share/zoneinfo/{timezone}"
-        localtime_path = "/userdata/localtime"
-        timezone_path = "/userdata/timezone"
-
-        if not os.path.isfile(zoneinfo_path):
+        """
+        Take the shared behaviour, which sets TZ and makes the clock correct
+        straight away, then keep writing the two files the stock layer reads so
+        it agrees with us after the next boot.
+        """
+        if not super().apply_timezone(timezone):
             Display.write_message_multiline([f"Error getting timezone file",
                                              f"Does not appear to be a file",f"{timezone}"
                                              ],3_000)
-            return
+            return False
+
+        zoneinfo_path = os.path.join(self.get_zoneinfo_dir(), timezone)
+        localtime_path = "/userdata/localtime"
+        timezone_path = "/userdata/timezone"
 
         def safe_delete(path):
             if os.path.lexists(path):
@@ -387,7 +369,8 @@ class MiyooFlip(MiyooDevice):
         shutil.copyfile(zoneinfo_path, localtime_path)
         shutil.copyfile(localtime_path, timezone_path)
 
-        Display.display_message("May need to reboot to apply timezone setting",3_000)
+        Display.display_message("Timezone updated",2_000)
+        return True
 
     def set_theme(self, theme_path: str):
         MiyooTrimCommon.set_theme(MiyooFlip.MIYOO_STOCK_CONFIG_LOCATION, theme_path)
@@ -412,15 +395,15 @@ class MiyooFlip(MiyooDevice):
             core = game_system_config.get_effective_menu_selection("Emulator_64", rom_file_path)
         return core
     
-    @throttle.limit_refresh(15)
+    @throttle.limit_refresh(15, fast_seconds=1, fast_while="_wifi_settle_until")
     def get_wifi_status(self):
         if(self.is_wifi_enabled()):
-            if(self.get_ip_addr_text() in ["Off","Error","Connecting"]):
+            if(self.get_ip_addr_text() in ["Off","Error","Connecting","No network selected"]):
                 return WifiStatus.OFF
             wifi_connection_quality_info = self.get_wifi_connection_quality_info()
             # Composite score out of 100 based on weighted contribution
             # Adjust weights as needed based on empirical testing
-            if(wifi_connection_quality_info.link_quality == 0.0 and wifi_connection_quality_info.signal_level == 0.0):
+            if(wifi_connection_quality_info.signal_level <= -200 or (wifi_connection_quality_info.link_quality == 0.0 and wifi_connection_quality_info.signal_level == 0.0)):
                 return WifiStatus.OFF
             else:
                 score = (

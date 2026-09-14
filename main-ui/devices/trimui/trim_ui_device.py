@@ -15,14 +15,13 @@ from devices.miyoo_trim_common import MiyooTrimCommon
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
 from display.display import Display
+from menus.language.language import Language
 from games.utils.device_specific.miyoo_trim_game_system_utils import MiyooTrimGameSystemUtils
 from games.utils.game_entry import GameEntry
 from menus.games.utils.rom_info import RomInfo
 from menus.settings.button_remapper import ButtonRemapper
-from menus.settings.timezone_menu import TimezoneMenu
 from utils import throttle
 from utils.logger import PyUiLogger
-from utils.py_ui_config import PyUiConfig
 
 class TrimUIDevice(DeviceCommon):
     
@@ -33,14 +32,22 @@ class TrimUIDevice(DeviceCommon):
 
     def on_system_config_changed(self):
         old_volume = self.system_config.get_volume()
+        old_wifi_enabled = self.system_config.is_wifi_enabled()
         self.system_config.reload_config()
         new_volume = self.system_config.get_volume()
         if(old_volume != new_volume):
             Display.volume_changed(new_volume)
 
-    def ensure_wpa_supplicant_conf(self):
-        MiyooTrimCommon.ensure_wpa_supplicant_conf(self.get_wpa_supplicant_conf_path())
-        
+        # Something outside this process - the physical switch's
+        # scene-wifi.sh, today - can flip .wifi in this same file while PyUI
+        # is already running. reload_config() above picks up the fresh
+        # value, but the WiFi status caches still
+        # need an explicit nudge so the WiFi menu/top bar icon catch up
+        # immediately instead of waiting on their own throttle window.
+        if(old_wifi_enabled != self.system_config.is_wifi_enabled()):
+            self.get_wifi_status.force_refresh()
+            self.get_ip_addr_text.force_refresh()
+
     def clear_framebuffer(self):
         pass
 
@@ -58,6 +65,36 @@ class TrimUIDevice(DeviceCommon):
     def reboot_cmd(self):
         return "reboot"
         
+    # Shared by the Brick, Brick Pro, Smart Pro and Smart Pro S. The
+    # "Powering off" / "Rebooting" message ends the UI, and the trailing sleep
+    # keeps PyUI from drawing over it while the shutdown runs.
+    def _signal_osd_quit(self):
+        os.makedirs("/tmp/trimui_osd", exist_ok=True)
+        open("/tmp/trimui_osd/osdd_quit", "a").close()
+
+    # The radio is save_poweroff.sh's to stop: it runs device_prepare_for_poweroff,
+    # may still need WiFi for the Syncthing shutdown sync, and kills wpa_supplicant
+    # itself before the unmount. PyUI killing it a second earlier only got in the way.
+    def _prepare_for_power_action(self):
+        self._signal_osd_quit()
+        time.sleep(1)
+
+    def power_off(self):
+        Display.display_message(Language.label("poweringOff", "Powering off..."))
+        self._prepare_for_power_action()
+        time.sleep(1)
+        super().power_off()
+        # So we dont update the display while shutting down
+        time.sleep(10)
+
+    def reboot(self):
+        Display.display_message(Language.label("rebooting", "Rebooting..."))
+        self._prepare_for_power_action()
+        time.sleep(1)
+        super().reboot()
+        # So we dont update the display while rebooting
+        time.sleep(10)
+
     def _set_lumination_to_config(self):
         val = self.map_backlight_from_10_to_full_255(self.system_config.backlight)
         try:
@@ -147,15 +184,15 @@ class TrimUIDevice(DeviceCommon):
             output = result.stdout.strip()
 
             if "Not connected." in output or result.returncode != 0:
-                return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
+                return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
 
-            signal_level = 0
             link_quality = 0  # This won't be available directly via iw, unless you derive it
 
-            # Extract signal level (in dBm)
+            # Extract signal level (in dBm); no reading is no signal, not full bars
             signal_match = re.search(r"signal:\s*(-?\d+)\s*dBm", output)
-            if signal_match:
-                signal_level = int(signal_match.group(1))
+            if not signal_match:
+                return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
+            signal_level = int(signal_match.group(1))
 
             # Optional: derive link quality heuristically (e.g., map signal strength to 0–70 or 0–100)
             # Example rough mapping:
@@ -174,25 +211,10 @@ class TrimUIDevice(DeviceCommon):
 
         except Exception as e:
             PyUiLogger.get_logger().error(f"An error occurred {e}")
-            return WiFiConnectionQualityInfo(noise_level=0, signal_level=0, link_quality=0)
+            return WiFiConnectionQualityInfo(noise_level=0, signal_level=-200, link_quality=0)
              
-    def set_wifi_power(self, value):
-        pass
-
-    def stop_wifi_services(self):
-        MiyooTrimCommon.stop_wifi_services(self)
-
-    def start_wpa_supplicant(self):
-        MiyooTrimCommon.start_wpa_supplicant(self)
-
     def is_wifi_enabled(self):
         return self.system_config.is_wifi_enabled()
-
-    def disable_wifi(self):
-        MiyooTrimCommon.disable_wifi(self)
-
-    def enable_wifi(self):
-        MiyooTrimCommon.enable_wifi(self)
 
     @throttle.limit_refresh(5)
     def get_charge_status(self):
@@ -256,7 +278,13 @@ class TrimUIDevice(DeviceCommon):
         pass
 
     def calibrate_sticks(self):
-        pass
+        from controller.controller import Controller
+        from devices.trimui.trim_ui_stick_calibrator import TrimUIStickCalibrator
+        TrimUIStickCalibrator(Controller.controller_interface.event_path, self.apply_stick_calibration).run()
+
+    def apply_stick_calibration(self):
+        from devices.trimui.trim_ui_stick_calibrator import TrimUIStickCalibrator
+        TrimUIStickCalibrator.reload_via_cal_update()
 
     def supports_analog_calibration(self):
         return False
@@ -278,9 +306,6 @@ class TrimUIDevice(DeviceCommon):
 
     def take_snapshot(self, path):
         return None
-    
-    def get_wpa_supplicant_conf_path(self):
-        return PyUiConfig.get_wpa_supplicant_conf_file_location("/userdata/cfg/wpa_supplicant.conf")
     
     def supports_brightness_calibration():
         return True
@@ -311,41 +336,35 @@ class TrimUIDevice(DeviceCommon):
             core = game_system_config.get_effective_menu_selection("Emulator_64", rom_file_path)
         return core
     
-    def supports_timezone_setting(self):
-        return True
-
-    def prompt_timezone_update(self):
-        timezone_menu = TimezoneMenu()
-        tz = timezone_menu.ask_user_for_timezone(timezone_menu.list_timezone_files('/usr/share/zoneinfo', verify_via_datetime=True))
-
-        if (tz is not None):
-            self.system_config.set_timezone(tz)
-            self.apply_timezone(tz)
+    # supports_timezone_setting and prompt_timezone_update come from
+    # DeviceCommon now, so the zone list matches the other devices.
 
     def apply_timezone(self, timezone):
         """
         timezone example: "America/New_York"
-        """
 
-        zoneinfo_path = Path("/usr/share/zoneinfo") / timezone
+        The shared behaviour sets TZ and republishes it. On top of that the
+        TrimUI points /etc/localtime at the same file, so anything that reads
+        the system timezone rather than the environment agrees, and writes the
+        result back to the hardware clock.
+        """
+        if not super().apply_timezone(timezone):
+            return False
+
+        zoneinfo_path = Path(self.get_zoneinfo_dir()) / timezone
         localtime_path = Path("/etc/localtime")
 
-        if not zoneinfo_path.exists():
-            raise ValueError(f"Invalid timezone: {timezone}")
-
-        # Update system timezone symlink 
+        # Update system timezone symlink
         try:
             subprocess.run(
                 ["ln", "-sf", str(zoneinfo_path), str(localtime_path)],
                 check=True
             )
         except Exception as e:
-            PyUiLogger.get_logger.error(f"Failed to update /etc/localtime: {e}")
+            PyUiLogger.get_logger().error(f"Failed to update /etc/localtime: {e}")
 
-        # Update environment for current process
-        os.environ["TZ"] = timezone
-        time.tzset()
         self.sync_hw_clock()
+        return True
 
     @throttle.limit_refresh(1)
     def post_present_operations(self):
