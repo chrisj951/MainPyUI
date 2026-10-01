@@ -14,6 +14,7 @@ from devices.utils.file_watcher import FileWatcher
 from utils import throttle
 from utils.ffmpeg_image_utils import FfmpegImageUtils
 from utils.logger import PyUiLogger
+from utils.py_ui_config import PyUiConfig
 
 
 class MagicXA133PDevice(TrimUIDevice):
@@ -71,6 +72,21 @@ class MagicXA133PDevice(TrimUIDevice):
         from controller.touch_watcher import TouchWatcher
         self.touch_watcher = TouchWatcher(self.touch_event_path, self)
         threading.Thread(target=self.touch_watcher.poll, daemon=True).start()
+
+    # The level -> raw curve and, on the XU20 and the Zero 40, the inverted backlight PWM
+    # live behind py-ui-config's backlightCmd; PyUI hands it the level and nothing else.
+    # Panel only: PyUI saves the level itself, and the screensaver's dim must not be saved.
+    def _set_lumination_to_config(self):
+        level = int(self.system_config.backlight)
+        backlight_cmd = PyUiConfig.get_backlight_cmd()
+        if not backlight_cmd or not os.path.exists(backlight_cmd):
+            return
+        try:
+            subprocess.run([backlight_cmd, str(level)],
+                           stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                           timeout=10, check=False)
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"Error setting brightness: {e}")
 
     def startup_init(self, include_wifi=True):
         self._set_lumination_to_config()
@@ -134,13 +150,20 @@ class MagicXA133PDevice(TrimUIDevice):
     @throttle.limit_refresh(15)
     def get_battery_percent(self):
         # Mirrors device_get_battery_percent in magicx_a133p.sh: a 0-1 % gauge
-        # reading with a healthy voltage is replaced by a voltage estimate.
+        # reading with a healthy voltage is replaced by a voltage estimate -
+        # never on the charger, whose charge voltage reads as 40 % on a flat cell.
         try:
             with open("/sys/class/power_supply/axp2202-battery/capacity", "r") as f:
                 cap = int(f.read().strip())
         except Exception:
             return 0
         if cap <= 1:
+            try:
+                with open("/sys/class/power_supply/axp2202-usb/online", "r") as f:
+                    if f.read().strip() == "1":
+                        return cap
+            except Exception:
+                pass
             try:
                 with open("/sys/class/power_supply/axp2202-battery/voltage_now", "r") as f:
                     v = int(f.read().strip())

@@ -18,6 +18,7 @@ class DescriptiveListView(ListView):
                  options: List[GridOrListEntry], selected_bg, selected : int = 0,
                  icon_and_desc_use_image_in_place_of_icon=None):
         super().__init__()
+        self.use_icons_to_calculate_line_height = False
         self.icon_and_desc_use_image_in_place_of_icon = icon_and_desc_use_image_in_place_of_icon
         self.top_bar_text = top_bar_text
         self.set_options(options)
@@ -25,6 +26,9 @@ class DescriptiveListView(ListView):
 
         self.selected_bg = selected_bg
         self.each_entry_width, self.each_entry_height = Display.get_image_dimensions(selected_bg)
+        if(Theme.get_use_text_for_line_height()):
+            self.each_entry_height = self._calculate_line_height(include_description_line=True)   
+
 
         usable = Display.get_usable_screen_height(force_include_top_bar=True) / self.each_entry_height
 
@@ -131,13 +135,24 @@ class DescriptiveListView(ListView):
                         value_text = value_text[:max_value_text_length-3] + "..."
 
                     value_text = "< " + value_text + " >"
+
+                if(Theme.get_use_text_for_line_height()):
+                    value_y = title_y_offset
+                    value_render_mode = title_render_mode
+                    value_width, _ = Display.get_text_dimensions(FontPurpose.DESCRIPTIVE_LIST_TITLE, value_text)
+                    value_x = Device.get_device().screen_width() - Theme.get_descriptive_list_text_from_icon_offset() - value_width
+                else:
+                    value_x = Device.get_device().screen_width() - Theme.get_descriptive_list_text_from_icon_offset()
+                    value_y = row_offset_y + self.each_entry_height // 2
+                    value_render_mode = RenderMode.MIDDLE_RIGHT_ALIGNED
+
                 Display.render_text(
                     value_text, 
-                    Device.get_device().screen_width() - Theme.get_descriptive_list_text_from_icon_offset(), 
-                    row_offset_y + self.each_entry_height // 2, 
+                    value_x, 
+                    value_y, 
                     color, 
                     FontPurpose.DESCRIPTIVE_LIST_TITLE,
-                    RenderMode.MIDDLE_RIGHT_ALIGNED)
+                    value_render_mode)
 
             color = Theme.text_color_selected(FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION) if actual_index == self.selected else Theme.text_color(FontPurpose.DESCRIPTIVE_LIST_DESCRIPTION)
             
