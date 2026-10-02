@@ -84,6 +84,13 @@ class Theme():
         cls.button_press_sounds_changed()
         cls.bgm_setting_changed()
 
+    @classmethod
+    def scale_with_height_multiplier(cls, val):
+        return int(cls.height_multiplier * val)
+    
+    @classmethod
+    def scale_with_width_multiplier(cls, val):
+        return int(cls.width_multiplier * val)       
 
     @classmethod
     def bgm_setting_changed(cls):
@@ -644,17 +651,13 @@ class Theme():
                 case FontPurpose.LIST_TOTAL:
                     cls._data["indexTotalSize"] = size
                 case FontPurpose.SHADOWED:
-                    cls._data["indexSelectedFontSize"] = size
+                    cls._data.setdefault("shadowed", {})["shadowedFontSize"] = size 
                 case FontPurpose.SHADOWED_BACKDROP:
-                    cls._data["indexTotalSize"] = size
-                case FontPurpose.SHADOWED:
-                    cls._data["shadowed"]["shadowedFontSize"] = size
-                case FontPurpose.SHADOWED_BACKDROP:
-                    cls._data["shadowed"]["shadowedFontBackdropSize"]  = size
+                    cls._data.setdefault("shadowed", {})["shadowedFontBackdropSize"] = size 
                 case FontPurpose.SHADOWED_SMALL:
-                    cls._data["shadowed"]["shadowedFontSmallSize"] = size
+                    cls._data.setdefault("shadowed", {})["shadowedFontSmallSize"] = size 
                 case FontPurpose.SHADOWED_BACKDROP_SMALL:
-                    cls._data["shadowed"]["shadowedFontBackdropSmallSize"]  = size
+                    cls._data.setdefault("shadowed", {})["shadowedFontBackdropSmallSize"] = size 
                 case _:
                     PyUiLogger.get_logger().error(
                         f"set_font_size: Unknown font purpose {font_purpose}")
@@ -784,7 +787,7 @@ class Theme():
     @classmethod
     def get_descriptive_list_text_offset_y(cls):
         if(Theme.get_use_text_for_line_height()):
-            return cls._data.get("descriptiveListTextOffsetY", 0)
+            return cls._data.get("descriptiveListTextOffsetY", int(5*cls._default_multiplier))
         else:
             return cls._data.get("descriptiveListTextOffsetY", int(15*cls._default_multiplier))
 
@@ -1118,6 +1121,11 @@ class Theme():
     @classmethod
     def scroll_rom_selection_text(cls):
         return cls._data.get("scrollRomSelectionText", True)
+
+    @classmethod
+    def set_scroll_rom_selection_text(cls, value):
+        cls._data["scrollRomSelectionText"] = value
+        cls.save_changes()
 
     @classmethod
     def show_index_text(cls):

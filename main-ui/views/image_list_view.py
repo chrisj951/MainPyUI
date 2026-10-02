@@ -38,44 +38,58 @@ class ImageListView(NonDescriptiveListView):
         for visible_index, (imageTextPair) in enumerate(visible_options):
             actual_index = self.current_top + visible_index
             text_available_width = None #just take up as much space as needed
-            text_pad = int(30 * Device.get_device().screen_height() / 480 )  #TODO get this from somewhere
+            text_pad = Theme.scale_with_width_multiplier( 20 )
             if(TextToImageRelationship.LEFT_OF_IMAGE == self.text_to_image_relationship):
+                render_mode=RenderMode.MIDDLE_LEFT_ALIGNED
                 x_value = 0 
                 y_value = self.base_y_offset + self.line_height//2
                 text_available_width = self.get_img_x_starting() - text_pad*2
             elif(TextToImageRelationship.RIGHT_OF_IMAGE == self.text_to_image_relationship):
+                render_mode=RenderMode.MIDDLE_LEFT_ALIGNED
                 x_value = self.img_width//2 + self.img_offset_x
                 y_value = self.base_y_offset + self.line_height//2
                 text_available_width = Device.get_device().screen_width() - self.img_width - text_pad*2
             elif(TextToImageRelationship.BELOW_IMAGE == self.text_to_image_relationship):
-                x_value = 0 
+                render_mode=RenderMode.MIDDLE_CENTER_ALIGNED
+                x_value = Device.get_device().screen_width() // 2
                 y_pad = 20 #TODO get from somewhere
                 y_value = (Display.get_top_bar_height() + y_pad*2 + self.img_height)  + self.line_height//2
                 text_available_width = Device.get_device().screen_width() - text_pad * 2
             elif(TextToImageRelationship.ABOVE_IMAGE == self.text_to_image_relationship):
-                x_value = 0 
+                render_mode=RenderMode.MIDDLE_CENTER_ALIGNED
+                x_value = Device.get_device().screen_width() // 2
                 y_value = self.base_y_offset + self.line_height//2
                 text_available_width = Device.get_device().screen_width() - text_pad * 2
             elif(TextToImageRelationship.TEXT_AROUND_LEFT_IMAGE == self.text_to_image_relationship):
+                render_mode=RenderMode.MIDDLE_LEFT_ALIGNED
                 x_value = 0
                 y_value = self.base_y_offset + self.line_height//2
                 text_available_width = Device.get_device().screen_width() - text_pad*2
             elif(TextToImageRelationship.TEXT_AROUND_RIGHT_IMAGE == self.text_to_image_relationship):
+                render_mode=RenderMode.MIDDLE_LEFT_ALIGNED
                 x_value = 0 
                 y_value = self.base_y_offset + self.line_height//2
                 text_available_width = self.get_img_x_starting() - text_pad*2
 
             y_value += visible_index * self.line_height
+            text_x_value = x_value + text_pad
+            selected_x_value = 0
 
+            #Do these work?
             if(TextToImageRelationship.TEXT_AROUND_LEFT_IMAGE == self.text_to_image_relationship and self.is_y_coord_in_img_box(y_value)):
-                x_value += self.img_width//2 + self.img_offset_x
+                render_mode=RenderMode.MIDDLE_LEFT_ALIGNED
+                x_value = self.img_width//2 + self.img_offset_x
+                selected_x_value = x_value
+                text_x_value = x_value + text_pad
                 text_available_width = Device.get_device().screen_width() - self.img_width - text_pad*2
             elif(TextToImageRelationship.TEXT_AROUND_RIGHT_IMAGE == self.text_to_image_relationship and self.is_y_coord_in_img_box(y_value)):
+                render_mode=RenderMode.MIDDLE_LEFT_ALIGNED
+                x_value = self.img_width//2 + self.img_offset_x
+                selected_x_value = x_value
                 text_available_width = Device.get_device().screen_width() - self.img_width - text_pad*2
+                text_x_value = x_value + text_pad
 
-            text_x_value = x_value + text_pad
 
-            render_mode=RenderMode.MIDDLE_LEFT_ALIGNED
             scroll_amt = 0
 
             if actual_index == self.selected:
@@ -84,7 +98,7 @@ class ImageListView(NonDescriptiveListView):
                     selected_bg_y = y_value - self.line_height // 2
                     Display.render_image(
                         self.selected_bg,
-                        x_value,
+                        selected_x_value,
                         selected_bg_y,
                         RenderMode.TOP_LEFT_ALIGNED,
                         crop_w=text_available_width + text_pad * 2,
