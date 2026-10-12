@@ -5,6 +5,7 @@ import threading
 from pathlib import Path
 
 from apps.miyoo.miyoo_app_finder import MiyooAppFinder
+from audio.audio_player_delegate_sdl2 import AudioPlayerDelegateSdl2
 from controller.controller_inputs import ControllerInput
 from controller.key_state import KeyState
 from controller.key_watcher_controller import KeyWatcherController
@@ -25,7 +26,7 @@ from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
 
 
-class MiniloongPocket1(DarkmossPanelCalibration, DeviceCommon):
+class MiniloongPocket1(DeviceCommon):
     """Miniloong Pocket 1 (RK3566, Mali-G52) on dArkMoss.
 
     Shape follows the RGB30 class: same base OS, same retrogame_joypad driver,
@@ -45,7 +46,9 @@ class MiniloongPocket1(DarkmossPanelCalibration, DeviceCommon):
 
     def __init__(self, device_name, main_ui_mode=True):
         self.device_name = device_name
+        self.audio_player = AudioPlayerDelegateSdl2()
         self.load_miniloong_system_json()
+        self.panel_calibration = DarkmossPanelCalibration(self.system_config)
         self.button_remapper = ButtonRemapper(self.system_config)
         self.game_utils = MiyooTrimGameSystemUtils()
         self.miyoo_games_file_parser = MiyooGamesFileParser()
@@ -181,6 +184,33 @@ class MiniloongPocket1(DarkmossPanelCalibration, DeviceCommon):
         except OSError as e:
             PyUiLogger.get_logger().error(f"Miniloong: backlight write failed: {e}")
 
+    def _set_brightness_to_config(self):
+        self.panel_calibration.apply("brightness")
+
+    def _set_contrast_to_config(self):
+        self.panel_calibration.apply("contrast")
+
+    def _set_saturation_to_config(self):
+        self.panel_calibration.apply("saturation")
+
+    def _set_hue_to_config(self):
+        self.panel_calibration.apply("hue")
+
+    def supports_brightness_calibration(self):
+        return self.panel_calibration.supports("brightness")
+
+    def supports_contrast_calibration(self):
+        return self.panel_calibration.supports("contrast")
+
+    def supports_saturation_calibration(self):
+        return self.panel_calibration.supports("saturation")
+
+    def supports_hue_calibration(self):
+        return self.panel_calibration.supports("hue")
+
+    def startup_init(self, include_wifi=True):
+        self.panel_calibration.apply_all()
+
     # ---- audio ----
 
     def get_volume(self):
@@ -266,20 +296,6 @@ class MiniloongPocket1(DarkmossPanelCalibration, DeviceCommon):
     def is_wifi_enabled(self):
         return self.system_config.is_wifi_enabled()
 
-    # ---- bluetooth: not wired ----
-
-    def is_bluetooth_enabled(self):
-        return False
-
-    def disable_bluetooth(self):
-        pass
-
-    def enable_bluetooth(self):
-        pass
-
-    def get_bluetooth_scanner(self):
-        return None
-
     # ---- launching / paths ----
 
     def run_cmd(self, args, dir=None, is_power_cmd=False):
@@ -303,6 +319,9 @@ class MiniloongPocket1(DarkmossPanelCalibration, DeviceCommon):
 
     def perform_startup_tasks(self):
         pass
+
+    def get_audio_system(self):
+        return self.audio_player
 
     def get_favorites_path(self):
         return "/mnt/SDCARD/Saves/pyui-favorites.json"

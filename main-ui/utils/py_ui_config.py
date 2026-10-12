@@ -1,17 +1,20 @@
 import json
 import os
+from pathlib import Path
 
 from utils.logger import PyUiLogger
 
 class PyUiConfig:
     _data = {}
     _config_path = None
+    _current_dir = None
 
     @classmethod
     def init(cls, config_path, initial_data=None):
         cls._config_path = config_path
         cls._data = initial_data or {}
         cls.load()
+        cls._current_dir = Path(__file__).resolve().parent
 
     @classmethod
     def save(cls):
@@ -91,6 +94,10 @@ class PyUiConfig:
     @classmethod
     def enable_button_watchers(cls):
         return cls._data.get("enableButtonWatchers", True)
+
+    @classmethod
+    def get_fallback_font(cls):
+        return cls._data.get("fallbackFontPath", cls._current_dir / "promptfont.ttf")
 
     @classmethod
     def get_main_menu_title(cls):
@@ -223,8 +230,8 @@ class PyUiConfig:
         return cls.get("cheevosRemoveCmd",None)
 
     @classmethod
-    def get_cheevos_cache_path(cls):
-        return cls.get("cheevosCachePath",None)
+    def get_raproxy_cli_cmd(cls):
+        return cls.get("raproxyCliCmd",None)
     
     @classmethod
     def get_about_entries(cls):
@@ -237,6 +244,10 @@ class PyUiConfig:
     @classmethod
     def get_reboot_cmd(cls):
         return cls.get("rebootCmd",None)
+
+    @classmethod
+    def get_long_task_cmd(cls):
+        return cls.get("longTaskCmd",None)
 
     @classmethod
     def mimic_miyoo_mainui_mode(cls):
@@ -259,10 +270,29 @@ class PyUiConfig:
         return cls.get("backlightCmd",None)
 
     @classmethod
+    def get_bt_audio_device_cmd(cls):
+        return cls.get("btAudioDeviceCmd",None)
+
+    @classmethod
+    def get_usb_audio_supported_cmd(cls):
+        return cls.get("usbAudioSupportedCmd",None)
+
+    @classmethod
+    def get_usb_audio_route_path(cls):
+        return cls.get("usbAudioRoutePath",None)
+
+    @classmethod
     def get_wifi_cmd(cls):
         return cls.get("wifiCmd",None)
+
+    @classmethod
+    def get_bluetooth_cmd(cls):
+        return cls.get("bluetoothCmd",None)
 
     @classmethod
     def get_cache_cheevos_cmd(cls):
         return cls.get("cacheCheevosCmd",None)
 
+    @classmethod
+    def get_cfw_version_file(cls):
+        return cls.get("cfwVersionFile","0.0.0")

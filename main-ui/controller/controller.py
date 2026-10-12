@@ -5,6 +5,7 @@ from devices.device import Device
 from themes.theme import Theme
 from utils.logger import PyUiLogger
 from utils.py_ui_config import PyUiConfig
+from utils.time_logger import log_timing
 
 class Controller:
     controller = None
@@ -35,6 +36,9 @@ class Controller:
     _screensaver_active = False
     _screensaver_ignore_input_until = 0
     _game_running = False
+    # Long jobs with no button presses (box art optimizing/downloading) keep the
+    # screensaver off while they run: see hold_screensaver().
+    _screensaver_holds = 0
     # Logical-space point of the last TOUCH_TAP, set by the touch watcher
     touch_point = None
 
@@ -190,8 +194,53 @@ class Controller:
         Controller.clear_last_input()
         Controller.gs_triggered = False
 
+
+    return_count_of_current_input = 0
+    last_hold_return_time  = 0
+
+    #This is to account for dumb coding elsewhere that I don't want to fix
+    get_input_called_again = False
+
+    @staticmethod
+    def last_input():
+
+        if(not Controller.get_input_called_again):
+            # Means someone is calling for a cached value, not a call after
+            # an input has actually been requested. This method should have never existed
+            # as it has a dual purpose which makes the delay difficult
+            return Controller.last_controller_input
+        
+        if(Controller.last_controller_input is None):
+            return None
+        
+        now = time.monotonic()
+        if(Controller.return_count_of_current_input == 0):
+            # This is for initiating turbo mode
+            Controller.hold_delay = PyUiConfig.get_turbo_delay_ms()
+        else:
+            # Means we have already returned once
+            elapsed = now - Controller.last_hold_return_time
+            if(elapsed < Controller.hold_delay):
+                return None
+            
+            if(Controller.return_count_of_current_input == 1):
+                # This is the delay for each press AFTER turbo mode is engaged
+                Controller.hold_delay = Device.get_device().get_system_config().get_input_rate_limit_ms() / 1000
+
+        Controller.last_hold_return_time = now
+        Controller.return_count_of_current_input += 1
+        Controller.get_input_called_again = False
+        return Controller.last_controller_input
+
+
     @staticmethod
     def get_input(timeout=-2, called_from_check_for_hotkey=False):
+        Controller.get_input_called_again = True
+        if(Controller.return_count_of_current_input != 0 and Controller.still_held_down() and not called_from_check_for_hotkey):
+            return True # TODO is this okay
+        if(not called_from_check_for_hotkey):
+            Controller.return_count_of_current_input = 0
+        
         if(Controller.first_check_after_gs_triggered):
             #Let user stop holding menu
             Controller.first_check_after_gs_triggered = False
@@ -240,7 +289,7 @@ class Controller:
             callback()
 
         if timeout == DEFAULT_TIMEOUT_FLAG:
-            timeout = Device.get_device().input_timeout_default()
+            timeout = 0
 
         now = time.monotonic()
         time_since_last_input = now - Controller.last_input_time
@@ -254,25 +303,15 @@ class Controller:
         Controller.controller_interface.force_refresh()
         start_time = time.monotonic()
 
-        # Wait if the input is being held down (anti-repeat logic)
-        while Controller.still_held_down() and (time.monotonic() - start_time < Controller.hold_delay):
-            Controller.controller_interface.force_refresh()
-            time.sleep(POLL_INTERVAL_SECONDS)
-
         was_hotkey = False
         started_held_down = Controller.still_held_down()
-        if not Controller.still_held_down():
-            #if(Controller.last_controller_input is not None):
-            #    PyUiLogger.get_logger().info(f"Controller input is not longer held down")
-            # Reset hold delay and clear any lingering event
-            Controller.hold_delay = PyUiConfig.get_turbo_delay_ms()
-
+        if not Controller.still_held_down():                
             # Blocking wait for event until timeout
             elapsed = time.monotonic() - start_time
             remaining_time = timeout - elapsed
             remaining_time = max(remaining_time, 0.001)
             screensaver_timeout = Theme.get_screensaver_timeout_sec()
-            if not called_from_check_for_hotkey and not Controller._game_running and screensaver_timeout > 0:
+            if not called_from_check_for_hotkey and Controller._screensaver_allowed() and screensaver_timeout > 0:
                 idle_remaining = screensaver_timeout - (time.monotonic() - Controller.screensaver_input_tracking_time)
                 remaining_time = min(remaining_time, max(idle_remaining, 0.001))
             while True:
@@ -298,7 +337,7 @@ class Controller:
                             while Controller.still_held_down() and not called_from_check_for_hotkey:
                                 Controller.check_for_hotkey()
                     elif (Controller.last_controller_input in (ControllerInput.VOLUME_UP, ControllerInput.VOLUME_DOWN)
-                          and not called_from_check_for_hotkey):
+                        and not called_from_check_for_hotkey):
                         # Pads that carry the volume keys on the gamepad node (Miniloong)
                         # deliver them here instead of through a KeyWatcher; give them the
                         # watcher's treatment (device.special_input -> step + indicator +
@@ -310,7 +349,7 @@ class Controller:
                         break  # Valid non-hotkey input
                 elapsed = time.monotonic() - start_time
                 remaining_time = timeout - elapsed
-                if not called_from_check_for_hotkey and not Controller._game_running and screensaver_timeout > 0:
+                if not called_from_check_for_hotkey and Controller._screensaver_allowed() and screensaver_timeout > 0:
                     idle_remaining = screensaver_timeout - (time.monotonic() - Controller.last_input_time)
                     remaining_time = min(remaining_time, idle_remaining)
                 if remaining_time <= 0:
@@ -318,12 +357,6 @@ class Controller:
                         Controller._try_start_screensaver(Display)
                     break
 
-
-        #TODO i think this loop is in the wrong place
-        # Wait if the input is being held down (anti-repeat logic)
-        while started_held_down and Controller.still_held_down() and (time.monotonic() - start_time < Controller.hold_delay):
-            Controller.controller_interface.force_refresh()
-            time.sleep(POLL_INTERVAL_SECONDS)
 
         if Controller.still_held_down():
             if(ControllerInput.MENU == Controller.last_input()):
@@ -338,10 +371,6 @@ class Controller:
                     RecentsMenuGS().run_rom_selection()
                     Controller.clear_last_input()
                     Controller.gs_triggered = False
-            elif(started_held_down):
-                #if(Controller.last_controller_input is not None):
-                #    PyUiLogger.get_logger().info(f"Controller input held down but isn't menu")
-                Controller.hold_delay = Device.get_device().get_system_config().get_input_rate_limit_ms() / 1000
 
         Controller.last_input_time = time.monotonic()
         if Controller.last_controller_input is not None:
@@ -352,8 +381,29 @@ class Controller:
         return Controller.last_controller_input is not None and not was_hotkey
 
     @staticmethod
+    def _screensaver_allowed():
+        return not Controller._game_running and Controller._screensaver_holds == 0
+
+    @staticmethod
+    def hold_screensaver(hold):
+        """Keep the screensaver off during a long job that runs with no button presses.
+
+        Otherwise the job's B-to-abort monitor thread, which polls get_input(),
+        starts it mid-job: the CPU drops to powersave, the backlight dims and the
+        first button press (B to abort) only wakes the screen. Holds nest; when the
+        last one is released the idle timer starts over, so the screen gets a full
+        idle period after the job.
+        """
+        if hold:
+            Controller._screensaver_holds += 1
+        else:
+            Controller._screensaver_holds = max(0, Controller._screensaver_holds - 1)
+            if Controller._screensaver_holds == 0:
+                Controller.screensaver_input_tracking_time = time.monotonic()
+
+    @staticmethod
     def _try_start_screensaver(Display):
-        if Controller._game_running:
+        if not Controller._screensaver_allowed():
             return False
 
         screensaver_timeout = Theme.get_screensaver_timeout_sec()
@@ -377,12 +427,6 @@ class Controller:
     @staticmethod
     def clear_input_queue():
         Controller.controller_interface.clear_input_queue()
-
-    @staticmethod
-    def last_input():
-        #if(Controller.last_controller_input is not None):
-        #    PyUiLogger.get_logger().info(f"Returning last input: {Controller.last_controller_input}")
-        return Controller.last_controller_input
 
     @staticmethod 
     def add_button_watcher(button_watcher):

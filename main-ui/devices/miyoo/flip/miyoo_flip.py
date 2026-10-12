@@ -11,7 +11,6 @@ from controller.key_watcher import KeyWatcher
 import os
 from controller.key_watcher_controller import KeyWatcherController
 from controller.key_watcher_controller_dataclasses import InputResult, KeyEvent
-from devices.bluetooth.bluetooth_scanner import BluetoothScanner
 from devices.charge.charge_status import ChargeStatus
 from devices.miyoo.flip.miyoo_flip_poller import MiyooFlipPoller
 from devices.miyoo.miyoo_device import MiyooDevice
@@ -106,7 +105,9 @@ class MiyooFlip(MiyooDevice):
         return "poweroff"
 
     def get_controller_interface(self):
-        return KeyWatcherController(event_path="/dev/input/event5", mapping_provider=MiyooTrimKeyMappingProvider(), event_format='llHHi')
+        # The pad is miyoo_inputd's "MIYOO Player1"; see Flip.cfg.
+        pad = self.input_event_path("MIYOO Player1", "/dev/input/event5")
+        return KeyWatcherController(event_path=pad, mapping_provider=MiyooTrimKeyMappingProvider(), event_format='llHHi')
         
     def on_system_config_changed(self):
         old_volume = self.system_config.get_volume()
@@ -122,39 +123,6 @@ class MiyooFlip(MiyooDevice):
         self._set_brightness_to_config()
         self._set_hue_to_config()
         self.init_gpio()
-        self.init_bluetooth()
-
-    def init_bluetooth(self):
-        if(self.system_config.is_bluetooth_enabled()):
-            try:
-                subprocess.Popen(["insmod","/lib/modules/rtk_btusb.ko"],
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL)
-            except Exception as e:
-                PyUiLogger.get_logger().error(f"Error running insmod {e}")
-
-            #Is this needed? Temporarily disable
-            if(False):
-                if(not self.is_btmanager_runing()):
-                    try:
-                        subprocess.Popen(["/usr/miyoo/bin/btmanager"],
-                                        stdout=subprocess.DEVNULL,
-                                        stderr=subprocess.DEVNULL)
-                    except Exception as e:
-                        PyUiLogger.get_logger().error(f"Error running insmod {e}")
-        else:
-            self.disable_bluetooth()
-
-    def is_btmanager_runing(self):
-        try:
-            # Run 'ps' to check for bluetoothd process
-            result = self.get_running_processes()
-            # Check if bluetoothd is in the process list
-            return 'btmanager' in result.stdout
-        except Exception as e:
-            PyUiLogger.get_logger().error(f"Error checking bluetoothd status: {e}")
-            return False
-
 
     def init_gpio(self):
         try:
@@ -269,10 +237,6 @@ class MiyooFlip(MiyooDevice):
             return int(f.read().strip()) 
         return 0
     
-    def get_bluetooth_scanner(self):
-        return BluetoothScanner()
-    
-
     def reboot_cmd(self):
         return "reboot"
 

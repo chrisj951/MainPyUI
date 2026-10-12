@@ -184,6 +184,7 @@ class Sdl2AudioPlayer:
         Commands come in through _cmd_q. Worker maintains its own maps.
         """
         chunk_map = {}  # path -> Mix_Chunk pointer
+        wanted_chunks = set()  # every path asked for, loaded or not
         music_map = {}  # path -> Mix_Music pointer
         loop_channel = None
         loop_music_path = None
@@ -195,6 +196,11 @@ class Sdl2AudioPlayer:
                     resp_q.put(ok, timeout=0.5)
                 except Exception:
                     pass
+
+        def mixer_open():
+            # After a failed reopen SDL_mixer has freed its channels but still counts
+            # them, so a channel call would crash until audio opens again.
+            return sdlmixer.Mix_QuerySpec(None, None, None) != 0
 
         # Helper wrappers (worker-only)
         def worker_init():
@@ -269,7 +275,7 @@ class Sdl2AudioPlayer:
             loop_music_path = None
             loop_chunk_path = None
             # Save paths so we can re-preload after reinit
-            old_chunk_paths = list(chunk_map.keys())
+            old_chunk_paths = list(wanted_chunks | set(chunk_map.keys()))
             for p, cptr in list(chunk_map.items()):
                 try:
                     sdlmixer.Mix_FreeChunk(cptr)
@@ -290,7 +296,9 @@ class Sdl2AudioPlayer:
                 sdl2.SDL_QuitSubSystem(sdl2.SDL_INIT_AUDIO)
             except Exception:
                 pass
+
             ok = worker_init()
+
             if ok:
                 PyUiLogger.get_logger().info("SDL2 audio reinit succeeded.")
                 # Re-preload previously cached WAVs
@@ -347,6 +355,9 @@ class Sdl2AudioPlayer:
 
             try:
                 name = cmd.name
+                if name not in ("init", "preload_wav", "cleanup") and not mixer_open():
+                    reply_ok(cmd.resp_q, False)
+                    continue
                 if name == "init":
                     reply_ok(cmd.resp_q, init_ok)
                 elif name == "set_volume":
@@ -359,6 +370,7 @@ class Sdl2AudioPlayer:
                     reply_ok(cmd.resp_q, True)
                 elif name == "preload_wav":
                     path = cmd.args[0]
+                    wanted_chunks.add(path)
                     if path in chunk_map:
                         reply_ok(cmd.resp_q, True)
                         continue
@@ -454,14 +466,14 @@ class Sdl2AudioPlayer:
                     stop_loop_internal()
                     reply_ok(cmd.resp_q, True)
                 elif name == "cleanup":
-                    # stop loops
-                    stop_loop_internal()
-                    # halt everything and wait a bit
-                    try:
-                        sdlmixer.Mix_HaltChannel(-1)
-                        sdlmixer.Mix_HaltMusic()
-                    except Exception as e:
-                        PyUiLogger.get_logger().warning(f"cleanup: halt exception: {e}")
+                    # stop loops and halt everything (only an open mixer), then wait a bit
+                    if mixer_open():
+                        stop_loop_internal()
+                        try:
+                            sdlmixer.Mix_HaltChannel(-1)
+                            sdlmixer.Mix_HaltMusic()
+                        except Exception as e:
+                            PyUiLogger.get_logger().warning(f"cleanup: halt exception: {e}")
                     sdl2.SDL_Delay(80)
                     # free all chunks and musics safely
                     for p, cptr in list(chunk_map.items()):

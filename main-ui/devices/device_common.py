@@ -4,12 +4,14 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from pathlib import Path
 from audio.audio_player_none import AudioPlayerNone
 from controller.controller_inputs import ControllerInput
 from menus.language.language import Language
 from devices.abstract_device import AbstractDevice
+from devices.bluetooth.bluetooth_command import BluetoothCommand
 from devices.miyoo.device_user_config import DeviceUserConfig
 from devices.utils.process_runner import ProcessRunner
 from devices.wifi.wifi_connection_quality_info import WiFiConnectionQualityInfo
@@ -225,7 +227,96 @@ class DeviceCommon(AbstractDevice):
     def get_display_volume(self):
         return self.get_volume()
             
-    @throttle.limit_refresh(15, fast_seconds=1, fast_while="_wifi_settle_until")
+    # ---- Bluetooth --------------------------------------------------------
+    # The shell owns the radio; PyUI saves the setting and calls bluetoothCmd.
+
+    def _bluetooth_cmd(self, *args, timeout=20):
+        cmd = PyUiConfig.get_bluetooth_cmd()
+        if not cmd or not os.path.exists(cmd):
+            return None
+        try:
+            result = subprocess.run([cmd, *args], capture_output=True, text=True,
+                                    stdin=subprocess.DEVNULL, timeout=timeout)
+            if result.returncode != 0:
+                PyUiLogger.get_logger().error(f"bluetooth {args[0]} exited {result.returncode}")
+                return None
+            return result.stdout
+        except Exception as e:
+            PyUiLogger.get_logger().error(f"bluetooth {args[0]} failed: {e}")
+            return None
+
+    def is_bluetooth_enabled(self):
+        return self.system_config.is_bluetooth_enabled()
+
+    def enable_bluetooth(self):
+        self.system_config.set_bluetooth(1)
+        self._apply_bluetooth()
+
+    def disable_bluetooth(self):
+        self.system_config.set_bluetooth(0)
+        self._apply_bluetooth()
+
+    # apply brings the radio up or down, which takes seconds; keep it off the
+    # UI thread. A toggle made while one is running gets one more apply, which
+    # reads the saved setting, so the last toggle wins.
+    _bt_apply_lock = threading.Lock()
+    _bt_apply_running = False
+    _bt_apply_again = False
+    _bt_route_key = None
+
+    def _apply_bluetooth(self):
+        with self._bt_apply_lock:
+            if self._bt_apply_running:
+                self._bt_apply_again = True
+                return
+            self._bt_apply_running = True
+        threading.Thread(target=self._bluetooth_apply_worker, daemon=True).start()
+
+    def _bluetooth_apply_worker(self):
+        while True:
+            self._bluetooth_cmd("apply", timeout=30)
+            self._bluetooth_status.force_refresh()
+            self.refresh_audio_route()
+            with self._bt_apply_lock:
+                if not self._bt_apply_again:
+                    self._bt_apply_running = False
+                    return
+                self._bt_apply_again = False
+
+    @throttle.limit_refresh(10, background=True)
+    def _bluetooth_status(self):
+        out = self._bluetooth_cmd("status", timeout=15) or ""
+        return dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
+
+    def get_bluetooth_status(self):
+        """For the top bar: None unless something is connected, then "audio" or
+        "gamepad" when only that kind is, otherwise "on"."""
+        if not self.is_bluetooth_enabled():
+            return None
+        status = self._bluetooth_status()
+        if status.get("radio") != "1":
+            return None
+        # Headsets also connect and drop on their own (boot reconnect, power off),
+        # and the audio stream comes up a moment after the connection.
+        route_key = (status.get("connected"), status.get("audio"))
+        if route_key != self._bt_route_key:
+            self._bt_route_key = route_key
+            self.refresh_audio_route()
+        icons = [i for i in status.get("connected_icon", "").split(",") if i]
+        if not icons:
+            return None
+        if all(i.startswith("audio") for i in icons):
+            return "audio"
+        if all(i == "input-gaming" for i in icons):
+            return "gamepad"
+        return "on"
+
+    def get_bluetooth_scanner(self):
+        if not hasattr(self, "_bluetooth_scanner"):
+            status = (self._bluetooth_cmd("status") or "").splitlines()
+            self._bluetooth_scanner = BluetoothCommand(self._bluetooth_cmd) if "radio=1" in status else None
+        return self._bluetooth_scanner
+
     # ---- WiFi -------------------------------------------------------------
     # The shell owns the radio and reports on it; PyUI only saves the on/off
     # setting and shows what `wifiCmd status` says. See App/PyUI/wifi_readme.txt
@@ -253,7 +344,11 @@ class DeviceCommon(AbstractDevice):
             PyUiLogger.get_logger().error(f"wifi {args[0]} failed: {e}")
             return None
 
-    @throttle.limit_refresh(10, fast_seconds=1, fast_while="_wifi_settle_until")
+    # background: the top bar asks for this every frame, and `wifiCmd status` takes
+    # ~0.2 s on an A133P. Read on the UI thread, that stalled one frame per refresh
+    # (every second while a change settles), and Controller.get_input drops a key
+    # pressed during a frame longer than 0.2 s: typing a WiFi password lost keys.
+    @throttle.limit_refresh(10, fast_seconds=1, fast_while="_wifi_settle_until", background=True)
     def _wifi_status(self):
         """`wifiCmd status` as a dict of its key=value lines."""
         out = self._wifi_cmd("status", timeout=15)
@@ -698,6 +793,97 @@ class DeviceCommon(AbstractDevice):
     def get_audio_system(self):
         return AudioPlayerNone()
 
+    @staticmethod
+    def input_event_path(name, default):
+        """The input node of the device registered as `name`, or `default`.
+
+        Virtual pads made by a vendor input daemon register after the kernel's
+        devices, so a USB device with a HID interface present at boot (a headset
+        remote, a DAC's buttons) can take the node number the pad usually has.
+        """
+        try:
+            with open("/proc/bus/input/devices") as f:
+                blocks = f.read().split("\n\n")
+        except OSError:
+            return default
+        for block in blocks:
+            if f'N: Name="{name}"' not in block:
+                continue
+            for line in block.splitlines():
+                if line.startswith("H: Handlers="):
+                    for handler in line.split("=", 1)[1].split():
+                        if handler.startswith("event"):
+                            return "/dev/input/" + handler
+        return default
+
+    _audio_route_lock = threading.Lock()
+
+    # usb_audio_watchdog.sh reroutes when a USB sound card comes or goes and
+    # records the card it routed to; get_bluetooth_status follows headsets.
+    # The record names the enumeration, so a card replugged at the same index
+    # still reopens: the old handle points at a card that is gone.
+    def watch_audio_route(self):
+        path = PyUiConfig.get_usb_audio_route_path()
+        if not path or not self._usb_audio_supported():
+            return
+        last = ""
+        while True:
+            time.sleep(1)
+            try:
+                route = Path(path).read_text()
+            except OSError:
+                route = ""
+            if route != last:
+                last = route
+                self._refresh_audio_route(reopen=True)
+
+    def _usb_audio_supported(self):
+        # The shell's device_usb_audio_supported is the one switch, as
+        # device_bluetooth_supported is for Bluetooth.
+        cmd = PyUiConfig.get_usb_audio_supported_cmd()
+        if not cmd:
+            return False
+        try:
+            return subprocess.run([cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                  timeout=30).returncode == 0
+        except Exception as e:
+            PyUiLogger.get_logger().warning(f"USB audio support check failed: {e}")
+            return False
+
+    def refresh_audio_route(self):
+        threading.Thread(target=self._refresh_audio_route, name="AudioRoute", daemon=True).start()
+
+    def _refresh_audio_route(self, reopen=False):
+        with self._audio_route_lock:
+            self._refresh_audio_route_locked(reopen)
+
+    def _refresh_audio_route_locked(self, reopen=False):
+        # The command prints the ALSA device to play through - a connected
+        # Bluetooth headset - or an empty last line for the default output.
+        cmd = PyUiConfig.get_bt_audio_device_cmd()
+        if not cmd:
+            return
+        try:
+            result = subprocess.run([cmd], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                    text=True, timeout=30)
+        except Exception as e:
+            PyUiLogger.get_logger().warning(f"Audio route check failed: {e}")
+            return
+        if result.returncode != 0:
+            return
+        lines = result.stdout.splitlines()
+        device = lines[-1].strip() if lines else ""
+        if device == os.environ.get("AUDIODEV", "") and not reopen:
+            return
+        if device:
+            os.environ["AUDIODEV"] = device
+        else:
+            os.environ.pop("AUDIODEV", None)
+        PyUiLogger.get_logger().info(f"Audio output now {device or 'the default device'}")
+        self.get_audio_system().audio_reopen()
+        from themes.theme import Theme
+        Theme.bgm_setting_changed()
+
     def get_extra_settings_options(self):
         return []
     
@@ -938,3 +1124,6 @@ class DeviceCommon(AbstractDevice):
 
     def get_game_images_folder_name(self):
         return "Imgs"
+
+    def fix_device_font_height_calc_issues(self, height):
+        return height
