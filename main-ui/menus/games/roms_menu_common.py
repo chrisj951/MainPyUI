@@ -343,6 +343,7 @@ class RomsMenuCommon(ABC):
                                 selected.get_selection().get_value().rom_file_path
                             )
                         
+                    Display.restore_bg()
                     return ControllerInput.B
                 elif(ControllerInput.SELECT == selected.get_input() and not self.support_only_game_launching):
                     self.popup_menu.toggle_view()
@@ -353,6 +354,7 @@ class RomsMenuCommon(ABC):
                         selected.get_selection().get_value().rom_file_path,
                         getattr(self, 'subfolder', '') or ''
                     )
+                    Display.restore_bg()
                     return ControllerInput.L1
                 elif(Theme.skip_main_menu() and ControllerInput.R1 == selected.get_input()):
                     PyUiState.set_last_game_selection(
@@ -360,6 +362,7 @@ class RomsMenuCommon(ABC):
                         selected.get_selection().get_value().rom_file_path,
                         getattr(self, 'subfolder', '') or ''
                     )
+                    Display.restore_bg()
                     return ControllerInput.R1
 
         Display.restore_bg()
