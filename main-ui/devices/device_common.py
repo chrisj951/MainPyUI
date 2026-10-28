@@ -7,7 +7,7 @@ import threading
 import time
 from pathlib import Path
 import sdl2
-import sdl2.ext
+from display import sdl_backend
 from audio.audio_player_none import AudioPlayerNone
 from controller.controller_inputs import ControllerInput
 from menus.language.language import Language
@@ -56,6 +56,9 @@ class DeviceCommon(AbstractDevice):
                     return
 
     def power_off(self):
+        # Shown here: waiting on the command, the menu can't act on the CFW's
+        # own farewell request (docs/shutdown_readme.txt).
+        Display.present_farewell()
         if PyUiConfig.get_poweroff_cmd():
             self.run_cmd([PyUiConfig.get_poweroff_cmd()], is_power_cmd=True)
         else:
@@ -119,10 +122,7 @@ class DeviceCommon(AbstractDevice):
     # keeps the screen faintly visible so a lit device still reads as "on".
     #
     # Dimming changes only the in-memory level; the user's level is remembered
-    # here and written back on restore. Written back, not just re-read: the
-    # shell brightness hotkeys (buttons_watchdog) derive the level from the raw
-    # backlight value, so a key pressed while dimmed would save a level computed
-    # from the dimmed value. Restore wins over that.
+    # here and written back on restore, so it wins over a level saved meanwhile.
     SCREENSAVER_BACKLIGHT_LEVEL = 1
     _screensaver_saved_backlight = None
 
@@ -576,6 +576,10 @@ class DeviceCommon(AbstractDevice):
 
     def exit_pyui(self):
         Display.deinit_display()
+        # Graphics teardown no longer syncs. Flush settings that are saved without
+        # fsync (CFW config, theme edits) before a restart or a hand-off.
+        if hasattr(os, "sync"):
+            os.sync()
         sys.exit()
 
     def double_init_sdl_display(self):
@@ -584,7 +588,7 @@ class DeviceCommon(AbstractDevice):
     def create_window(self, width, height):
         """The window Display draws into, given the display's current size: fullscreen on
         a handheld."""
-        return sdl2.ext.Window("Minimal SDL2 GUI", size=(width, height), flags=sdl2.SDL_WINDOW_FULLSCREEN)
+        return sdl_backend.Window("Minimal SDL2 GUI", size=(width, height), flags=sdl2.SDL_WINDOW_FULLSCREEN)
 
     def supports_volume(self):
         return True
@@ -1036,6 +1040,10 @@ class DeviceCommon(AbstractDevice):
         # Need to test 1 at a time to ensure it works
         return False
 
+    def get_sdl_backend(self):
+        """Override with ext on a device that needs the original PySDL2 wrappers."""
+        return "direct"
+
     def wants_gles_context(self):
         """
         Ask SDL for an OpenGL ES EGL config rather than a desktop GL one.
@@ -1109,6 +1117,10 @@ class DeviceCommon(AbstractDevice):
         pass
 
     def clear_framebuffer(self):
+        pass
+
+    def menu_sound_settings_changed(self):
+        """Called after the button-press-sound or background-music setting changes."""
         pass
 
     def are_headphones_plugged_in(self):

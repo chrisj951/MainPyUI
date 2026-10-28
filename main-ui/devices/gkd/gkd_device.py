@@ -46,10 +46,10 @@ class GKDDevice(DeviceCommon):
         pass
 
     def power_off_cmd(self):
-        return "poweroff"
+        return "systemctl poweroff"
 
     def reboot_cmd(self):
-        return "reboot"
+        return "systemctl reboot"
 
     def _set_lumination_to_config(self):
         with open("/sys/class/backlight/backlight/brightness", "w") as f:
@@ -306,3 +306,6 @@ class GKDDevice(DeviceCommon):
     @throttle.limit_refresh(1)
     def post_present_operations(self):
         self.clear_display_cache_if_memory_full("MemAvailable", 100)
+
+    def get_image_for_activity(self, activity):
+        return MiyooTrimCommon.get_image_for_activity(activity)
